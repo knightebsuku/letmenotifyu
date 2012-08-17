@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Letmenotifyu
+Comment=Notification Program for www.1channel.ch
+TryExec=letmenotifyu
+Exec=letmenotifyu
+Icon=letmenotifyu
+Type=Application
+Categories=GNOME;Network;
+StartupNotify=true
+X-Ubuntu-Gettext-Domain=letmenotifyu
