@@ -43,6 +43,6 @@ class Series:
     def enter_link(self,url):
         connection=sqlite.connect(self.series_db)
         cursor=connection.cursor()
-        cursor.execute('INSERT INTO series VALUES(null,?,0)',(url,))
+        cursor.execute('INSERT INTO series VALUES(null,?,0,null,null)',(url,))
         connection.commit()
         

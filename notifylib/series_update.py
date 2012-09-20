@@ -12,16 +12,14 @@ def get_episode_count(tv_show_url,ep_counts,series_db,cursor):#count number of e
         ep_link=[""]
         http="http://www.1channel.ch"
         check=urllib2.urlopen(tv_show_url).read()
+        show_title=re.findall('<meta property="og:title" content="(.*?)">',check)
         num_eps=re.findall('<div class="tv_episode_item"> <a href=(.*?)>',check)
         for amount in num_eps:
             count+=1
         if ep_counts < count:
             link=http+amount[1:][:-1]
-            announce("New Series Episode",link)
-            #update database
-            #connection=sqlite.connect(series_db)
-            #cursor=connection.cursor()
-            cursor.execute('UPDATE series SET num_eps=? WHERE url=?',(count,tv_show_url))
+            announce("New Series Episode",show_title[0],link)
+            cursor.execute('UPDATE series SET num_eps=?,title=?,eplat=? WHERE url=?',(count,show_title[0],link,tv_show_url))
            
             
             

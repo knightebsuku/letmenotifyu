@@ -2,15 +2,12 @@
 
 # import staandard python libs and custom ones.
 import os,webbrowser,sys
-from threading import Thread
 from gi.repository import Gtk, GObject
 from pysqlite2 import dbapi2 as sqlite
 from notifylib.add_url import Series
 from notifylib.about import About
 from notifylib.confirm import Confirm
-from notifylib.movies_update import get_movies
-from notifylib.series_update import get_series
-from notifylib.update import update_databases
+
 
 GObject.threads_init()
 movie_path=os.environ['HOME']+'/.local/share/letmenotifyu/movies.db'
@@ -29,13 +26,11 @@ class Base:
         self.builder.add_from_file(gladefile)
         dict={'on_btnmovies_clicked':self.on_btnmovies_clicked,
               'on_winlet_destroy':self.on_winlet_destroy,
-              'on_btnadd_clicked':self.on_btnadd_clicked,
               'on_treeview1_button_press_event':self.on_treeview1_button_press_event,
               'on_btnSeries_clicked':self.on_btnSeries_clicked,
               'on_additem_button_press_event':self.on_additem_button_press_event,
               'on_closeitem_button_press_event':self.on_closeitem_button_press_event,
-              'on_aboutitem_button_press_event':self.on_aboutitem_button_press_event,
-              'on_updateitem_button_press_event':self. on_updateitem_button_press_event}
+              'on_aboutitem_button_press_event':self.on_aboutitem_button_press_event}
         self.builder.connect_signals(dict) #waiting for Signals
         self.window=self.builder.get_object('winlet') #name of main gtkwindow object
         self.window.set_icon_from_file(pic)
@@ -52,7 +47,7 @@ class Base:
         db=connect.cursor()
         db.execute("SELECT * from series")
         for links in db.fetchall():
-            series.append([links[1]])
+            series.append([links[3]])
         
     def on_btnmovies_clicked(self,widget):
         self.builder.get_object('listmovies').clear() #in case there is stuff
@@ -68,14 +63,14 @@ class Base:
             choosen=self.builder.get_object('treeview1').get_selection() #reference to GTK.Selection
             movie,name=choosen.get_selected() #returns tuple
             title=movie[name][0]
-            if title[0:7] != 'http://':
+            if title[-5:-1]=="2012":
                 connect=sqlite.connect(self.movies_db)
                 db=connect.cursor()
-                db.execute("SELECT link FROM movie WHERE titles=?", (title,))
+                db.execute("SELECT link FROM movie WHERE titles=?",(title,))
             else:
                 connect=sqlite.connect(self.series_db)
                 db=connect.cursor()
-                db.execute("SELECT url FROM series WHERE url=?",(title,))
+                db.execute("SELECT eplat FROM series WHERE title=?", (title,))
             for link in db.fetchall():
                 webbrowser.open_new(link[0])
                 
@@ -83,13 +78,11 @@ class Base:
             choosen=self.builder.get_object('treeview1').get_selection() #reference to GTK.Selection
             series,name=choosen.get_selected() #returns tuple
             url=series[name][0]
-            if url[0:7] == 'http://':
+            if url[-5:-1]!="2012":
                 load=Confirm('confirm.glade',url,self.series_db)
+                
         else:
             ""
-        
-    def on_btnadd_clicked(self,widget):
-       load=Series('inputDialog.glade',self.series_db) #load input dialog to enter url of series
 
     def on_additem_button_press_event(self,widget,event):
         load=Series('inputDialog.glade',self.series_db)
@@ -99,9 +92,6 @@ class Base:
         
     def on_aboutitem_button_press_event(self,widget,event):
         load=About('about.glade')
-
-    def on_updateitem_button_press_event(self,widget,event):
-        Thread(target=update_databases).start()
 
 
 
