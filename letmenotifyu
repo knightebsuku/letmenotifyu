@@ -1,86 +1,54 @@
 #!/usr/bin/python
 
-import os,webbrowser
+import os
 from threading import Thread
-import threading
 from notifylib.update import update_databases
+from notifylib.create import create_db
+from notifylib.add_url import Series
 from gi.repository import Gtk,GObject
 from gi.repository import AppIndicator3 as appindicator
 from notifylib.base import Base
-#from notifylib.create import create_db
 
 GObject.threads_init()
-movie_path=os.environ['HOME']+'/.local/share/letmenotifyu/movies.db'
-series_path=os.environ['HOME']+'/.local/share/letmenotifyu/url.db'
+movie_path=os.environ['HOME']+'/.local/share/letmenotifyu/movies.sqlite'
+series_path=os.environ['HOME']+'/.local/share/letmenotifyu/url.sqlite'
 
 
-
-#def start_update():
-    
-
-def stop_app():
-    Gtk.main_quit()
-
-        
-def goto_browser(web_link):
-    webbrowser.openlink(web_link)
+def series(*args):
+     load=Series('inputDialog.glade',series_path)
+     
+def window(*args):
+     app_Start=Base('main.glade',movie_path,series_path,'letmenotifyu.png')
     
 class AppLet:
     def __init__(self):
-        app_Start=Base('main.glade',movie_path,series_path,'letmenotifyu.png')
-        self.appInd=appindicator.Indicator.new("Letmenotifyu","indicator-messages",
+        self.appInd=appindicator.Indicator.new("Letmenotifyu","/usr/share/letmenotifyu/ui/letmenotifyu.png",
                                       appindicator.IndicatorCategory.APPLICATION_STATUS)
         self.appInd.set_status(appindicator.IndicatorStatus.ACTIVE)
         self.menu=Gtk.Menu()
-        self.movie=Gtk.Menu()
-        self.series=Gtk.Menu()
-        
-        self.movie_view=Gtk.MenuItem("New Movies") #name of menu
-        self.movie_view.set_submenu(self.movie) # movie_view will have submenus
-        self.menu.append(self.movie_view)
-        self.movie_view.show()
 
-        self.series_view=Gtk.MenuItem("New Episodes")
-        self.series_view.set_submenu(self.series)
-        self.menu.append(self.series_view)
-        self.series_view.show()
+        self.open_view=Gtk.MenuItem("Open")
+        self.menu.append(self.open_view)
+        self.open_view.show()
+        self.open_view.connect("activate",window)
 
-        #self.updates()
-        self.quitting()
+        self.add_series=Gtk.MenuItem("Add Series")
+        self.menu.append(self.add_series)
+        self.add_series.show()
+        self.add_series.connect("activate",series)
 
-        self.appInd.set_menu(self.menu)
-        update_thread=Thread(target=update_databases)
-        update_thread.setDaemon(True)
-        update_thread.start()
-        Gtk.main()
-        
-        
-    def update_movie_menu(self,new_movie,link):
-        movie_update=Gtk.MenuItem(new_movie)
-        self.movie.append(movie_update)
-        movie_update.show()
-        movie_update.connect("activate",goto_browser) #when clicked open browser
-
-    def set_series_menu(self):
-        print ""
-         
-
-    def update_series_menu(self,link):
-        print ""
-
-    ## def updates(self):
-    ##     update=Gtk.MenuItem("Update")
-    ##     self.menu.append(update)
-    ##     update.connect("activate",start_update)
-    ##     update.show()
-        
-    def quitting(self):
         quit=Gtk.MenuItem("Quit")
         self.menu.append(quit)
         quit.connect("activate",Gtk.main_quit)
         quit.show()
+        
+        self.appInd.set_menu(self.menu)
+        update_thread=Thread(target=update_databases) #start update
+        update_thread.setDaemon(True)
+        update_thread.start()
+        Gtk.main()
 
-
+    
 if __name__=="__main__":
     if os.path.exists(movie_path) and os.path.exists(series_path):
         start=AppLet()

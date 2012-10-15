@@ -4,8 +4,8 @@ from notifylib.series_update import get_series
 from notifylib.movies_update import get_movies
 import time,os
 
-movie_path=os.environ['HOME']+'/.local/share/letmenotifyu/movies.db'
-series_path=os.environ['HOME']+'/.local/share/letmenotifyu/url.db'
+movie_path=os.environ['HOME']+'/.local/share/letmenotifyu/movies.sqlite'
+series_path=os.environ['HOME']+'/.local/share/letmenotifyu/url.sqlite'
     
 def update_databases():
         try:

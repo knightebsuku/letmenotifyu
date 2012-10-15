@@ -18,14 +18,15 @@ def make_movie_db(db):
 def make_series_db(db):
      connection=sqlite.connect(db)
      cursor=connection.cursor()
-     cursor.execute('CREATE TABLE series(id INTEGER PRIMARY KEY,url VARCHAR(30),num_eps INTEGER)')
+     cursor.execute('CREATE TABLE series(id INTEGER PRIMARY KEY,url VARCHAR(20),num_eps INTEGER,title VARCHAR(15),eplat VARCHAR(20))')
      connection.commit()
 
 def create_db(movie_db,series_db):
+    os.makedirs(os.environ['HOME']+'/.local/share/letmenotifyu/')
     make_movie_db(movie_db)
     make_series_db(series_db)
 
 
-movie_path=os.environ['HOME']+'/.local/share/letmenotifyu/movies.db'
-series_path=os.environ['HOME']+'/.local/share/letmenotifyu/url.db'
+movie_path=os.environ['HOME']+'/.local/share/letmenotifyu/movies.sqlite'
+series_path=os.environ['HOME']+'/.local/share/letmenotifyu/url.sqlite'
 #create_db(movie_path,series_path)
