@@ -19,7 +19,7 @@ class Confirm:
     def on_btnOk_clicked(self,widget):
         connect=sqlite.connect(self.series_db)
         db=connect.cursor()
-        db.execute("DELETE FROM series WHERE url=?",(self.title,))
+        db.execute("DELETE FROM series WHERE title=?",(self.title,))
         connect.commit()
         self.confirm.get_object('msgdlg').destroy()
 
