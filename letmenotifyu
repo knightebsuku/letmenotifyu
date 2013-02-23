@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+#main file
 import os
 from threading import Thread
 from notifylib.update import update_databases
