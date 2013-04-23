@@ -4,12 +4,6 @@ import urllib2, re,sys
 from gi.repository import Notify
 from pysqlite2 import dbapi2 as sqlite
 from notifylib.notifiy import announce
-
-def get_view(title,link):
-    require={title,link}
-    return require
-    
-
 #check for latest movies
 def get_movies(movie_db): # Get latest movies from site
         new_store=[""]*24 #max of 24 movies are displayed on the page
