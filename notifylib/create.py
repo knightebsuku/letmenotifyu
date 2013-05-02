@@ -30,6 +30,3 @@ def create_database(sqlite_file):
     make_episode_table(cursor)
     connection.commit()
 
-
-
-#create_database(database)
