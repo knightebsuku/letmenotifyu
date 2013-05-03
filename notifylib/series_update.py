@@ -2,10 +2,9 @@
 
 import urllib2,re
 from gi.repository import Notify
-from pysqlite2 import dbapi2 as sqlite
 from notifylib.notifiy import announce
 
-http="http://www.1channel.ch"
+http="http://www.letmewatchthis.ch"
 #Check for latest series episode
 def get_episode_count(show_title,show_link,episode_count,cursor,connection):
     """
@@ -50,14 +49,10 @@ def insert_difference(show_title,show,web_count,current_count,cursor,connection)
     
     
     
-def get_series(sqlite_file): #fetch url from database
-    connection=sqlite.connect(sqlite_file)
-    cursor=connection.cursor()
+def get_series(cursor,connection): #fetch url from database
     cursor.execute('SELECT * FROM series')
     for url in cursor.fetchall():
         get_episode_count(str(url[1]),url[2],url[3],cursor,connection)
     connection.commit()
          
-
-#get_series("letmenotifyu.sqlite")     
 
