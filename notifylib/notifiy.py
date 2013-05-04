@@ -1,8 +1,9 @@
-#!/usr/bin/env python
-from gi.repository import Notify
-#import letmenotifyu
+#!/usr/bin/python
 
-#notification
+from gi.repository import Notify
+
+
+
 
 def announce(*args):
     Notify.init("Letmenotifyu")
