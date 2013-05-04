@@ -77,9 +77,10 @@ class Base:
                 load=Confirm('confirm.glade',url,self.cursor,self.connection)
 
     def on_additem_button_press_event(self,widget,event):
-        load=Add_Series('inputDialog.glade',self.cursor)
+        load=Add_Series('inputDialog.glade',self.cursor,self.connection)
         
     def on_closeitem_button_press_event(self,widget,event):
+        self.connection.close()
         Gtk.main_quit()
         
     def on_aboutitem_button_press_event(self,widget,event):

@@ -4,22 +4,20 @@
 import os
 from threading import Thread
 from notifylib.update import update_databases
-from notifylib.create import create_db
-from notifylib.add_url import Series
+from notifylib.create import create_database
+from notifylib.add_url import Add_Series
 from gi.repository import Gtk,GObject
 from gi.repository import AppIndicator3 as appindicator
 from notifylib.base import Base
+from pysqlite2 import dbapi2 as sqlite
 
 GObject.threads_init()
-movie_path=os.environ['HOME']+'/.local/share/letmenotifyu/movies.sqlite'
-series_path=os.environ['HOME']+'/.local/share/letmenotifyu/url.sqlite'
+sqlite_file='/home/zeref/Coding/Python/letmenotifyu/letmenotifyu-1.2/notifylib/letmenotifyu.sqlite'
+path=os.path.join('/usr/share/letmenotifyu','ui')
+os.chdir(path)
 
-
-def series(*args):
-     load=Series('inputDialog.glade',series_path)
-     
-def window(*args):
-     app_Start=Base('main.glade',movie_path,series_path,'letmenotifyu.png')
+def main_menu(*args):
+     app_Start=Base('main.glade','letmenotifyu.png')
     
 class AppLet:
     def __init__(self):
@@ -31,12 +29,7 @@ class AppLet:
         self.open_view=Gtk.MenuItem("Open")
         self.menu.append(self.open_view)
         self.open_view.show()
-        self.open_view.connect("activate",window)
-
-        self.add_series=Gtk.MenuItem("Add Series")
-        self.menu.append(self.add_series)
-        self.add_series.show()
-        self.add_series.connect("activate",series)
+        self.open_view.connect("activate",main_menu)
 
         quit=Gtk.MenuItem("Quit")
         self.menu.append(quit)
@@ -44,17 +37,17 @@ class AppLet:
         quit.show()
         
         self.appInd.set_menu(self.menu)
-        update_thread=Thread(target=update_databases) #start update
+        update_thread=Thread(target=update_databases) #start update Thread
         update_thread.setDaemon(True)
         update_thread.start()
         Gtk.main()
 
     
 if __name__=="__main__":
-    if os.path.exists(movie_path) and os.path.exists(series_path):
+    if os.path.exists(sqlite_file):
         start=AppLet()
     else:
-        create_db(movie_path,series_path)
+        create_database(sqlite_file)
         start=AppLet()
     
    

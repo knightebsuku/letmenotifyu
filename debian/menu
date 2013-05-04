@@ -1,0 +1,2 @@
+?package(letmenotifyu):needs="X11" section="Applications/Network/Communication" \
+  title="Letmenotifyu" command="/usr/bin/letmenotifyu" icon="/usr/share/letmenotifyu/ui/letmenotifyu.xpm"

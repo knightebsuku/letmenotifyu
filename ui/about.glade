@@ -14,7 +14,7 @@
     <property name="icon_name">notify</property>
     <property name="type_hint">dialog</property>
     <property name="program_name">Letmenotifyu</property>
-    <property name="version">v 1.0</property>
+    <property name="version">v 1.5.0</property>
     <property name="comments" translatable="yes">letmenotify is a program that will notify you of the latest movies and series episodes.</property>
     <property name="website">http://letmenotifyu.blogspot.com/</property>
     <property name="website_label" translatable="yes">Letmenotifyu</property>

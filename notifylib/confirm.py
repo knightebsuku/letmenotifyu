@@ -4,9 +4,10 @@ from gi.repository import Gtk
 from pysqlite2 import dbapi2 as sqlite
 
 class Confirm:
-    def __init__(self,gladefile,title,series_db):
-        self.title=title #url
-        self.series_db=series_db
+    def __init__(self,gladefile,title,cursor,connection):
+        self.title=title
+        self.cursor=cursor
+        self.connection=connection
         self.confirm=Gtk.Builder()
         self.confirm.add_from_file(gladefile)
         dicts={'on_btnOk_clicked':self.on_btnOk_clicked,
@@ -17,10 +18,8 @@ class Confirm:
         window.show()
 
     def on_btnOk_clicked(self,widget):
-        connect=sqlite.connect(self.series_db)
-        db=connect.cursor()
-        db.execute("DELETE FROM series WHERE title=?",(self.title,))
-        connect.commit()
+        self.cursor.execute("DELETE FROM series WHERE title=?",(self.title,))
+        self.connection.commit()
         self.confirm.get_object('msgdlg').destroy()
 
     def on_btnCancel_clicked(self,widget):

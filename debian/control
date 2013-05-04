@@ -1,0 +1,17 @@
+Source: letmenotifyu
+Section: x11
+Priority: optional
+Maintainer: Lunga Mthembu <zerefs@gmail.com>
+Build-Depends: debhelper (>= 8.0.0), python (>=2.4)
+Standards-Version: 3.9.3
+Homepage: http://letmenotifyu.blogspot.com
+
+Package: letmenotifyu
+Architecture: all
+Depends:fontconfig-config, ttf-indic-fonts-core,python-pysqlite2, ${shlibs:Depends}, ${misc:Depends}, ${python:Depends}
+Description: Program to notify users
+ This program will allow user to be notified about
+ the latest movie release. The program will also allow users
+ to select which series they would like to be notified
+ about from www.1channel.ch
+
