@@ -2,7 +2,7 @@
 
 from gi.repository import Gtk
 
-
+#about box
 class About:
     def __init__(self,gladefile):
         about=Gtk.Builder()
