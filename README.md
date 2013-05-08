@@ -5,12 +5,7 @@ This is the Development Branch Leading to 1.5.0
 
 
 *********************************************
-Updates
-********************************************
-
-*Series_update.py Updated
-*Create.py Updated
-*Movie_update.py Updated
-*add_url.py Updated
-*base.py Updated
-
+Things Still to do
+*********************************************
+Add another column for series table
+Add children to GTKTreestore
