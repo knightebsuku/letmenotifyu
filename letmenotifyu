@@ -13,7 +13,8 @@ from pysqlite2 import dbapi2 as sqlite
 
 GObject.threads_init()
 sqlite_file='/home/zeref/Coding/Python/letmenotifyu/letmenotifyu-1.2/notifylib/letmenotifyu.sqlite'
-path=os.path.join('/usr/share/letmenotifyu','ui')
+#path=os.path.join('/usr/share/letmenotifyu','ui')
+path=os.path.join('/home/zeref/Coding/Python/letmenotifyu/letmenotifyu-1.2','ui')
 os.chdir(path)
 
 def main_menu(*args):
