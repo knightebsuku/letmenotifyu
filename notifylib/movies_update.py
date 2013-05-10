@@ -37,7 +37,6 @@ def compare(new_movie,new_link,cursor,connection):
 def update_database(update_movie,update_link,cursor,connection): 
     count,index=1,0
     for movie in update_movie:
-        print movie
         link="http://www.letmewatchthis.ch"+update_link[index][1:][:-1]
         cursor.execute('UPDATE movies SET title=?,link=? WHERE id=?',(movie,link,count))
         connection.commit()

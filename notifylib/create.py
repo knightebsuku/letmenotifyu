@@ -4,6 +4,7 @@ from pysqlite2 import dbapi2 as sqlite
 
 
 database=os.environ['HOME']+'/.local/share/letmenotifyu/letmenotifyu.sqlite'
+
 #database will be made during setup
 def make_movie_table(cursor):
     i=0
@@ -14,13 +15,13 @@ def make_movie_table(cursor):
 
         
 def make_series_table(cursor):
-     cursor.execute('CREATE TABLE series(id INTEGER PRIMARY KEY,title VARCHAR(15),series_link VARCHAR(20),num_eps INTEGER)')
+     cursor.execute('CREATE TABLE series(title VARCHAR(15) PRIMARY KEY,series_link VARCHAR(20),number_of_episodes INTEGER,number_of_seasons INTEGER)')
 
 def make_episode_table(cursor):
     cursor.execute('CREATE TABLE episodes(id INTEGER PRIMARY KEY,title VARCHAR(20),episode_name VARCHAR(15), episode_link VARCHAR(30), FOREIGN KEY (title) REFERENCES series(title))')
 
 def create_database(sqlite_file):
-    os.makedirs(os.environ['HOME']+'/.local/share/letmenotifyu/')
+    #os.makedirs(os.environ['HOME']+'/.local/share/letmenotifyu/')
     connection=sqlite.connect(sqlite_file)
     cursor=connection.cursor()
     make_movie_table(cursor)
@@ -29,4 +30,5 @@ def create_database(sqlite_file):
     connection.commit()
     make_episode_table(cursor)
     connection.commit()
+    connection.close()
 

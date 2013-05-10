@@ -33,22 +33,21 @@ class Add_Series:
 
 
     def check_url(self,text): #check there is text and valid url
-        url='http://www.1channel.ch/'
-        if text=="" or text[0:23] != url:
-            self.dialog.get_object('lblNotice').set_text("Not a valid link")
-            self.dialog.get_object('lblNotice').set_visible(True)
-            self.dialog.get_object('imcheck').set_visible(True)
-        else:
+        if re.findall(r'(http://www.letmewatchthis.ch)|(http://www.1channel.ch)',text):
             self.enter_link(text)
             
-
+        else:
+                self.dialog.get_object('lblNotice').set_text("Not a valid link")
+                self.dialog.get_object('lblNotice').set_visible(True)
+                self.dialog.get_object('imcheck').set_visible(True)
         
     def enter_link(self,url):
-        title=re.search("http://www.1channel.ch/(.*)-\d+\-(.*)",url)
+        print url
+        title=re.search(r"http://www.letmewatchthis.ch/(.*)-\d+\-(.*)",url) or re.search(r"http://www.1channel.ch/(.*)-\d+\-(.*)",url)
         change_string=title.group(2)
         show_title=change_string.replace("-"," ")
         try:
-                self.cursor.execute('INSERT INTO series(title,series_link,num_eps) VALUES(?,?,0)',(show_title,url,))
+                self.cursor.execute('INSERT INTO series(title,series_link,number_of_episodes,number_of_seasons) VALUES(?,?,0,0)',(show_title,url,))
                 self.connection.commit()
                 self.link_box.set_text('')
         except Exception:
