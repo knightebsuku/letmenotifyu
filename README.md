@@ -7,5 +7,4 @@ This is the Development Branch Leading to 1.5.0
 *********************************************
 Things Still to do
 *********************************************
-Add another column for series table
-Add children to GTKTreestore
+Right Click option to delete series	
