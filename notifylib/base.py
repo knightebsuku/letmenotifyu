@@ -2,17 +2,16 @@
 
 import os
 import webbrowser
-import sys
 import re
 
-from gi.repository import Gtk, GObject
+from gi.repository import Gtk
 from pysqlite2 import dbapi2 as sqlite
 from notifylib.add_url import Add_Series
 from notifylib.about import About
 from notifylib.confirm import Confirm
-from notifylib.create_tree_view import *
+from notifylib.create_tree_view import create_parent
 
-sqlite_file='/home/zeref/Coding/Python/letmenotifyu/letmenotifyu-1.2/notifylib/letmenotifyu.sqlite'
+sqlite_file=os.environ['HOME']+'/.local/share/letmenotifyu/letmenotifyu.sqlite'
 
 
 class Base:
@@ -31,6 +30,9 @@ class Base:
               'on_closeitem_button_press_event':self.on_closeitem_button_press_event,
               'on_aboutitem_button_press_event':self.on_aboutitem_button_press_event}
         self.builder.connect_signals(dict)
+        self.TreeSeries=self.builder.get_object('TreeSeries')
+        self.treeview=self.builder.get_object('treeview1')
+        self.listmovies=self.builder.get_object('listmovies')
         self.window=self.builder.get_object('winlet')
         self.window.set_icon_from_file(pic)
 
@@ -40,36 +42,40 @@ class Base:
         Gtk.main_quit()
 
     def on_btnSeries_clicked(self,widget):
-        series=self.builder.get_object('treeview1')
-        order=self.builder.get_object('treeviewcolumn1')
-        series.set_model(self.builder.get_object('TreeSeries'))
-        series_column=self.builder.get_object('TreeSeries')
-        series_column.clear()
-        create_parent(self.cursor,series_column)
+        self.treeview.set_model(self.TreeSeries)
+        self.TreeSeries.clear()
+        create_parent(self.cursor,self.TreeSeries)
             
     
     def on_btnmovies_clicked(self,widget):
-        self.builder.get_object('listmovies').clear()
-        movie_model=self.builder.get_object('treeview1')
-        movie_model.set_model(self.builder.get_object('listmovies'))
-        movie_list=self.builder.get_object('listmovies')
+        self.listmovies.clear()
+        self.treeview.set_model(self.listmovies)
         self.cursor.execute("SELECT title FROM movies")
         for title in self.cursor.fetchall():
-            movie_list.append([title[0]])
+            self.listmovies.append([title[0]])
 
     def on_treeview1_button_press_event(self,widget,event):
         if event.button==1:
-            choosen=self.builder.get_object('treeview1').get_selection()
+            choosen=self.treeview.get_selection()
             movie,name=choosen.get_selected()
             title=movie[name][0]
             if  re.findall(r"\(\d{4}\)$",title):
                 self.cursor.execute("SELECT link FROM movies WHERE title=?",(title,))
             elif re.findall(r"^Episode",title):
-                episode_parent=self.builder.get_object('TreeSeries').get_iter_first()
-                model=self.builder.get_object('treeview1').get_model()
-                series_title=model.get_value(episode_parent,0)
-                self.cursor.execute("SELECT episode_link from episodes where episode_name=? and title=?",(title,series_title))
-                    
+                path=self.TreeSeries.get_path(name)
+                path_value=str(path)
+                
+                episode_title_path=self.TreeSeries.get_iter(path_value[:1])
+                episode_season_path=self.TreeSeries.get_iter(path_value[:3])
+                episode_path=self.TreeSeries.get_iter(path_value)
+
+                model=self.treeview.get_model()
+                episode_title=model.get_value(episode_title_path,0)
+                episode_season=model.get_value(episode_season_path,0)
+                episode_path=model.get_value(episode_path,0)
+                sql_season=episode_season.replace(" ","-")
+                
+                self.cursor.execute("SELECT episode_link from episodes where episode_name=? and title=? and episode_link LIKE ?",(episode_path,episode_title,"%"+sql_season+"%"))
             for link in self.cursor.fetchall():
                 webbrowser.open_new(link[0])
                 
@@ -78,17 +84,17 @@ class Base:
             series,name=choosen.get_selected()
             url=series[name][0]
             if re.findall(r"\d{4}$",url):
-                load=Confirm('confirm.glade',url,self.cursor,self.connection)
+                Confirm('confirm.glade',url,self.cursor,self.connection)
 
     def on_additem_button_press_event(self,widget,event):
-        load=Add_Series('inputDialog.glade',self.cursor,self.connection)
+        Add_Series('inputDialog.glade',self.cursor,self.connection)
         
     def on_closeitem_button_press_event(self,widget,event):
         self.connection.close()
         Gtk.main_quit()
         
     def on_aboutitem_button_press_event(self,widget,event):
-        load=About('about.glade')
+        About('about.glade')
 
 
 

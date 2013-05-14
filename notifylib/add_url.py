@@ -15,11 +15,12 @@ class Add_Series:
               'on_btnOk_clicked':self.on_btnOk_clicked,
               'on_entlink_button_release_event':self.on_entlink_button_release_event}
         self.dialog.connect_signals(dict)
+        self.notice=self.dialog.get_object('lblNotice')
         self.window=self.dialog.get_object('linkdialog')
         self.window.show()
-
+        
     def on_btnCancel_clicked(self,*args):
-        self.dialog.get_object('linkdialog').destroy()
+        self.window.destroy()
 
     def on_btnOk_clicked(self,widget):
         self.link_box=self.dialog.get_object('entlink')
@@ -37,8 +38,8 @@ class Add_Series:
             self.enter_link(text)
             
         else:
-                self.dialog.get_object('lblNotice').set_text("Not a valid link")
-                self.dialog.get_object('lblNotice').set_visible(True)
+                self.notice.set_text("Not a valid link")
+                self.notice.set_visible(True)
                 self.dialog.get_object('imcheck').set_visible(True)
         
     def enter_link(self,url):

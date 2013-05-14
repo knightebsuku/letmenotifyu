@@ -5,20 +5,17 @@ import os
 from threading import Thread
 from notifylib.update import update_databases
 from notifylib.create import create_database
-from notifylib.add_url import Add_Series
 from gi.repository import Gtk,GObject
 from gi.repository import AppIndicator3 as appindicator
 from notifylib.base import Base
-from pysqlite2 import dbapi2 as sqlite
 
 GObject.threads_init()
-sqlite_file='/home/zeref/Coding/Python/letmenotifyu/letmenotifyu-1.2/notifylib/letmenotifyu.sqlite'
-#path=os.path.join('/usr/share/letmenotifyu','ui')
-path=os.path.join('/home/zeref/Coding/Python/letmenotifyu/letmenotifyu-1.2','ui')
+sqlite_file=os.environ['HOME']+'/.local/share/letmenotifyu/letmenotifyu.sqlite'
+path=os.path.join('/usr/share/letmenotifyu','ui')
 os.chdir(path)
 
 def main_menu(*args):
-     app_Start=Base('main.glade','letmenotifyu.png')
+     Base('main.glade','letmenotifyu.png')
     
 class AppLet:
     def __init__(self):
@@ -46,9 +43,10 @@ class AppLet:
     
 if __name__=="__main__":
     if os.path.exists(sqlite_file):
-        start=AppLet()
+        AppLet()
     else:
+        os.makedirs(os.environ['HOME']+'/.local/share/letmenotifyu/')
         create_database(sqlite_file)
-        start=AppLet()
+        AppLet()
     
    

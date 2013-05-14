@@ -6,7 +6,7 @@ from pysqlite2 import dbapi2 as sqlite
 import time
 import os
 
-sqlite_file='/home/zeref/Coding/Python/letmenotifyu/letmenotifyu-1.2/notifylib/letmenotifyu.sqlite'
+sqlite_file=os.environ['HOME']+'/.local/share/letmenotifyu/letmenotifyu.sqlite'
 
 def update_databases():
     connection=sqlite.connect(sqlite_file)
