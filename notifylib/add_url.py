@@ -33,7 +33,7 @@ class Add_Series:
             url_paste.paste_clipboard()
 
 
-    def check_url(self,text): #check there is text and valid url
+    def check_url(self,text):
         if re.findall(r'(http://www.letmewatchthis.ch)|(http://www.1channel.ch)',text):
             self.enter_link(text)
             

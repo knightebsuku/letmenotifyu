@@ -1,6 +1,8 @@
 #!/usr/bin/python
-import os
+
+
 from pysqlite2 import dbapi2 as sqlite
+
 
 def make_movie_table(cursor):
     i=0

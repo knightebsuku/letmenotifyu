@@ -5,7 +5,6 @@ import re
 from gi.repository import Notify
 from notifylib.notifiy import announce
 
-#Check for latest series episode
 def get_episode_count(show_title,show_link,episode_count,cursor,connection):
     """
     Get number of episodes

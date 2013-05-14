@@ -3,6 +3,7 @@
 from gi.repository import Gtk
 from pysqlite2 import dbapi2 as sqlite
 
+
 class Confirm:
     def __init__(self,gladefile,title,cursor,connection):
         self.title=title

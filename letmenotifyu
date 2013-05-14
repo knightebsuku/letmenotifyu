@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-#main file
+
 import os
 from threading import Thread
 from notifylib.update import update_databases
@@ -18,6 +18,9 @@ def main_menu(*args):
      Base('main.glade','letmenotifyu.png')
     
 class AppLet:
+    """
+    Start App Indicator
+    """
     def __init__(self):
         self.appInd=appindicator.Indicator.new("Letmenotifyu","/usr/share/letmenotifyu/ui/letmenotifyu.png",
                                       appindicator.IndicatorCategory.APPLICATION_STATUS)
@@ -35,7 +38,7 @@ class AppLet:
         quit.show()
         
         self.appInd.set_menu(self.menu)
-        update_thread=Thread(target=update_databases) #start update Thread
+        update_thread=Thread(target=update_databases)
         update_thread.setDaemon(True)
         update_thread.start()
         Gtk.main()

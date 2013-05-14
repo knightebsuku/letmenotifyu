@@ -1,7 +1,6 @@
 #!/usr/bin/python
 
 
-#setup file
 from distutils.core import setup
 
 if __name__=='__main__':

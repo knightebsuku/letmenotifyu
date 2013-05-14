@@ -13,7 +13,7 @@ def get_movies(cursor,connection):
     """
      Get latest movies from site
      """
-    new_store=[""]*24 #max of 24 movies are displayed on the page
+    new_store=[""]*24
     movie_links=[""]*24 
     count=0
     response=urllib2.urlopen('http://www.letmewatchthis.ch/index.php?sort=featured').read()
