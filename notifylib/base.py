@@ -33,6 +33,8 @@ class Base:
         self.TreeSeries=self.builder.get_object('TreeSeries')
         self.treeview=self.builder.get_object('treeview1')
         self.listmovies=self.builder.get_object('listmovies')
+        self.cursor.execute("PRAGMA foreign_keys = ON")
+        self.connection.commit()
         self.window=self.builder.get_object('winlet')
         self.window.set_icon_from_file(pic)
 
@@ -75,7 +77,7 @@ class Base:
                 episode_path=model.get_value(episode_path,0)
                 sql_season=episode_season.replace(" ","-")
                 
-                self.cursor.execute("SELECT episode_link from episodes where episode_name=? and title=? and episode_link LIKE ?",(episode_path,episode_title,"%"+sql_season+"%"))
+                self.cursor.execute("SELECT episode_link from episodes where episode_name=? and title=? and episode_link LIKE ?", (episode_path,episode_title,"%"+sql_season+"%"))
             for link in self.cursor.fetchall():
                 webbrowser.open_new(link[0])
                 
@@ -84,6 +86,8 @@ class Base:
             series,name=choosen.get_selected()
             url=series[name][0]
             if re.findall(r"\d{4}$",url):
+                pass
+            else:
                 Confirm('confirm.glade',url,self.cursor,self.connection)
 
     def on_additem_button_press_event(self,widget,event):

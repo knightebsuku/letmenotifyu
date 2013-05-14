@@ -19,6 +19,8 @@ def make_episode_table(cursor):
 def create_database(sqlite_file):
     connection=sqlite.connect(sqlite_file)
     cursor=connection.cursor()
+    cursor.execute("PRAGMA foreign_keys = ON")
+    connection.commit()
     make_movie_table(cursor)
     connection.commit()
     make_series_table(cursor)
