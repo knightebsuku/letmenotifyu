@@ -1,10 +1,10 @@
 Program to notify users of new movie and series episode releases.
 
-This is the Development Branch Leading to 1.5.0
+This is the Main Branch of 1.5.0
 
 
 ************************
-Beta Release!!!!!
+Final Release!!!!!
 ************************
 
 
