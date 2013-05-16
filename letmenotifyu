@@ -11,7 +11,8 @@ from notifylib.base import Base
 
 GObject.threads_init()
 sqlite_file=os.environ['HOME']+'/.local/share/letmenotifyu/letmenotifyu.sqlite'
-path=os.path.join('/usr/share/letmenotifyu','ui')
+path=os.path.join('/home/zeref/Coding/Python/letmenotifyu/letmenotifyu-1.5','ui')
+#path=os.path.join('/usr/share/letmenotifyu','ui')
 os.chdir(path)
 
 def main_menu(*args):
