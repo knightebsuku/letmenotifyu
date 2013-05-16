@@ -3,7 +3,6 @@
 
 from pysqlite2 import dbapi2 as sqlite
 
-
 def make_movie_table(cursor):
     i=0
     cursor.execute('CREATE TABLE movies(id INTEGER PRIMARY KEY, title VARCHAR(20), link VARCHAR(20))')

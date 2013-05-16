@@ -1,5 +1,7 @@
 #!/usr/bin/python
 
+
+
 import urllib2
 import re
 from gi.repository import Notify

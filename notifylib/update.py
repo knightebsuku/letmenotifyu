@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 
+import time
+import os
 from notifylib.series_update import get_series
 from notifylib.movies_update import get_movies
 from pysqlite2 import dbapi2 as sqlite
-import time
-import os
 
 #separate database instance
 sqlite_file=os.environ['HOME']+'/.local/share/letmenotifyu/letmenotifyu.sqlite'

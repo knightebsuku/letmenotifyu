@@ -2,9 +2,6 @@
 
 from gi.repository import Notify
 
-
-
-
 def announce(*args):
     """
     Update to notification
