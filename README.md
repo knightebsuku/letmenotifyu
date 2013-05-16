@@ -11,3 +11,8 @@ Final Release!!!!!
 **Notice****
 
 For the url links use letmewatchthis.ch and not 1channel.ch	
+
+
+**Adding of series***
+Input the home page of the series
+eg: http://www.letmewatchthis.ch/tv-9594-The-Big-Bang-Theory
