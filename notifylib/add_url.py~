@@ -35,7 +35,7 @@ class Add_Series:
 
 
     def check_url(self,text):
-        if re.findall(r'(http://www.primewire.ag)|(http://www.1channel.ch)',text):
+        if re.findall(r'(http://www.letmewatchthis.ch)|(http://www.1channel.ch)',text):
             self.enter_link(text)
             
         else:
@@ -45,7 +45,7 @@ class Add_Series:
         
     def enter_link(self,url):
         print url
-        title=re.search(r"http://www.primewire.ag/(.*)-\d+\-(.*)",url) or re.search(r"http://www.1channel.ch/(.*)-\d+\-(.*)",url)
+        title=re.search(r"http://www.letmewatchthis.ch/(.*)-\d+\-(.*)",url) or re.search(r"http://www.1channel.ch/(.*)-\d+\-(.*)",url)
         change_string=title.group(2)
         show_title=change_string.replace("-"," ")
         try:

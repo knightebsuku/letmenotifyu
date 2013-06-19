@@ -2,55 +2,21 @@
 
 
 import os
-from threading import Thread
-from notifylib.update import update_databases
 from notifylib.create import create_database
-from gi.repository import Gtk,GObject
-from gi.repository import AppIndicator3 as appindicator
 from notifylib.base import Base
 
-GObject.threads_init()
 sqlite_file=os.environ['HOME']+'/.local/share/letmenotifyu/letmenotifyu.sqlite'
 path=os.path.join('/home/zeref/Coding/Python/letmenotifyu/letmenotifyu-1.5','ui')
 #path=os.path.join('/usr/share/letmenotifyu','ui')
 os.chdir(path)
 
-def main_menu(*args):
-     Base('main.glade','letmenotifyu.png')
-    
-class AppLet:
-    """
-    Start App Indicator
-    """
-    def __init__(self):
-        self.appInd=appindicator.Indicator.new("Letmenotifyu","/usr/share/letmenotifyu/ui/letmenotifyu.png",
-                                      appindicator.IndicatorCategory.APPLICATION_STATUS)
-        self.appInd.set_status(appindicator.IndicatorStatus.ACTIVE)
-        self.menu=Gtk.Menu()
-
-        self.open_view=Gtk.MenuItem("Open")
-        self.menu.append(self.open_view)
-        self.open_view.show()
-        self.open_view.connect("activate",main_menu)
-
-        quit=Gtk.MenuItem("Quit")
-        self.menu.append(quit)
-        quit.connect("activate",Gtk.main_quit)
-        quit.show()
-        
-        self.appInd.set_menu(self.menu)
-        update_thread=Thread(target=update_databases)
-        update_thread.setDaemon(True)
-        update_thread.start()
-        Gtk.main()
-
-    
 if __name__=="__main__":
     if os.path.exists(sqlite_file):
-        AppLet()
+        Base('main.glade','letmenotifyu.png',sqlite_file)
     else:
         os.makedirs(os.environ['HOME']+'/.local/share/letmenotifyu/')
         create_database(sqlite_file)
-        AppLet()
+        Base('main_glade','letmenotifyu,png',sqlite_file)
+        
     
    

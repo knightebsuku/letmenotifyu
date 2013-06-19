@@ -5,19 +5,21 @@ import os
 import webbrowser
 import re
 
-from gi.repository import Gtk
+from gi.repository import Gtk,GObject
 from pysqlite2 import dbapi2 as sqlite
+from threading import Thread
 from notifylib.add_url import Add_Series
 from notifylib.about import About
 from notifylib.confirm import Confirm
 from notifylib.create_tree_view import create_parent
+from notifylib.update import update_databases
 
 sqlite_file=os.environ['HOME']+'/.local/share/letmenotifyu/letmenotifyu.sqlite'
-
+GObject.threads_init()
 
 class Base:
     """Font end for letmenotifyu"""
-    def __init__(self,gladefile,pic):
+    def __init__(self,gladefile,pic,sqlite_file):
         self.connection=sqlite.connect(sqlite_file)
         self.cursor=self.connection.cursor()
         self.builder=Gtk.Builder()
@@ -38,8 +40,11 @@ class Base:
         self.connection.commit()
         self.window=self.builder.get_object('winlet')
         self.window.set_icon_from_file(pic)
-
         self.window.show()
+        update_thread=Thread(target=update_databases)
+        update_thread.setDaemon(True)
+        update_thread.start()
+        Gtk.main()
         
     def on_winlet_destroy(self,widget):
         Gtk.main_quit()
