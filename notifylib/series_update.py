@@ -1,7 +1,5 @@
 #!/usr/bin/python
 
-
-
 import urllib2
 import re
 from gi.repository import Notify
@@ -36,16 +34,13 @@ def get_episode_count(show_title,show_link,episode_count,cursor,connection):
         update_number_episodes(cursor,connection,show_title,count,count_seasons)
         insert_difference(show_title,count_eps,count,episode_count,cursor,connection,http)
 
-
 def populate_all(show_title,episode_name,episode_link,cursor,connection,http):
     cursor.execute('INSERT INTO episodes(title,episode_name,episode_link) VALUES(?,?,?)' ,(show_title,str(episode_name),http+str(episode_link)))
     connection.commit()
-
     
 def update_number_episodes(cursor,connection,show_title,count,seasons):
     cursor.execute("Update series set number_of_episodes=?,number_of_seasons=? WHERE title=?",(count,seasons,show_title))
     connection.commit()
-
 
 def insert_difference(show_title,show,web_count,current_count,cursor,connection,http):
     steps=web_count-current_count
@@ -53,9 +48,7 @@ def insert_difference(show_title,show,web_count,current_count,cursor,connection,
         cursor.execute("INSERT INTO episodes(title,episode_name,episode_link) VALUES(?,?,?)",(show_title,show[-steps][1],http+show[-steps][0]))
         connection.commit()
         steps-=1
-    
-    
-    
+        
 def get_series(cursor,connection): #fetch url from database
     cursor.execute('SELECT * FROM series')
     for url in cursor.fetchall():

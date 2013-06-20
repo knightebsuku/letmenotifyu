@@ -1,14 +1,11 @@
 #!/usr/bin/env python
 
-
 import urllib2
 import  re
 import sys
 from gi.repository import Notify
 from notifylib.notifiy import announce
 from pysqlite2 import dbapi2 as sqlite
-
-sqlite_file='/home/zeref/Coding/Python/letmenotifyu/letmenotifyu-1.2/notifylib/letmenotifyu.sqlite'
 
 def get_movies(cursor,connection):
     """
@@ -33,8 +30,6 @@ def compare(new_movie,new_link,cursor,connection):
                 announce('New Movie',new_movie[0],link)
                 update_database(new_movie,new_link,cursor,connection)
                 
-
-
 def update_database(update_movie,update_link,cursor,connection): 
     count,index=1,0
     for movie in update_movie:

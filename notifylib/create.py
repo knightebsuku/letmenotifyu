@@ -1,6 +1,5 @@
 #!/usr/bin/python
 
-
 from pysqlite2 import dbapi2 as sqlite
 
 def make_movie_table(cursor):
@@ -9,7 +8,6 @@ def make_movie_table(cursor):
     while i <=23:
         cursor.execute("INSERT INTO movies VALUES(null,'#####','#####')")
         i+=1
-
         
 def make_series_table(cursor):
      cursor.execute('CREATE TABLE series(title VARCHAR(30) PRIMARY KEY,series_link VARCHAR(30),number_of_episodes INTEGER,number_of_seasons INTEGER)')

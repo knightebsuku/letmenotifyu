@@ -1,6 +1,5 @@
 #!/usr/bin/python
 
-
 def create_parent(cursor,series_column):
     x=1
     cursor.execute("SELECT title,number_of_seasons from series")
@@ -10,7 +9,6 @@ def create_parent(cursor,series_column):
             create_seasons(cursor,results[0],parent_title,series_column,x)
             x+=1
         x=1
-
 
 def create_seasons(cursor,series_title,parent_title,series_column,x):
     name="season "+str(x)

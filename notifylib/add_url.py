@@ -1,6 +1,5 @@
 #!/usr/bin/python
 
-
 import re
 from gi.repository import Gtk
 from pysqlite2 import dbapi2 as sqlite
@@ -45,7 +44,7 @@ class Add_Series:
         
     def enter_link(self,url):
         print url
-        title=re.search(r"http://www.primewire.ag/(.*)-\d+\-(.*)",url) or re.search(r"http://www.1channel.ch/(.*)-\d+\-(.*)",url)
+        title=re.search(r"http://www.primewire.ag/(.*)-\d+\-(.*)",url)
         change_string=title.group(2)
         show_title=change_string.replace("-"," ")
         try:

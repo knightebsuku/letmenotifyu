@@ -10,7 +10,7 @@ if __name__=='__main__':
           description='Program to notify users of new movie and series episode release from www.1channel.ch',
           author='Lunga Mthembu (zeref)',
           author_email='zerefs@gmail.com',
-          url='http://letmenotifyu.blogspot.com/',
+          url='https://github.com/zerefs/letmenotifyu',
           license='GPL',
           scripts=['letmenotifyu'],
           packages=['notifylib'],
