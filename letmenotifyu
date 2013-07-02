@@ -5,9 +5,7 @@ from notifylib.create import create_database
 from notifylib.base import Base
 
 sqlite_file=os.environ['HOME']+'/.local/share/letmenotifyu/letmenotifyu.sqlite'
-path=os.path.join('/home/zeref/Coding/Python/letmenotifyu/letmenotifyu-1.5','ui')
-#path=os.path.join('/usr/share/letmenotifyu','ui')
-os.chdir(path)
+os.chdir("/usr/share/letmenotifyu/")
 
 if __name__=="__main__":
     if os.path.exists(sqlite_file):
