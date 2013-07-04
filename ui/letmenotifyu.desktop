@@ -1,9 +1,9 @@
 [Desktop Entry]
 Name=Letmenotifyu
-Comment=Notification Program for www.1channel.ch
+Comment=Notification Program for www.primewire.ag
 TryExec=letmenotifyu
 Exec=letmenotifyu
-Icon=letmenotifyu
+Icon=/usr/share/letmenotifyu/letmenotifyu.xpm
 Type=Application
 Categories=GNOME;Network;
 StartupNotify=true
