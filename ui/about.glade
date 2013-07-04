@@ -14,12 +14,14 @@
     <property name="icon_name">notify</property>
     <property name="type_hint">dialog</property>
     <property name="program_name">Letmenotifyu</property>
-    <property name="version">v 1.5.0</property>
+    <property name="version">v 1.6.3</property>
     <property name="comments" translatable="yes">letmenotify is a program that will notify you of the latest movies and series episodes.</property>
     <property name="website">https://github.com/zerefs/letmenotifyu</property>
     <property name="website_label" translatable="yes">Letmenotifyu</property>
     <property name="license" translatable="yes">GPL 3.0</property>
-    <property name="authors">Lunga Mthembu</property>
+    <property name="authors">Lunga Mthembu
+Icon from http://dryicons.com</property>
+    <property name="logo">letmenotifyu.png</property>
     <property name="wrap_license">True</property>
     <property name="license_type">gpl-3-0</property>
     <child internal-child="vbox">

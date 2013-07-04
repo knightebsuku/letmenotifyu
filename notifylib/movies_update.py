@@ -3,10 +3,11 @@
 import urllib2
 import  re
 import sys
+
 from gi.repository import Notify
 from notifylib.notifiy import announce
 from pysqlite2 import dbapi2 as sqlite
-
+from urllib2  import URLError
 def get_movies(cursor,connection):
     """
      Get latest movies from site
@@ -14,13 +15,17 @@ def get_movies(cursor,connection):
     new_store=[""]*24
     movie_links=[""]*24 
     count=0
-    response=urllib2.urlopen('http://www.primewire.ag/index.php?sort=featured').read()
-    latest_movies=re.findall('<div class="index_item index_item_ie"><a href=(.*?) title="Watch (.*?)">',response)
-    for new in latest_movies:
-        new_store[count]=new[1]
-        movie_links[count]=new[0]
-        count+=1
-    compare(new_store,movie_links,cursor,connection)
+    try:
+        response=urllib2.urlopen('http://www.primewire.ag/index.php?sort=featured').read()
+        latest_movies=re.findall('<div class="index_item index_item_ie"><a href=(.*?) title="Watch (.*?)">',response)
+        for new in latest_movies:
+            new_store[count]=new[1]
+            movie_links[count]=new[0]
+            count+=1
+            compare(new_store,movie_links,cursor,connection)
+    except URLError, e:
+        pass
+        
            
 def compare(new_movie,new_link,cursor,connection):
      cursor.execute("SELECT title FROM movies WHERE id=1")
