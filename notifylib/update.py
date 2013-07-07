@@ -15,12 +15,8 @@ def update_databases():
     try:
         get_series(cursor,connection)
         get_movies(cursor,connection)
-        connection.close()
         time.sleep(21600) #wait 6 hrs
     except Exception, e:
         print e
-        connection.close()   
         time.sleep(300) #wait 5min
-    finally:
-        update_databases()
 
