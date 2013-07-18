@@ -5,7 +5,7 @@ This is the Main Branch of 1.6
 
 
 ************************
-New Release 1.6.7
+New Release 1.6.8
 ************************
 
 **Adding of series***

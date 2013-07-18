@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python
 
 import time
 import os
@@ -16,8 +16,8 @@ def update_databases():
     try:
         get_series(cursor,connection)
         get_movies(cursor,connection)
+        print "Updated"
         time.sleep(21600) #wait 6 hrs
-	print "Updated"
     except Exception, e:
         print e
         time.sleep(300) #wait 5min
