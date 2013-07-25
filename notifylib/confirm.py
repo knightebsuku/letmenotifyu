@@ -1,7 +1,7 @@
 #! /usr/bin/python
 
 from gi.repository import Gtk
-from pysqlite2 import dbapi2 as sqlite
+import sqlite3 as sqlite
 
 
 class Confirm:

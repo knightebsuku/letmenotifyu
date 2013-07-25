@@ -3,10 +3,10 @@
 import urllib2
 import  re
 import sys
+import sqlite3 as sqlite
 
 from gi.repository import Notify
 from notifylib.notifiy import announce
-from pysqlite2 import dbapi2 as sqlite
 from urllib2  import URLError
 
 def get_movies(cursor,connection):

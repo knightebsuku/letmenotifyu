@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-#version 1.6.9
+#version 1.6.10
 
 import os
 from notifylib.create import create_database

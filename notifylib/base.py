@@ -3,9 +3,9 @@
 import os
 import webbrowser
 import re
+import sqlite3 as sqlite
 
 from gi.repository import Gtk,GObject
-from pysqlite2 import dbapi2 as sqlite
 from threading import Thread
 from notifylib.add_url import Add_Series
 from notifylib.about import About

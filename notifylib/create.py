@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-from pysqlite2 import dbapi2 as sqlite
+import sqlite3 as sqlite
 
 def make_movie_table(cursor):
     i=0
