@@ -1,21 +1,21 @@
 #!/usr/bin/python
 
-#version 1.6.10
+#version 1.6.11
 
 import os
 from notifylib.create import create_database
 from notifylib.base import Base
 
-sqlite_file=os.environ['HOME']+'/.local/share/letmenotifyu/letmenotifyu.sqlite'
+sqlite_file = os.environ['HOME']+'/.local/share/letmenotifyu/letmenotifyu.sqlite'
 os.chdir("/usr/share/letmenotifyu/")
 #os.chdir("ui")
-if __name__=="__main__":
+if __name__ == "__main__":
     if os.path.exists(sqlite_file):
-        Base('main.glade','letmenotifyu.png',sqlite_file)
+        Base('main.glade', 'letmenotifyu.png', sqlite_file)
     else:
         os.makedirs(os.environ['HOME']+'/.local/share/letmenotifyu/')
         create_database(sqlite_file)
-        Base('main_glade','letmenotifyu,png',sqlite_file)
+        Base('main_glade', 'letmenotifyu,png', sqlite_file)
         
     
    

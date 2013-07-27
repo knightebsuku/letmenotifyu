@@ -1,15 +1,12 @@
 #!/usr/bin/python
 
-
-
-#About glade file
 from gi.repository import Gtk
 
 class About:
-    def __init__(self,gladefile):
-        about=Gtk.Builder()
+    def __init__(self, gladefile):
+        about = Gtk.Builder()
         about.add_from_file(gladefile)
-        window=about.get_object('abtdlg')
+        window = about.get_object('abtdlg')
         window.run()
         window.destroy()
         

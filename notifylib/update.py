@@ -8,14 +8,14 @@ from notifylib.series_update import get_series
 from notifylib.movies_update import get_movies
 
 #separate database instance
-sqlite_file=os.environ['HOME']+'/.local/share/letmenotifyu/letmenotifyu.sqlite'
+sqlite_file = os.environ['HOME']+'/.local/share/letmenotifyu/letmenotifyu.sqlite'
 
 def update_databases():
-    connection=sqlite.connect(sqlite_file)
-    cursor=connection.cursor()
+    connection = sqlite.connect(sqlite_file)
+    cursor = connection.cursor()
     try:
-        get_series(cursor,connection)
-        get_movies(cursor,connection)
+        get_series(cursor, connection)
+        get_movies(cursor, connection)
         print "Updated"
         time.sleep(21600) #wait 6 hrs
     except Exception, e:
