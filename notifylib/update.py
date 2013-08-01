@@ -21,4 +21,6 @@ def update_databases():
     except Exception, e:
         print e
         time.sleep(300) #wait 5min
+    finally:
+        update_databases()
 

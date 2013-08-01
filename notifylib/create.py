@@ -6,7 +6,7 @@ def make_movie_table(cursor):
     i = 0
     cursor.execute('CREATE TABLE movies(id INTEGER PRIMARY KEY, title VARCHAR(20), link VARCHAR(20))')
     while i <= 23:
-        cursor.execute("INSERT INTO movies VALUES(null,'#####','#####')")
+        cursor.execute("INSERT INTO movies VALUES(null,' ',' ')")
         i+=1
         
 def make_series_table(cursor):
