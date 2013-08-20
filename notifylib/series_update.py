@@ -1,6 +1,6 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
-import urllib2
+from  urllib.request import Request, urlopen
 import re
 from notifylib.notifiy import announce
 
@@ -10,21 +10,20 @@ def get_episode_count(show_title, show_link, episode_count, cursor, connection):
     Get latest series to send to notification
     update database with lastest series
     """
-    title = re.search(r'(.*)/tv', show_link) or re.search(r'(.*)/watch', show_link)
-    http = title.group(1)
-    count = 0
-    count_seasons = 0
-    i = 0
-    tv_show_page = urllib2.urlopen(str(show_link)).read()
-    count_eps = re.findall('<div class="tv_episode_item"> <a href="(.*?)">(.*?)\s+<', tv_show_page)
-    seasons = re.findall(' <h2><a href=(.*?)', tv_show_page)
+    #title = re.search(r'(.*)/tv', show_link) or re.search(r'(.*)/watch', show_link)
+    #http = title.group(1)
+    count, count_seasons, i = 0
+    req= Request(show_link,headers = {'User_Agent':'Mozlla/5.0'})
+    tv_show_webpage = urlopen(req).read()
+    all_epsisodes = re.findall('<div class="tv_episode_item"> <a href="(.*?)">(.*?)\s+<', tv_show_webpage)
+    seasons = re.findall(' <h2><a href=(.*?)', tv_show_webpage)
     for seasons_count in seasons:
-        count_seasons+= 1
-    for num_eps in count_eps:
+        count_seasons += 1
+    for num_eps in all_epsisodes:
         count+= 1 
     if episode_count == 0: 
-        for data in count_eps:
-            populate_all(show_title, data[1], data[0], cursor, connection, http)
+        for data in all_episodes:
+            new_series_add(show_title, data[1], data[0], cursor, connection, http)
             i+= 1
             update_number_episodes(cursor, connection, show_title,
                                    count, count_seasons)
@@ -35,7 +34,7 @@ def get_episode_count(show_title, show_link, episode_count, cursor, connection):
         insert_difference(show_title, count_eps, count, episode_count, cursor,
                           connection, http)
 
-def populate_all(show_title, episode_name, episode_link, cursor, connection, http):
+def new_series_add(show_title, episode_name, episode_link, cursor, connection, http):
     cursor.execute('INSERT INTO episodes(title,episode_name,episode_link) VALUES(?,?,?)' , (show_title, str(episode_name), http+str(episode_link)))
     connection.commit()
     

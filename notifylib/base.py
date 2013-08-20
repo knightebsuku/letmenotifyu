@@ -1,6 +1,4 @@
-#!/usr/bin/python
 
-import os
 import webbrowser
 import re
 import sqlite3 as sqlite
@@ -11,16 +9,15 @@ from notifylib.add_url import Add_Series
 from notifylib.about import About
 from notifylib.confirm import Confirm
 from notifylib.create_tree_view import create_parent
-from notifylib.update import update_databases
+from notifylib.update import update_movie_series
 
-sqlite_file = os.environ['HOME']+'/.local/share/letmenotifyu/letmenotifyu.sqlite'
 GObject.threads_init()
 
 
 class Base:
     """Font end for letmenotifyu"""
-    def __init__(self, gladefile, pic, sqlite_file):
-        self.connection = sqlite.connect(sqlite_file)
+    def __init__(self, gladefile, pic, db):
+        self.connection = sqlite.connect(db)
         self.cursor = self.connection.cursor()
         self.builder = Gtk.Builder()        
         self.builder.add_from_file(gladefile)
@@ -40,7 +37,7 @@ class Base:
         self.window = self.builder.get_object('winlet')
         self.window.set_icon_from_file(pic)
         self.window.show()
-        update_thread = Thread(target= update_databases)
+        update_thread = Thread(target= update_movie_series,args=(db,))
         update_thread.setDaemon(True)
         update_thread.start()
         Gtk.main()
@@ -62,7 +59,7 @@ class Base:
 
     def on_treeview1_button_press_event(self, widget, event):
         if event.button == 1:
-            choosen=self.treeview.get_selection()
+            choosen = self.treeview.get_selection()
             movie, name = choosen.get_selected()
             title = movie[name][0]
             if re.findall(r"\(\d{4}\)$", title):
@@ -81,7 +78,8 @@ class Base:
                 episode_path = model.get_value(episode_path, 0)
                 sql_season = episode_season.replace(" ", "-")
                 
-                self.cursor.execute("SELECT episode_link from episodes where episode_name=? and title=? and episode_link LIKE ?", (episode_path, episode_title, "%"+sql_season+"%"))
+                self.cursor.execute("SELECT episode_link from episodes where episode_name=? and title=? and episode_link LIKE ?",
+                                    (episode_path, episode_title, "%"+sql_season+"%"))
             for link in self.cursor.fetchall():
                 webbrowser.open_new(link[0])
                 

@@ -1,4 +1,3 @@
-#!/usr/bin/python
 
 import sqlite3 as sqlite
 
@@ -10,14 +9,14 @@ def make_movie_table(cursor):
         i+=1
         
 def make_series_table(cursor):
-     cursor.execute('CREATE TABLE series(title VARCHAR(30) PRIMARY KEY,series_link VARCHAR(30),number_of_episodes INTEGER,number_of_seasons INTEGER)')
+     cursor.execute('CREATE TABLE series(title VARCHAR(30) PRIMARY KEY,series_link VARCHAR(60),number_of_episodes INTEGER,number_of_seasons INTEGER)')
 
 def make_episode_table(cursor):
-    cursor.execute('CREATE TABLE episodes(id INTEGER PRIMARY KEY,title VARCHAR(30),episode_name VARCHAR(15), episode_link VARCHAR(40), FOREIGN KEY (title) REFERENCES series(title) ON DELETE CASCADE)')
+    cursor.execute('CREATE TABLE episodes(id INTEGER PRIMARY KEY,title VARCHAR(30),episode_name VARCHAR(15), episode_link VARCHAR(40), Date TIMESTAMP, FOREIGN KEY (title) REFERENCES series(title) ON DELETE CASCADE)')
 
 def create_database(sqlite_file):
-    connection=sqlite.connect(sqlite_file)
-    cursor=connection.cursor()
+    connection = sqlite.connect(sqlite_file)
+    cursor = connection.cursor()
     cursor.execute("PRAGMA foreign_keys = ON")
     connection.commit()
     make_movie_table(cursor)

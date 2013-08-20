@@ -1,41 +1,33 @@
-#!/usr/bin/env python
 
-import urllib2
+from urllib.request import Request, urlopen
 import re
 
 from notifylib.notifiy import announce
 
 def get_movies(cursor, connection):
     """Get latest movies from site"""
-    movie_titles = [""]*24
-    movie_links = [""]*24 
-    count = 0
-    response = urllib2.urlopen('http://www.primewire.ag/index.php?sort=featured').read()
-    latest_movies = re.findall('<div class="index_item index_item_ie"><a href=(.*?) title="Watch (.*?)">', response)
-    for new in latest_movies:
-        movie_titles[count] = new[1]
-        movie_links[count] = new[0]
-        count += 1
-    compare(movie_titles, movie_links, cursor, connection)
+    movie_info = []
+    req = Request('http://www.primewire.ag/index.php?sort=featured',
+                headers = {'User-Agent':'Mozilla/5.0'})
+    latest_movie_page= urlopen(req).read()
+    latest_movies = re.findall(b'<div class="index_item index_item_ie"><a href=(.*?) title="Watch (.*?)">',
+                               latest_movie_page)
+    for new_info in latest_movies: #get Movies titles and links
+        movie_info.append((new_info[1], new_info[0]))
+    #compare(movie_info, cursor, connection)
         
            
-def compare(new_movie, new_link, cursor, connection):
+def compare(movie_info, cursor, connection):
     cursor.execute("SELECT title FROM movies WHERE id=1")
-    for top_list in cursor.fetchall():
-        link = "http://www.primewire.ag"+new_link[0][1:][:-1]
-        if top_list[0] != new_movie[0]:
-                announce('New Movie', new_movie[0], link)
-                update_database(new_movie, new_link, cursor, connection)
+    for top_movie in cursor.fetchall():
+        if top_movie != movie_info[0][0]:
+            print("Going to annnounce")
+            print(movie_info[0][0])
+            #announce('New Movie', movie_info[0][0],movie_info[0][1])
+    #update_database(movie_info,cursor, connection)
                 
-def update_database(new_movie, new_link, cursor, connection):
-    count, index = 1, 0
-    for movie in new_movie:
-        link ="http://www.primewire.ag"+new_link[index][1:][:-1]
-        cursor.execute('UPDATE movies SET title=?,link=? WHERE id=?',
-                       (movie, link, count))
+def update_database(movie_info, cursor, connection):
+    for movie_detail in movie_info:
+        cursor.excute("INSERT into movies(title,link) VALUES(?,?)",
+                      (movie_detail[0],movie_detail[1],))
         connection.commit()
-        count += 1
-        index += 1
-
-
-

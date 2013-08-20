@@ -1,26 +1,25 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import time
-import os
 import sqlite3 as sqlite
 
 from notifylib.series_update import get_series
 from notifylib.movies_update import get_movies
 
-#separate database instance
-sqlite_file = os.environ['HOME']+'/.local/share/letmenotifyu/letmenotifyu.sqlite'
 
-def update_databases():
+def update_movie_series(sqlite_file):
     connection = sqlite.connect(sqlite_file)
     cursor = connection.cursor()
     try:
-        get_series(cursor, connection)
+        #get_series(cursor, connection)
         get_movies(cursor, connection)
-        print "Updated"
+        #Will add log function with time stamp to add to log file
+        print("Updated")
         time.sleep(21600) #wait 6 hrs
-    except Exception, e:
-        print e
+    except Exception as e:
+        #Add log fuction to log output
+        print(e)
         time.sleep(300) #wait 5min
     finally:
-        update_databases()
+        update_movie_series(sqlite_file)
 
