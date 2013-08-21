@@ -6,28 +6,31 @@ from notifylib.notifiy import announce
 
 def get_movies(cursor, connection):
     """Get latest movies from site"""
-    movie_info = []
+    new_movie_info = {}
     req = Request('http://www.primewire.ag/index.php?sort=featured',
                 headers = {'User-Agent':'Mozilla/5.0'})
-    latest_movie_page= urlopen(req).read()
-    latest_movies = re.findall(b'<div class="index_item index_item_ie"><a href=(.*?) title="Watch (.*?)">',
+    latest_movie_page= urlopen(req).read().decode('utf-8') #return bytes
+    latest_movies = re.findall(r'<div class="index_item index_item_ie"><a href="(.*?)" title="Watch (.*?)">',
                                latest_movie_page)
     for new_info in latest_movies: #get Movies titles and links
-        movie_info.append((new_info[1], new_info[0]))
-    #compare(movie_info, cursor, connection)
+        new_movie_info[new_info[1]] = new_info[0]
+    compare(new_movie_info, cursor, connection)
         
            
-def compare(movie_info, cursor, connection):
-    cursor.execute("SELECT title FROM movies WHERE id=1")
+def compare(new_movie_info, cursor, connection):
+    old_movie_info = {}
+    insert_movies=[]
+    http = 'http://primewire.ag'
+    cursor.execute("SELECT title FROM movies")
     for top_movie in cursor.fetchall():
-        if top_movie != movie_info[0][0]:
-            print("Going to annnounce")
-            print(movie_info[0][0])
-            #announce('New Movie', movie_info[0][0],movie_info[0][1])
-    #update_database(movie_info,cursor, connection)
+        old_movie_info[top_movie[0]] = ""
+    diff_titles = set(new_movie_info.keys()) - set(old_movie_info.keys())
+    get_difference = list(diff_titles)
+    for title in get_difference:
+        announce('New Movie',title, http+new_movie_info[title])
+        insert_movies.append((title, http+new_movie_info[title]))
+    update_database(insert_movies, cursor, connection)
                 
-def update_database(movie_info, cursor, connection):
-    for movie_detail in movie_info:
-        cursor.excute("INSERT into movies(title,link) VALUES(?,?)",
-                      (movie_detail[0],movie_detail[1],))
+def update_database(movie_list, cursor, connection):
+        cursor.executemany("INSERT into movies(title,link) VALUES(?,?)", movie_list)
         connection.commit()
