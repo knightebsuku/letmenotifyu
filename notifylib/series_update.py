@@ -1,8 +1,9 @@
-#!/usr/bin/python3
+
+import re
 
 from  urllib.request import Request, urlopen
-import re
 from notifylib.notifiy import announce
+from datetime import datetime
 
 def get_episode_count(show_title, show_link, episode_count, cursor, connection):
     """
@@ -10,43 +11,43 @@ def get_episode_count(show_title, show_link, episode_count, cursor, connection):
     Get latest series to send to notification
     update database with lastest series
     """
-    #title = re.search(r'(.*)/tv', show_link) or re.search(r'(.*)/watch', show_link)
-    #http = title.group(1)
-    count, count_seasons, i = 0
-    req= Request(show_link,headers = {'User_Agent':'Mozlla/5.0'})
-    tv_show_webpage = urlopen(req).read()
-    all_epsisodes = re.findall('<div class="tv_episode_item"> <a href="(.*?)">(.*?)\s+<', tv_show_webpage)
-    seasons = re.findall(' <h2><a href=(.*?)', tv_show_webpage)
-    for seasons_count in seasons:
-        count_seasons += 1
-    for num_eps in all_epsisodes:
-        count+= 1 
-    if episode_count == 0: 
-        for data in all_episodes:
-            new_series_add(show_title, data[1], data[0], cursor, connection, http)
-            i+= 1
-            update_number_episodes(cursor, connection, show_title,
-                                   count, count_seasons)
-    elif  episode_count < count: 
-        link = http+str(count_eps[-1][0])
-        announce("New Series Episode", show_title, link)
-        update_number_episodes(cursor, connection, show_title, count, count_seasons)
-        insert_difference(show_title, count_eps, count, episode_count, cursor,
-                          connection, http)
+    episode_detail=[]
+    req= Request(show_link, headers = {'User_Agent':'Mozlla/5.0'})
+    tv_show_webpage = urlopen(req).read().decode('ISO-8859-1')
+    all_episodes = re.findall(r'<div class="tv_episode_item"> <a href="(.*?)">(.*?)\s+<',
+                              tv_show_webpage)
+    seasons = re.findall(' <h2><a href="(.*?)"', tv_show_webpage)
+    
+    for ep in all_episodes:
+        data=(show_title,)+ep+(str(datetime.now()),)
+        episode_detail.append(data)
 
-def new_series_add(show_title, episode_name, episode_link, cursor, connection, http):
-    cursor.execute('INSERT INTO episodes(title,episode_name,episode_link) VALUES(?,?,?)' , (show_title, str(episode_name), http+str(episode_link)))
+    if episode_count == 0:
+        new_series_add(episode_detail, cursor, connection)
+        update_number_episodes( len(all_episodes), len(seasons),
+                               show_title, cursor, connection)
+    elif  episode_count < len(all_episodes):
+        http='www.primewire.ag'
+        announce("New Series Episodes",show_title,http+all_episodes[-1][0])
+        update_number_episodes( len(all_episodes), len(seasons), show_title,
+                                cursor,connection)
+        insert_difference(show_title, all_episodes, len(all_episodes),
+                          episode_count, cursor, connection)
+
+def new_series_add(episode_detail, cursor, connection):
+    cursor.executemany('INSERT INTO episodes(title,episode_link,episode_name,Date) VALUES(?,?,?,?)' , episode_detail)
     connection.commit()
     
-def update_number_episodes(cursor, connection, show_title, count, seasons):
-    cursor.execute("Update series set number_of_episodes=?,number_of_seasons=? WHERE title=?", (count, seasons, show_title))
+def update_number_episodes(num_episodes, num_seasons, show_title,
+                           cursor, connection):
+    cursor.execute("Update series set number_of_episodes=?,number_of_seasons=? WHERE title=?", (num_episodes,num_seasons, show_title,))
     connection.commit()
 
-def insert_difference(show_title, show, web_count, current_count, cursor,
-                      connection, http):
-    steps = web_count-current_count
+def insert_difference(show_title, all_episodes, web_count, db_count, cursor,
+                      connection):
+    steps = web_count-db_count
     while steps > 0:
-        cursor.execute("INSERT INTO episodes(title,episode_name,episode_link) VALUES(?,?,?)", (show_title, show[-steps][1], http+show[-steps][0]))
+        cursor.execute("INSERT INTO episodes(title,episode_name,episode_link,Date) VALUES(?,?,?,?)", (show_title, all_episodes[-steps][1], all_episodes[-steps][0],datetime.now(),))
         connection.commit()
         steps-=1
         

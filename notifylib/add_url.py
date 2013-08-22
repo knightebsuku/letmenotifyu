@@ -1,20 +1,19 @@
-#!/usr/bin/python3
 
 import re
 from gi.repository import Gtk
 
 
-def check_url(text, notice,dialog,cursor,connection,link_box):
-    if re.match(r'http://vodly.to', text):
-        enter_link(text,cursor,connection,dialog,link_box)
+def check_url(text, notice,dialog, cursor, connection, link_box):
+    if re.match(r'http://www.primewire.ag', text):
+        enter_link(text, cursor, connection, dialog, link_box)
     else:
         notice.set_text("Not a valid link")
         notice.set_visible(True)
         dialog.get_object('imcheck').set_visible(True)
 
 
-def enter_link(url, cursor, connection,dialog,link_box):
-    title = re.search(r"http://vodly.to/(.*)-\d+\-(.*)", url)
+def enter_link(url, cursor, connection, dialog, link_box):
+    title = re.search(r"http://www.primewire.ag/(.*)-\d+\-(.*)", url)
     change_string = title.group(2)
     show_title = change_string.replace("-", " ")
     try:
@@ -36,17 +35,17 @@ class Add_Series:
         self.dialog = Gtk.Builder()
         self.dialog.add_from_file(gladefile)
         connectors = {'on_btnCancel_clicked': self.on_btnCancel_clicked,
-              'on_btnOk_clicked': self.on_btnOk_clicked,
-              'on_entlink_button_release_event': self.on_entlink_button_release_event}
+              'on_btnOk_clicked': self.on_btnOk_clicked}
         self.dialog.connect_signals(connectors)
         self.notice = self.dialog.get_object('lblNotice')
         self.window = self.dialog.get_object('linkdialog')
         self.window.show()
+
         
     def on_btnCancel_clicked(self, widget):
         self.window.destroy()
 
     def on_btnOk_clicked(self, widget):
         self.link_box = self.dialog.get_object('entlink')
-        self.check_url(self.link_box.get_text(),self.notice,self.dialog,self.link_box) 
+        check_url(self.link_box.get_text(), self.notice, self.dialog, self.cursor, self.connection, self.link_box) 
         self.link_box.set_text('')
