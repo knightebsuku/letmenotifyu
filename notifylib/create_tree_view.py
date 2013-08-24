@@ -1,4 +1,3 @@
-#!/usr/bin/python
 
 def create_parent(cursor, series_column):
     x=1
@@ -6,11 +5,11 @@ def create_parent(cursor, series_column):
     for results in cursor.fetchall():
         parent_title = series_column.append(None, [results[0]])
         while x <= int(results[1]):
-            create_seasons(cursor, results[0], parent_title, series_column, x)
+            create_episodes(cursor, results[0], parent_title, series_column, x)
             x += 1
         x = 1
 
-def create_seasons(cursor, series_title, parent_title, series_column, x):
+def create_episodes(cursor, series_title, parent_title, series_column, x):
     name = "season "+str(x)
     sql_name = "%season-"+str(x)+"%"
     series_number = series_column.append(parent_title, [name])

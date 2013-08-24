@@ -51,7 +51,7 @@ def insert_difference(show_title, all_episodes, web_count, db_count, cursor,
         connection.commit()
         steps-=1
         
-def get_series(cursor, connection): #fetch url from database
+def get_series(cursor, connection):
     cursor.execute('SELECT * FROM series')
     for url in cursor.fetchall():
         get_episode_count(str(url[0]), url[1], url[2], cursor, connection)

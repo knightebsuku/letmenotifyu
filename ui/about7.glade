@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <!-- interface-requires gtk+ 3.0 -->
+  <object class="GtkAboutDialog" id="abtdlg">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="border_width">5</property>
+    <property name="title" translatable="yes">About</property>
+    <property name="resizable">False</property>
+    <property name="modal">True</property>
+    <property name="window_position">center-on-parent</property>
+    <property name="destroy_with_parent">True</property>
+    <property name="icon">notify.png</property>
+    <property name="icon_name">notify</property>
+    <property name="type_hint">dialog</property>
+    <property name="program_name">Letmenotifyu</property>
+    <property name="version">1.7.0</property>
+    <property name="comments" translatable="yes">letmenotifyu is a program that will notify you of the latest movies and series episodes.</property>
+    <property name="website">https://github.com/zerefs/letmenotifyu</property>
+    <property name="website_label" translatable="yes">Letmenotifyu</property>
+    <property name="license" translatable="yes">GPL 3.0</property>
+    <property name="authors">Lunga Mthembu
+Icons http://dryicons.com</property>
+    <property name="logo">letmenotifyu.png</property>
+    <property name="wrap_license">True</property>
+    <property name="license_type">gpl-3-0</property>
+    <child internal-child="vbox">
+      <object class="GtkBox" id="aboutdialog-vbox1">
+        <property name="can_focus">False</property>
+        <property name="orientation">vertical</property>
+        <property name="spacing">2</property>
+        <child internal-child="action_area">
+          <object class="GtkButtonBox" id="actionarea">
+            <property name="can_focus">False</property>
+            <property name="homogeneous">True</property>
+            <property name="layout_style">end</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="pack_type">end</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+      </object>
+    </child>
+  </object>
+</interface>
