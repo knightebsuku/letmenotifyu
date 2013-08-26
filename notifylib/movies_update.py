@@ -1,7 +1,7 @@
 
-from urllib.request import Request, urlopen
 import re
 
+from urllib.request import Request, urlopen
 from notifylib.notifiy import announce
 
 def get_movies(cursor, connection):
@@ -30,7 +30,7 @@ def compare(new_movie_info, cursor, connection):
         announce('New Movie',title, http+new_movie_info[title])
         insert_movies.append((title, http+new_movie_info[title]))
     update_database(insert_movies, cursor, connection)
-                
+                    
 def update_database(movie_list, cursor, connection):
         cursor.executemany("INSERT into movies(title,link) VALUES(?,?)", movie_list)
         connection.commit()

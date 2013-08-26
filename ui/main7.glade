@@ -20,11 +20,13 @@
     </columns>
   </object>
   <object class="GtkWindow" id="winlet">
+    <property name="visible">True</property>
     <property name="can_focus">False</property>
+    <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_STRUCTURE_MASK</property>
     <property name="title" translatable="yes">Letmenotifyu</property>
     <property name="window_position">center-on-parent</property>
-    <property name="default_width">500</property>
-    <property name="default_height">350</property>
+    <property name="default_width">700</property>
+    <property name="default_height">450</property>
     <property name="icon">letmenotifyu.png</property>
     <property name="icon_name">letmenotifyu</property>
     <property name="gravity">center</property>
@@ -138,15 +140,6 @@
               </object>
             </child>
             <child>
-              <object class="GtkMenuItem" id="menuitem3">
-                <property name="use_action_appearance">False</property>
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="label" translatable="yes">_View</property>
-                <property name="use_underline">True</property>
-              </object>
-            </child>
-            <child>
               <object class="GtkMenuItem" id="menuitem4">
                 <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
@@ -197,7 +190,7 @@
                     <property name="model">listMovies</property>
                     <property name="headers_visible">False</property>
                     <property name="headers_clickable">False</property>
-                    <property name="search_column">7</property>
+                    <property name="hover_selection">True</property>
                     <signal name="button-press-event" handler="on_treeviewMovies_button_press_event" swapped="no"/>
                     <child internal-child="selection">
                       <object class="GtkTreeSelection" id="treeview-selection1"/>
@@ -225,7 +218,7 @@
                 <property name="label" translatable="yes">Featured Movies</property>
               </object>
               <packing>
-                <property name="tab_fill">False</property>
+                <property name="reorderable">True</property>
               </packing>
             </child>
             <child>
@@ -240,6 +233,7 @@
                     <property name="model">treeSeriesArchive</property>
                     <property name="headers_visible">False</property>
                     <property name="headers_clickable">False</property>
+                    <property name="hover_selection">True</property>
                     <signal name="button-press-event" handler="on_treeview1_button_press_event" swapped="no"/>
                     <child internal-child="selection">
                       <object class="GtkTreeSelection" id="treeview-selection2"/>
@@ -286,11 +280,14 @@
                     <property name="headers_visible">False</property>
                     <property name="headers_clickable">False</property>
                     <property name="search_column">0</property>
+                    <property name="hover_selection">True</property>
+                    <signal name="button-press-event" handler="on_treeview2_button_press_event" swapped="no"/>
                     <child internal-child="selection">
                       <object class="GtkTreeSelection" id="treeview-selection3"/>
                     </child>
                     <child>
                       <object class="GtkTreeViewColumn" id="treeviewcolumn3">
+                        <property name="sizing">autosize</property>
                         <property name="title" translatable="yes">column</property>
                         <child>
                           <object class="GtkCellRendererText" id="cellrenderertext3"/>
