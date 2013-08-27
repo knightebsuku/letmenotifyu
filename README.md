@@ -1,9 +1,9 @@
-This is the Development Branch of Letmenotufyu
+Letmenotifyu
 
 
 
 ************************
-Next Dev Release is 1.7
+Current Release is 1.7-rc
 ************************
 
 **Adding of series***
