@@ -105,7 +105,7 @@ class Main:
     def on_notebook1_button_press_event(self,widget,event):
             if self.notebook1.get_current_page()==0:
                     self.builder.get_object('listMovies').clear()
-                    self.cur.execute('SELECT title FROM movies')
+                    self.cur.execute('SELECT title FROM movies ORDER BY id DESC')
                     for title in self.cur.fetchall():
                             self.builder.get_object('listMovies').append([title[0]])
             elif self.notebook1.get_current_page() == 1:
