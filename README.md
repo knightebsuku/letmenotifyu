@@ -10,8 +10,6 @@ Next Dev Release is 1.7
 Input the home page of the series
 eg: http://www.primewire.ag/tv-9594-xxxxxxxxx
 
-To Access the database ~$ sqlite3 letmenotifyu7.sqlite3
-
-Upate
-Program will be packaged this weekend
+Application is currently in the testing stage.
+This is Letmenotifyu 1.7-rc (RELEASE CANDIDATE)
 

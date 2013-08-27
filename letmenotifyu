@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-#version 1.7
+#version 1.7-rc
 
 import os
 import sys

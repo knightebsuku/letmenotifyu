@@ -30,17 +30,20 @@ class Main:
                  'on_imageAbout_activate': self.on_imageAbout_activate,
                  'on_notebook1_button_press_event': self.on_notebook1_button_press_event,
                  'on_treeviewMovies_button_press_event': self.on_treeviewMovies_button_press_event,
-                 'on_treeview1_button_press_event': self.on_treeview1_button_press_event,
-                 'on_treeview2_button_press_event':self.on_treeview2_button_press_event}
+                 'on_treeArchive_button_press_event': self.on_treeArchive_button_press_event,
+                 'on_treeLatest_button_press_event':self.on_treeLatest_button_press_event}
         
         self.builder.connect_signals(signals)
         self.treeviewMovies = self.builder.get_object('treeviewMovies')
-        self.treeview1 = self.builder.get_object('treeview1')
+        self.treeArchive = self.builder.get_object('treeArchive')
         self.series_archive = self.builder.get_object('treeSeriesArchive')
         self.treeLatest = self.builder.get_object('treeLatest')
         self.notebook1 = self.builder.get_object('notebook1')
         self.window = self.builder.get_object('winlet')
         self.window.show()
+        update_thread = Thread(target= update_movie_series, args=(db,))
+        update_thread.setDaemon(True)
+        update_thread.start()
         Gtk.main()
 
     def on_winlet_destroy(self,widget):
@@ -66,19 +69,17 @@ class Main:
             for link in self.cur.fetchall():
                 webbrowser.open_new(link[0])
 
-    def on_treeview2_button_press_event(self,widget,event):
+    def on_treeLatest_button_press_event(self,widget,event):
         if event.button == 1:
-            get_latest_series = self.builder.get_object('treeview2').get_selection()
+            get_latest_series = self.builder.get_object('treeLatest').get_selection()
             series,name = get_latest_series.get_selected()
             get_episode = series[name][0]
-            print(get_episode)
-            print(self.latest_dict[get_episode])
-            #webbrowser.open_new(self.latest_dict[get_episode])
+            webbrowser.open_new(self.latest_dict[get_episode])
             
                 
-    def on_treeview1_button_press_event(self,widget,event):
+    def on_treeArchive_button_press_event(self,widget,event):
         if event.button == 1:
-            selected = self.builder.get_object('treeview1').get_selection()
+            selected = self.builder.get_object('treeArchive').get_selection()
             series,name = selected.get_selected()
             episode = series[name][0]
             if re.match(r"^Episode",episode):
@@ -89,7 +90,7 @@ class Main:
                 episode_season_path = self.series_archive.get_iter(path_value[:3])
                 episode_path = self.series_archive.get_iter(path_value)
 
-                model = self.treeview1.get_model()
+                model = self.treeArchive.get_model()
                 episode_title = model.get_value(episode_title_path, 0) 
                 episode_season = model.get_value(episode_season_path, 0)
                 episode_path = model.get_value(episode_path, 0)

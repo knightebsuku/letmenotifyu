@@ -5,19 +5,20 @@ from urllib.request import Request, urlopen
 from notifylib.notifiy import announce
 
 def get_movies(cursor, connection):
-    """Get latest movies from site"""
+    """Extract Movie Links and Titles"""
     new_movie_info = {}
     req = Request('http://www.primewire.ag/index.php?sort=featured',
                 headers = {'User-Agent':'Mozilla/5.0'})
-    latest_movie_page= urlopen(req).read().decode('utf-8') #return bytes
+    latest_movie_page= urlopen(req).read().decode('utf-8')
     latest_movies = re.findall(r'<div class="index_item index_item_ie"><a href="(.*?)" title="Watch (.*?)">',
                                latest_movie_page)
-    for new_info in latest_movies: #get Movies titles and links
+    for new_info in latest_movies: 
         new_movie_info[new_info[1]] = new_info[0]
     compare(new_movie_info, cursor, connection)
         
            
 def compare(new_movie_info, cursor, connection):
+    """Compare Old movie list to new Movie list"""
     old_movie_info = {}
     insert_movies=[]
     http = 'http://primewire.ag'
