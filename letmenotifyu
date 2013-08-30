@@ -4,7 +4,6 @@
 
 import os
 import sys
-
 from notifylib.create import create_database
 from notifylib.main import Main
 

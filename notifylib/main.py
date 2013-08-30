@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 
 import sqlite3 as sqlite
 import webbrowser
@@ -37,7 +36,6 @@ class Main:
         self.treeviewMovies = self.builder.get_object('treeviewMovies')
         self.treeArchive = self.builder.get_object('treeArchive')
         self.series_archive = self.builder.get_object('treeSeriesArchive')
-        self.treeLatest = self.builder.get_object('treeLatest')
         self.notebook1 = self.builder.get_object('notebook1')
         self.window = self.builder.get_object('winlet')
         self.window.show()
@@ -103,9 +101,9 @@ class Main:
                 
             
     def on_notebook1_button_press_event(self,widget,event):
-            if self.notebook1.get_current_page()==0:
+            if self.notebook1.get_current_page() == 0:
                     self.builder.get_object('listMovies').clear()
-                    self.cur.execute('SELECT title FROM movies ORDER BY id DESC')
+                    self.cur.execute('SELECT title FROM movies ORDER BY id DESC') #to get the latest movie showing first
                     for title in self.cur.fetchall():
                             self.builder.get_object('listMovies').append([title[0]])
             elif self.notebook1.get_current_page() == 1:
