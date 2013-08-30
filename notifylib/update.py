@@ -12,10 +12,10 @@ def update_movie_series(sqlite_file):
     try:
         get_series(cursor, connection)
         get_movies(cursor, connection)
-        time.sleep(21600) #wait 6 hrs
+        time.sleep(21600)
     except Exception as e:
         print(e)
-        time.sleep(300) #wait 5min
+        time.sleep(300)
     finally:
         connection.close()
         update_movie_series(sqlite_file)

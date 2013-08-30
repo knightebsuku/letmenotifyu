@@ -3,7 +3,7 @@ Letmenotifyu
 
 
 ************************
-Current Release is 1.7-rc
+Current Release is 1.7
 ************************
 
 **Adding of series***

@@ -5,7 +5,7 @@ from urllib.request import Request, urlopen
 from notifylib.notifiy import announce
 
 def get_movies(cursor, connection):
-    """Extract Movie Links and Titles"""
+    """extract movie links and titles"""
     new_movie_info = {}
     req = Request('http://www.primewire.ag/index.php?sort=featured',
                 headers = {'User-Agent':'Mozilla/5.0'})
@@ -18,7 +18,7 @@ def get_movies(cursor, connection):
         
            
 def compare(new_movie_info, cursor, connection):
-    """Compare Old movie list to new Movie list"""
+    """Compare old movie list to new movie list"""
     old_movie_info = {}
     insert_movies=[]
     http = 'http://primewire.ag'
@@ -33,5 +33,5 @@ def compare(new_movie_info, cursor, connection):
     update_database(insert_movies, cursor, connection)
                     
 def update_database(movie_list, cursor, connection):
-        cursor.executemany("INSERT into movies(title,link) VALUES(?,?)", movie_list)
+        cursor.executemany("INSERT INTO movies(title,link) VALUES(?,?)", movie_list)
         connection.commit()

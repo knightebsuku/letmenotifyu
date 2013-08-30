@@ -2,11 +2,7 @@
 import sqlite3 as sqlite
 
 def make_movie_table(cursor):
-    i = 0
     cursor.execute('CREATE TABLE movies(id INTEGER PRIMARY KEY, title VARCHAR(20), link VARCHAR(20))')
-    while i <= 23:
-        cursor.execute("INSERT INTO movies VALUES(null,' ',' ')")
-        i+=1
         
 def make_series_table(cursor):
      cursor.execute('CREATE TABLE series(title VARCHAR(30) PRIMARY KEY,series_link VARCHAR(60),number_of_episodes INTEGER,number_of_seasons INTEGER)')
