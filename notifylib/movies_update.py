@@ -30,8 +30,5 @@ def compare(new_movie_info, cursor, connection):
     for title in get_difference:
         announce('New Movie',title, http+new_movie_info[title])
         insert_movies.append((title, http+new_movie_info[title]))
-    update_database(insert_movies, cursor, connection)
-                    
-def update_database(movie_list, cursor, connection):
-        cursor.executemany("INSERT INTO movies(title,link) VALUES(?,?)", movie_list)
-        connection.commit()
+    cursor.executemany("INSERT INTO movies(title,link) VALUES(?,?)",insert_movies)
+    connection.commit()
