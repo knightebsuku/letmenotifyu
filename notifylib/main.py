@@ -63,7 +63,7 @@ class Main:
             get_title=self.builder.get_object('treeviewMovies').get_selection()
             movie,name=get_title.get_selected()
             fetch_title=movie[name][0]
-            self.cur.execute("SELECT link from movies where title=?",(fetch_title,))
+            self.cur.execute("SELECT link FROM movies WHERE title=?",(fetch_title,))
             for link in self.cur.fetchall():
                 webbrowser.open_new(link[0])
 
@@ -94,7 +94,7 @@ class Main:
                 episode_path = model.get_value(episode_path, 0)
                 sql_season = episode_season.replace(" ", "-")
 
-                self.cur.execute("SELECT episode_link from episodes where episode_name=? and title=? and episode_link LIKE ?",
+                self.cur.execute("SELECT episode_link FROM episodes WHERE episode_name=? AND title=? AND episode_link LIKE ?",
                                     (episode_path, episode_title, "%"+sql_season+"%"))
                 for link in self.cur.fetchall():
                     webbrowser.open_new("http://www.primewire.ag"+link[0])
@@ -112,7 +112,7 @@ class Main:
             elif self.notebook1.get_current_page() == 2:
                     week = datetime.now() - timedelta(days=7)
                     self.builder.get_object('listLatestSeries').clear()
-                    self.cur.execute('SELECT title,episode_link,episode_name from episodes WHERE Date BETWEEN  ? AND ?',(week, datetime.now()))
+                    self.cur.execute('SELECT title,episode_link,episode_name FROM episodes WHERE Date BETWEEN  ? AND ?',(week, datetime.now()))
                     for latest in self.cur.fetchall():
                             self.latest_dict[latest[0]+"-"+latest[2]] = "http://www.primewire.ag"+latest[1]
                             self.builder.get_object('listLatestSeries').append([latest[0]+"-"+latest[2]])
