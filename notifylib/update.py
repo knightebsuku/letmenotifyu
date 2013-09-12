@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 
 import time
 import sqlite3 as sqlite

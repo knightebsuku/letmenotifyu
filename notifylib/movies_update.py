@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 
 import re
 
@@ -26,9 +27,9 @@ def compare(new_movie_info, cursor, connection):
     for top_movie in cursor.fetchall():
         old_movie_info[top_movie[0]] = ""
     diff_titles = set(new_movie_info.keys()) - set(old_movie_info.keys())
-    get_difference = list(diff_titles)
-    for title in get_difference:
-        announce('New Movie',title, http+new_movie_info[title])
-        insert_movies.append((title, http+new_movie_info[title]))
-    cursor.executemany("INSERT INTO movies(title,link) VALUES(?,?)",insert_movies)
-    connection.commit()
+    if  diff_titles:
+        for title in list(diff_titles):
+            announce('New Movie',title, http+new_movie_info[title])
+            insert_movies.append((title, http+new_movie_info[title]))
+        cursor.executemany("INSERT INTO movies(title,link) VALUES(?,?)",insert_movies)
+        connection.commit()

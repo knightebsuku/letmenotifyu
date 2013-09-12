@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 
 import sqlite3 as sqlite
 import webbrowser
@@ -98,6 +99,8 @@ class Main:
                                     (episode_path, episode_title, "%"+sql_season+"%"))
                 for link in self.cur.fetchall():
                     webbrowser.open_new("http://www.primewire.ag"+link[0])
+            else:
+                pass
                 
             
     def on_notebook1_button_press_event(self,widget,event):
