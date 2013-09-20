@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import re
+import sqlite3 as sqlite
 from gi.repository import Gtk
 
 
@@ -22,7 +23,6 @@ def enter_link(url, cursor, connection, dialog, link_box):
         connection.commit()
         link_box.set_text('')
     except Exception as e:
-        #Will use python loggin to output to file to keep track of  erros and  changes
         print(e)
         dialog.get_object('lblNotice').set_text("Link already exists")
         dialog.get_object('lblNotice').set_visible(True)
@@ -30,9 +30,9 @@ def enter_link(url, cursor, connection, dialog, link_box):
                 
 
 class Add_Series:
-    def __init__(self, gladefile, cursor, connection):
-        self.cursor = cursor
-        self.connection = connection
+    def __init__(self, gladefile, db_file):
+        self.connection = sqlite3.connect(db_file)
+        self.cursor = self.connect.cursor()
         self.dialog = Gtk.Builder()
         self.dialog.add_from_file(gladefile)
         connectors = {'on_btnCancel_clicked': self.on_btnCancel_clicked,
@@ -44,6 +44,7 @@ class Add_Series:
 
         
     def on_btnCancel_clicked(self, widget):
+        self.connection.close()
         self.window.destroy()
 
     def on_btnOk_clicked(self, widget):
