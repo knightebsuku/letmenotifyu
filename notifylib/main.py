@@ -99,12 +99,8 @@ class Main:
 
                 cursor.execute("SELECT episode_link FROM episodes WHERE episode_name=? AND title=? AND episode_link LIKE ?",
                                     (episode_path, episode_title, "%"+sql_season+"%"))
-                print(episode_path)
-                print(episode_title)
-                print(sql_season)
                 for link in cursor.fetchall():
-                    print(link[0])
-                    #webbrowser.open_new("http://www.primewire.ag"+link[0])
+                    webbrowser.open_new("http://www.primewire.ag"+link[0])
             else:
                 pass
         connect.close()
