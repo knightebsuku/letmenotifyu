@@ -103,6 +103,9 @@ class Main:
                     webbrowser.open_new("http://www.primewire.ag"+link[0])
             else:
                 pass
+        elif event.button == 3:
+            print("Show right click menu")
+            
         connect.close()
                 
             

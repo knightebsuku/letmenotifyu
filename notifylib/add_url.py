@@ -31,7 +31,7 @@ def enter_link(url, cursor, connection, dialog, link_box):
 
 class Add_Series:
     def __init__(self, gladefile, db_file):
-        self.connection = sqlite3.connect(db_file)
+        self.connect = sqlite.connect(db_file)
         self.cursor = self.connect.cursor()
         self.dialog = Gtk.Builder()
         self.dialog.add_from_file(gladefile)
@@ -44,10 +44,10 @@ class Add_Series:
 
         
     def on_btnCancel_clicked(self, widget):
-        self.connection.close()
+        self.connect.close()
         self.window.destroy()
 
     def on_btnOk_clicked(self, widget):
         self.link_box = self.dialog.get_object('entlink')
-        check_url(self.link_box.get_text(), self.notice, self.dialog, self.cursor, self.connection, self.link_box) 
+        check_url(self.link_box.get_text(), self.notice, self.dialog, self.cursor, self.connect, self.link_box) 
         self.link_box.set_text('')
