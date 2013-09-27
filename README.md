@@ -4,7 +4,7 @@ Letmenotifyu
 Program to notifyu users of new Episode and Movie releases
 
 ************************
-New Version 1.7.0
+New Version 1.7.0-4
 ************************
 
 **Adding of series***

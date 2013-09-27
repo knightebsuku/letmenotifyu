@@ -12,6 +12,7 @@ from notifylib.about import About
 from notifylib.confirm import Confirm
 from notifylib.create_tree_view import create_parent
 from notifylib.update import update_movie_series
+from notifylib.Delete import Delete_Series
 
 GObject.threads_init()
 
@@ -104,7 +105,10 @@ class Main:
             else:
                 pass
         elif event.button == 3:
-            print("Show right click menu")
+            selected = self.builder.get_object('treeArchive').get_selection()
+            series,name = selected.get_selected()
+            series_title = series[name][0]
+            Delete_Series(series_title,cursor,connect,'delete7.glade')
             
         connect.close()
                 
