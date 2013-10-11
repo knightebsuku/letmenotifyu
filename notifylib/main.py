@@ -15,12 +15,10 @@ from notifylib.update import update_movie_series
 
 GObject.threads_init()
 
-
 class Main:
-    """Main Page for letmenotifyu"""
     def __init__(self, gladefile, pic, db):
-        self.connect=sqlite.connect(db)
-        self.cursor=self.connect.cursor()
+        self.connect= sqlite.connect(db)
+        self.cursor= self.connect.cursor()
         self.latest_dict = {}
         self.builder = Gtk.Builder()
         self.builder.add_from_file(gladefile)
@@ -37,12 +35,10 @@ class Main:
                  'on_Delete_Series_activate':self.on_Delete_Series_activate}
         
         self.builder.connect_signals(signals)
-        self.treeviewMovies = self.builder.get_object('treeviewMovies')
         self.treeArchive = self.builder.get_object('treeArchive')
         self.series_archive = self.builder.get_object('treeSeriesArchive')
         self.notebook1 = self.builder.get_object('notebook1')
-        self.window = self.builder.get_object('winlet')
-        self.window.show()
+        self.window = self.builder.get_object('winlet').show()
         update_thread = Thread(target= update_movie_series, args=(db,))
         update_thread.setDaemon(True)
         update_thread.start()
@@ -62,9 +58,9 @@ class Main:
 
     def on_treeviewMovies_button_press_event(self,widget,event):
         if event.button == 1:
-            get_title=self.builder.get_object('treeviewMovies').get_selection()
-            movie,name=get_title.get_selected()
-            fetch_title=movie[name][0]
+            get_title= self.buider.get_object("treeviewMovies").get_selection()
+            movie,name= get_title.get_selected()
+            fetch_title= movie[name][0]
             self.cursor.execute("SELECT link FROM movies WHERE title=?",(fetch_title,))
             for link in self.cursor.fetchall():
                 webbrowser.open_new(link[0])
@@ -79,7 +75,7 @@ class Main:
                 
     def on_treeArchive_button_press_event(self,widget,event):
         if event.button == 1:
-            selected = self.builder.get_object('treeArchive').get_selection()
+            selected = self.treeArchive.get_selection()
             series,name = selected.get_selected()
             episode = series[name][0]
             if re.match(r"^Episode",episode):
@@ -103,19 +99,19 @@ class Main:
             else:
                 pass
         elif event.button == 3:
-            selected = self.builder.get_object('treeArchive').get_selection()
+            selected = self.treeArchive.get_selection()
             series,name = selected.get_selected()
             self.series_title = series[name][0]
             self.builder.get_object("Series").popup(None,None,None,None,event.button,event.time)
             
     def on_Stop_Update_activate(self,widget):
-        Confirm('confirm7.glade',self.series_title,"stop",self.cursor,self.connect)
+        Confirm('confirm7.glade',self.series_title,"stop",self.connect,self.cursor)
         
     def on_Start_Update_activate(self,widget):
-        Confirm('confirm7.glade',self.series_title,"start",self.cursor,self.connect)
+        Confirm('confirm7.glade',self.series_title,"start",self.connect,self.cursor)
         
     def on_Delete_Series_activate(self,widget):
-        Confirm('confirm7.glade',self.series_title,"delete",self.cursor,self.connect)
+        Confirm('confirm7.glade',self.series_title,"delete",self.connect,self.cursor)
         
                   
     def on_notebook1_button_press_event(self,widget,event):

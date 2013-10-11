@@ -2,32 +2,6 @@
 import re
 from gi.repository import Gtk
 
-
-def check_url(text, notice,dialog, cursor, connection, link_box):
-    if re.match(r'http://www.primewire.ag', text):
-        enter_link(text, cursor, connection, dialog, link_box)
-    else:
-        notice.set_text("Not a valid link")
-        notice.set_visible(True)
-        dialog.get_object('imcheck').set_visible(True)
-
-
-def enter_link(url, cursor, connection, dialog, link_box):
-    title = re.search(r"http://www.primewire.ag/(.*)-\d+\-(.*)", url)
-    change_string = title.group(2)
-    show_title = change_string.replace("-", " ")
-    try:
-        cursor.execute('INSERT INTO series(title,series_link,number_of_episodes,number_of_seasons) VALUES(?,?,0,0)', (show_title, url,))
-        connection.commit()
-        link_box.set_text('')
-    except Exception as e:
-        #Will use python loggin to output to file to keep track of  erros and  changes
-        print(e)
-        dialog.get_object('lblNotice').set_text("Link already exists")
-        dialog.get_object('lblNotice').set_visible(True)
-        dialog.get_object('imcheck').set_visible(True)
-                
-
 class Add_Series:
     def __init__(self, gladefile, cursor, connection):
         self.cursor = cursor
@@ -49,3 +23,27 @@ class Add_Series:
         self.link_box = self.dialog.get_object('entlink')
         check_url(self.link_box.get_text(), self.notice, self.dialog, self.cursor, self.connection, self.link_box) 
         self.link_box.set_text('')
+
+
+
+def check_url(text, notice,dialog, cursor, connection, link_box):
+    if re.match(r'http://www.primewire.ag', text):
+        enter_link(text, cursor, connection, dialog, link_box)
+    else:
+        notice.set_text("Not a valid link")
+        notice.set_visible(True)
+        dialog.get_object('imcheck').set_visible(True)
+
+def enter_link(url, cursor, connection, dialog, link_box):
+    title = re.search(r"http://www.primewire.ag/(.*)-\d+\-(.*)", url)
+    change_string = title.group(2)
+    show_title = change_string.replace("-", " ")
+    try:
+        cursor.execute('INSERT INTO series(title,series_link,number_of_episodes,number_of_seasons) VALUES(?,?,0,0)', (show_title, url,))
+        connection.commit()
+        link_box.set_text('')
+    except Exception as e:
+        print(e)
+        dialog.get_object('lblNotice').set_text("Link already exists")
+        dialog.get_object('lblNotice').set_visible(True)
+        dialog.get_object('imcheck').set_visible(True)

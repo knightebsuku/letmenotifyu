@@ -1,4 +1,3 @@
-
 from gi.repository import Notify
 
 def announce(*args):

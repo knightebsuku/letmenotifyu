@@ -2,7 +2,7 @@
 from gi.repository import Gtk
 
 class Confirm:
-    def __init__(self, gladefile, title,instruction,cursor,connect):
+    def __init__(self, gladefile, title,instruction,connect,cursor):
         self.connect=connect
         self.cursor=cursor
         self.title = title
@@ -14,8 +14,7 @@ class Confirm:
         self.confirm.connect_signals(dicts)
         self.message,self.sql=which_sql_message(self.instruction)
         self.confirm.get_object('msgdlg').format_secondary_text(self.message+" "+ self.title+"?")
-        window = self.confirm.get_object('msgdlg')
-        window.show()
+        window = self.confirm.get_object('msgdlg').show()
 
     def on_btnOk_clicked(self, widget):
         self.cursor.execute("PRAGMA foreign_keys = ON")

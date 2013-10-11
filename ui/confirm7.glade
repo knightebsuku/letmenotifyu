@@ -20,11 +20,9 @@
             <child>
               <object class="GtkButton" id="btnOk">
                 <property name="label" translatable="yes">Ok</property>
-                <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <property name="use_action_appearance">False</property>
                 <signal name="clicked" handler="on_btnOk_clicked" swapped="no"/>
               </object>
               <packing>
@@ -36,11 +34,9 @@
             <child>
               <object class="GtkButton" id="btnCancel">
                 <property name="label" translatable="yes">Cancel</property>
-                <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <property name="use_action_appearance">False</property>
                 <signal name="clicked" handler="on_btnCancel_clicked" swapped="no"/>
               </object>
               <packing>

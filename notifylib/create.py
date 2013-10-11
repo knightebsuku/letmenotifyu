@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 
 import sqlite3 as sqlite
 
@@ -13,6 +12,7 @@ def make_episode_table(cursor):
 
 def alter_tables(cursor):
     cursor.execute('ALTER TABLE series ADD COLUMN last_update TIMESTAMP,status BOOLEAN')
+    connection.commit()
     #function to change database if needed.
 
 def create_database(sqlite_file):
