@@ -19,8 +19,7 @@ GObject.threads_init()
 class Main:
     """Main Page for letmenotifyu"""
     def __init__(self, gladefile, pic, db):
-        self.connect = sqlite.connect(db)
-        self.cur = self.connect.cursor()
+        self.db_file=db
         self.latest_dict = {}
         self.builder = Gtk.Builder()
         self.builder.add_from_file(gladefile)
@@ -37,37 +36,37 @@ class Main:
         self.treeviewMovies = self.builder.get_object('treeviewMovies')
         self.treeArchive = self.builder.get_object('treeArchive')
         self.series_archive = self.builder.get_object('treeSeriesArchive')
-        self.treeLatest = self.builder.get_object('treeLatest')
         self.notebook1 = self.builder.get_object('notebook1')
         self.window = self.builder.get_object('winlet')
         self.window.show()
-        update_thread = Thread(target= update_movie_series, args=(db,))
-        update_thread.setDaemon(True)
-        update_thread.start()
+        #update_thread = Thread(target= update_movie_series, args=(self.db_file,))
+        #update_thread.setDaemon(True)
+        #update_thread.start()
         Gtk.main()
 
     def on_winlet_destroy(self,widget):
-        self.connect.close()
         Gtk.main_quit()
 
     def on_imageAdd_activate(self,widget):
-        Add_Series('input7.glade',self.cur,self.connect)
+        Add_Series('input7.glade',self.db_file)
 
     def on_imageQuit_destroy(self,widget):
-        self.connect.close()
         Gtk.main_quit()
 
     def on_imageAbout_activate(self,widget):
         About('about7.glade')
 
     def on_treeviewMovies_button_press_event(self,widget,event):
+        connect =sqlite.connect(self.db_file)
+        cursor=connect.cursor()
         if event.button == 1:
             get_title=self.builder.get_object('treeviewMovies').get_selection()
             movie,name=get_title.get_selected()
             fetch_title=movie[name][0]
-            self.cur.execute("SELECT link from movies where title=?",(fetch_title,))
-            for link in self.cur.fetchall():
+            cursor.execute("SELECT link FROM movies WHERE title=?",(fetch_title,))
+            for link in cursor.fetchall():
                 webbrowser.open_new(link[0])
+        connect.close()
 
     def on_treeLatest_button_press_event(self,widget,event):
         if event.button == 1:
@@ -78,6 +77,8 @@ class Main:
             
                 
     def on_treeArchive_button_press_event(self,widget,event):
+        connect= sqlite.connect(self.db_file)
+        cursor=connect.cursor()
         if event.button == 1:
             selected = self.builder.get_object('treeArchive').get_selection()
             series,name = selected.get_selected()
@@ -96,35 +97,50 @@ class Main:
                 episode_path = model.get_value(episode_path, 0)
                 sql_season = episode_season.replace(" ", "-")
 
-                self.cur.execute("SELECT episode_link from episodes where episode_name=? and title=? and episode_link LIKE ?",
+                cursor.execute("SELECT episode_link FROM episodes WHERE episode_name=? AND title=? AND episode_link LIKE ?",
                                     (episode_path, episode_title, "%"+sql_season+"%"))
-                for link in self.cur.fetchall():
+                for link in cursor.fetchall():
                     webbrowser.open_new("http://www.primewire.ag"+link[0])
-                
+            else:
+                pass
+        elif event.button == 3:
+            selected = self.builder.get_object('treeArchive').get_selection()
+            series,name = selected.get_selected()
+            series_title = series[name][0]
+            print("OK")
+            self.builder.get_object("Series").popup(None,None,None,None,event.button,event.time)
+            
+        connect.close()
             
     def on_notebook1_button_press_event(self,widget,event):
-            if self.notebook1.get_current_page()==0:
-                    self.builder.get_object('listMovies').clear()
-                    self.cur.execute('SELECT title FROM movies')
-                    for title in self.cur.fetchall():
-                            self.builder.get_object('listMovies').append([title[0]])
-            elif self.notebook1.get_current_page() == 1:
-                    self.series_archive.clear()
-                    create_parent(self.cur,self.builder.get_object('treeSeriesArchive'))
-            elif self.notebook1.get_current_page() == 2:
-                    week = datetime.now() - timedelta(days=7)
-                    self.builder.get_object('listLatestSeries').clear()
-                    self.cur.execute('SELECT title,episode_link,episode_name from episodes WHERE Date BETWEEN  ? AND ?',(week, datetime.now()))
-                    for latest in self.cur.fetchall():
-                            self.latest_dict[latest[0]+"-"+latest[2]] = "http://www.primewire.ag"+latest[1]
-                            self.builder.get_object('listLatestSeries').append([latest[0]+"-"+latest[2]])
-                
-            else:
-                    pass
-                
+        connect = sqlite.connect(self.db_file)
+        cursor = connect.cursor()
+        if self.notebook1.get_current_page() == 0:
+            self.builder.get_object('listMovies').clear()
+            cursor.execute('SELECT title FROM movies ORDER BY id DESC')
+            for title in cursor.fetchall():
+                self.builder.get_object('listMovies').append([title[0]])
+        elif self.notebook1.get_current_page() == 1:
+            self.series_archive.clear()
+            create_parent(cursor,self.builder.get_object('treeSeriesArchive'))
+        elif self.notebook1.get_current_page() == 2:
+            week = datetime.now() - timedelta(days=7)
+            self.builder.get_object('listLatestSeries').clear()
+            cursor.execute('SELECT title,episode_link,episode_name FROM episodes WHERE Date BETWEEN  ? AND ?',(week, datetime.now()))
+            for latest in cursor.fetchall():
+                self.latest_dict[latest[0]+"-"+latest[2]] = "http://www.primewire.ag"+latest[1]
+                self.builder.get_object('listLatestSeries').append([latest[0]+"-"+latest[2]])
+
+        else:
+                pass
+        connect.close()
+            
                     
             
             
+
+
+
 
 
 

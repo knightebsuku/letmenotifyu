@@ -28,12 +28,12 @@ def get_episode_count(show_title, show_link, episode_count, cursor, connection):
 
     if episode_count == 0:
         new_series_add(new_series_detail, cursor, connection)
-        update_number_episodes( len(all_episodes), len(seasons),
+        update_series_table( len(all_episodes), len(seasons),
                                show_title, cursor, connection)
     elif  episode_count < len(all_episodes):
         http='www.primewire.ag'
         announce("New Series Episodes",show_title,http+all_episodes[-1][0])
-        update_number_episodes( len(all_episodes), len(seasons), show_title,
+        update_series_table( len(all_episodes), len(seasons), show_title,
                                 cursor,connection)
         insert_difference(show_title, all_episodes, len(all_episodes),
                           episode_count, cursor, connection)
@@ -43,10 +43,10 @@ def new_series_add(new_series_detail, cursor, connection):
     cursor.executemany('INSERT INTO episodes(title,episode_link,episode_name) VALUES(?,?,?)' , new_series_detail)
     connection.commit()
     
-def update_number_episodes(num_episodes, num_seasons, show_title,
+def update_series_table(num_episodes, num_seasons, show_title,
                            cursor, connection):
     """Update The number of episodes and seasons"""
-    cursor.execute("Update series set number_of_episodes=?,number_of_seasons=? WHERE title=?", (num_episodes,num_seasons, show_title,))
+    cursor.execute("Update series set number_of_episodes=?,number_of_seasons=?,last_update=? WHERE title=?", (num_episodes,num_seasons,datetime.now(), show_title,))
     connection.commit()
 
 def insert_difference(show_title, all_episodes, web_count, db_count, cursor,
@@ -59,9 +59,10 @@ def insert_difference(show_title, all_episodes, web_count, db_count, cursor,
         steps-=1
         
 def get_series(cursor, connection):
-    cursor.execute('SELECT * FROM series')
+    cursor.execute('SELECT title,series_link,number_of_episodes FROM series WHERE last_update < ? ',(datetime.now(),))
     for url in cursor.fetchall():
-        get_episode_count(url[0], url[1], url[2], cursor, connection)
+        print(url[0])
+        #get_episode_count(url[0], url[1], url[2], cursor, connection)
          
 
 
