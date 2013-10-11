@@ -37,6 +37,10 @@ def get_episode_count(show_title, show_link, episode_count, cursor, connection):
                                 cursor,connection)
         insert_difference(show_title, all_episodes, len(all_episodes),
                           episode_count, cursor, connection)
+    else:
+        cursor.execute("UPDATE series SET last_update=? WHERE title=?",
+                       (datetime.now(),show_title,))
+        connection.commit()
 
 def new_series_add(new_series_detail, cursor, connection):
     """Add new series"""
@@ -59,10 +63,10 @@ def insert_difference(show_title, all_episodes, web_count, db_count, cursor,
         steps-=1
         
 def get_series(cursor, connection):
-    cursor.execute('SELECT title,series_link,number_of_episodes FROM series WHERE last_update < ? ',(datetime.now(),))
+    cursor.execute('SELECT title,series_link,number_of_episodes FROM series WHERE status = 1 ')
     for url in cursor.fetchall():
         print(url[0])
-        #get_episode_count(url[0], url[1], url[2], cursor, connection)
+        get_episode_count(url[0], url[1], url[2], cursor, connection)
          
 
 

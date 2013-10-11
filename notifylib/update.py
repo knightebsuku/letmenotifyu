@@ -15,6 +15,8 @@ def update_movie_series(sqlite_file):
         get_movies(cursor, connection)
         time.sleep(21600) #6hrs
     except Exception as e:
+        print(e)
+        print("Cant UPDATE")
         time.sleep(300) #wait 5min
     finally:
         connection.close()
