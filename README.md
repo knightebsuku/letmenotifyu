@@ -1,25 +1,15 @@
-<<<<<<< HEAD
-This is the Main Branch
-=======
-Letmenotifyu
->>>>>>> master
-
+This is the Main Branch Letmenotifyu
 
 Program to notifyu users of new Episode and Movie releases
 
-************************
-<<<<<<< HEAD
+
 New Release 1.7.1
-=======
-New Version 1.7.0-4
->>>>>>> master
 ************************
 Changes
 
 *Code cleanup.
 *Ability to delete Series.
 *Ability to stop or start updating a series.
-
 
 
 **Adding of series***
