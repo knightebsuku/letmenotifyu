@@ -65,19 +65,10 @@ def insert_difference(show_title, all_episodes, web_count, db_count, cursor,
         connection.commit()
         steps-=1
         
-<<<<<<< HEAD
 def get_series(cursor, connection):
     cursor.execute('SELECT title,series_link,number_of_episodes FROM series WHERE status = 1 ')
-=======
-def get_series(db_file):
-    connect=sqlite.connect(db_file)
-    cursor=connect.cursor()
-    """Get Series info from database"""
-    cursor.execute('SELECT title,series_link,number_of_episodes FROM series')
->>>>>>> master
     for url in cursor.fetchall():
-        get_episode_count(url[0], url[1], url[2], cursor, connect)
-    connect.close()
+        get_episode_count(url[0], url[1], url[2], cursor, connection)
          
 
 

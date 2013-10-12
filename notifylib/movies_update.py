@@ -6,9 +6,7 @@ import sqlite3 as sqlite
 from urllib.request import Request, urlopen
 from notifylib.notifiy import announce
 
-def get_movies(db_file):
-    connect=sqlite.connect(db_file)
-    cursor=connect.cursor()
+def get_movies(cursor,connect):
     """extract movie links and titles"""
     new_movie_info = {}
     req = Request('http://www.primewire.ag/index.php?sort=featured',
@@ -19,7 +17,6 @@ def get_movies(db_file):
     for new_info in latest_movies: 
         new_movie_info[new_info[1]] = new_info[0]
     compare(new_movie_info, cursor, connect)
-    connect.close()
         
            
 def compare(new_movie_info, cursor, connection):

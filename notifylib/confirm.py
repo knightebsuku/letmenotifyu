@@ -12,17 +12,10 @@ class Confirm:
         self.confirm.add_from_file(gladefile)
         signals = {'on_btnOk_clicked': self.on_btnOk_clicked,
                'on_btnCancel_clicked': self.on_btnCancel_clicked}
-<<<<<<< HEAD
-        self.confirm.connect_signals(dicts)
+        self.confirm.connect_signals(signals)
         self.message,self.sql=which_sql_message(self.instruction)
         self.confirm.get_object('msgdlg').format_secondary_text(self.message+" "+ self.title+"?")
         window = self.confirm.get_object('msgdlg').show()
-=======
-        self.confirm.connect_signals(signals)
-        self.confirm.get_object('msgdlg').format_secondary_text('Are you sure you want to delete:'+" "+ self.title)
-        window = self.confirm.get_object('msgdlg')
-        window.show()
->>>>>>> master
 
     def on_btnOk_clicked(self, widget):
         self.cursor.execute("PRAGMA foreign_keys = ON")

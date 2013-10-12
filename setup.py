@@ -3,11 +3,7 @@ from distutils.core import setup
 
 if __name__=='__main__':
     setup(name='letmenotifyu',
-<<<<<<< HEAD
           version='1.7.1',
-=======
-          version='1.7.0-4',
->>>>>>> master
           description='Program to notify users of new movie and series episode release from www.primewrire.ag',
           author='Lunga Mthembu (zeref)',
           author_email='zerefs@gmail.com',

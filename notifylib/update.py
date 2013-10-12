@@ -11,7 +11,6 @@ def update_movie_series(db_file):
     connection = sqlite.connect(db_file)
     cursor = connection.cursor()
     try:
-<<<<<<< HEAD
         get_series(cursor, connection)
         get_movies(cursor, connection)
         time.sleep(21600) #6hrs
@@ -20,15 +19,4 @@ def update_movie_series(db_file):
         time.sleep(300) #wait 5min
     finally:
         connection.close()
-        update_movie_series(sqlite_file)
-=======
-        get_series(db_file)
-        get_movies(db_file)
-        time.sleep(21600)
-    except Exception as e:
-        print(e)
-        time.sleep(300)
-    finally:
         update_movie_series(db_file)
->>>>>>> master
-

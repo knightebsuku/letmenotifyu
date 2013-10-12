@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-=======
-#!/usr/bin/python3
 
->>>>>>> master
 from gi.repository import Gtk
 
 class About:
