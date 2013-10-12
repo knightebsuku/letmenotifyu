@@ -1,10 +1,10 @@
 #!/usr/bin/python3
 
-#version 1.7.1
 import os
 import sys
 
 from notifylib.create import create_database
+from notifylib.create import upgrade_database
 from notifylib.main import Main
 
 #sys.path.append("/usr/share/letmenotifyu/")
@@ -15,7 +15,8 @@ db_file=directory_path+'dev.sqlite'
 
 if __name__ == "__main__":
      if os.path.isfile(db_file):
-        Main('main7.glade', 'letmenotifyu.png', db_file)
+         upgrade_database(db_file)
+         Main('main7.glade', 'letmenotifyu.png', db_file)
      else:
          try:
              os.makedirs(directory_path)
