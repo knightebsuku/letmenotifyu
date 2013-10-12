@@ -58,7 +58,7 @@ class Main:
 
     def on_treeviewMovies_button_press_event(self,widget,event):
         if event.button == 1:
-            get_title= self.buider.get_object("treeviewMovies").get_selection()
+            get_title= self.builder.get_object("treeviewMovies").get_selection()
             movie,name= get_title.get_selected()
             fetch_title= movie[name][0]
             self.cursor.execute("SELECT link FROM movies WHERE title=?",(fetch_title,))

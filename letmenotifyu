@@ -9,9 +9,10 @@ from notifylib.main import Main
 
 #sys.path.append("/usr/share/letmenotifyu/")
 
-os.chdir("ui")
+#os.chdir("ui")
+os.chdir("/usr/share/letmenotifyu/")
 directory_path=os.environ['HOME']+'/.local/share/letmenotifyu/'
-db_file=directory_path+'dev.sqlite'
+db_file=directory_path+'letmenotifyu.sqlite'
 
 if __name__ == "__main__":
      if os.path.isfile(db_file):

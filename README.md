@@ -1,10 +1,17 @@
-This is the Development Branch of Letmenotufyu
+This is the Main Branch
 
 
 
 ************************
-Next Dev Release is 1.7
+New Release 1.7.1
 ************************
+Changes
+
+*Code cleanup.
+*Ability to delete Series.
+*Ability to stop or start updating a series.
+
+
 
 **Adding of series***
 Input the home page of the series
