@@ -122,6 +122,7 @@
               </object>
             </child>
             <child>
+<<<<<<< HEAD
               <object class="GtkMenuItem" id="Edit">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
@@ -144,6 +145,8 @@
               </object>
             </child>
             <child>
+=======
+>>>>>>> master
               <object class="GtkMenuItem" id="menuitem4">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>

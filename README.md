@@ -1,9 +1,18 @@
+<<<<<<< HEAD
 This is the Main Branch
+=======
+Letmenotifyu
+>>>>>>> master
 
 
+Program to notifyu users of new Episode and Movie releases
 
 ************************
+<<<<<<< HEAD
 New Release 1.7.1
+=======
+New Version 1.7.0-4
+>>>>>>> master
 ************************
 Changes
 
@@ -17,6 +26,6 @@ Changes
 Input the home page of the series
 eg: http://www.primewire.ag/tv-9594-xxxxxxxxx
 
-Application is currently in the testing stage.
-This is Letmenotifyu 1.7-rc (RELEASE CANDIDATE)
+I use this application a lot and I'm always making improvements to it
+Please let me know if you use it as well
 

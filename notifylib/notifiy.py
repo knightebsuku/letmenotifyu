@@ -1,3 +1,8 @@
+<<<<<<< HEAD
+=======
+#!/usr/bin/python3
+
+>>>>>>> master
 from gi.repository import Notify
 
 def announce(*args):

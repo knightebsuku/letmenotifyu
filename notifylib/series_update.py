@@ -1,5 +1,7 @@
+#!/usr/bin/python3
 
 import re
+import sqlite3 as sqlite
 
 from  urllib.request import Request, urlopen
 from notifylib.notifiy import announce
@@ -13,6 +15,7 @@ def get_episode_count(show_title, show_link, episode_count, cursor, connection):
     """
     episode_detail=[]
     new_series_detail=[]
+    
     req= Request(show_link, headers = {'User_Agent':'Mozlla/5.0'})
     tv_show_webpage = urlopen(req).read().decode('ISO-8859-1')
     all_episodes = re.findall(r'<div class="tv_episode_item"> <a href="(.*?)">(.*?)\s+<',
@@ -62,10 +65,19 @@ def insert_difference(show_title, all_episodes, web_count, db_count, cursor,
         connection.commit()
         steps-=1
         
+<<<<<<< HEAD
 def get_series(cursor, connection):
     cursor.execute('SELECT title,series_link,number_of_episodes FROM series WHERE status = 1 ')
+=======
+def get_series(db_file):
+    connect=sqlite.connect(db_file)
+    cursor=connect.cursor()
+    """Get Series info from database"""
+    cursor.execute('SELECT title,series_link,number_of_episodes FROM series')
+>>>>>>> master
     for url in cursor.fetchall():
-        get_episode_count(url[0], url[1], url[2], cursor, connection)
+        get_episode_count(url[0], url[1], url[2], cursor, connect)
+    connect.close()
          
 
 

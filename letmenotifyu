@@ -1,16 +1,25 @@
 #!/usr/bin/python3
 
+<<<<<<< HEAD
+=======
+#version 1.7.0-4
+
+>>>>>>> master
 import os
 import sys
-
 from notifylib.create import create_database
 from notifylib.create import upgrade_database
 from notifylib.main import Main
 
+<<<<<<< HEAD
 #sys.path.append("/usr/share/letmenotifyu/")
 
 #os.chdir("ui")
 os.chdir("/usr/share/letmenotifyu/")
+=======
+#os.chdir("/usr/share/letmenotifyu/")
+os.chdir("ui")
+>>>>>>> master
 directory_path=os.environ['HOME']+'/.local/share/letmenotifyu/'
 db_file=directory_path+'letmenotifyu.sqlite'
 
