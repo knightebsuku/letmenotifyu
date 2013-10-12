@@ -25,6 +25,7 @@ def create_database(sqlite_file):
     make_movie_table(cursor)
     make_series_table(cursor)
     make_episode_table(cursor)
+    make_version_table(cursor)
     connection.commit()
     connection.close()
 
