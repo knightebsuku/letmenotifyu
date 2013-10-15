@@ -12,6 +12,7 @@ from notifylib.about import About
 from notifylib.confirm import Confirm
 from notifylib.create_tree_view import create_parent
 from notifylib.update import update_movie_series
+from notifylib.stats import Statistics
 
 GObject.threads_init()
 
@@ -33,16 +34,17 @@ class Main:
                  'on_treeLatest_button_press_event':self.on_treeLatest_button_press_event,
                  'on_Stop_Update_activate':self.on_Stop_Update_activate,
                  'on_Start_Update_activate':self.on_Start_Update_activate,
-                 'on_Delete_Series_activate':self.on_Delete_Series_activate}
+                 'on_Delete_Series_activate':self.on_Delete_Series_activate,
+                 'on_Properties_activate':self.on_Properties_activate}
         
         self.builder.connect_signals(signals)
         self.treeArchive = self.builder.get_object('treeArchive')
         self.series_archive = self.builder.get_object('treeSeriesArchive')
         self.notebook1 = self.builder.get_object('notebook1')
         self.window = self.builder.get_object('winlet').show()
-        update_thread = Thread(target= update_movie_series, args=(self.db_file,))
-        update_thread.setDaemon(True)
-        update_thread.start()
+        #update_thread = Thread(target= update_movie_series, args=(self.db_file,))
+        #update_thread.setDaemon(True)
+        #update_thread.start()
         Gtk.main()
 
     def on_winlet_destroy(self,widget):
@@ -113,6 +115,9 @@ class Main:
         
     def on_Delete_Series_activate(self,widget):
         Confirm('confirm7.glade',self.series_title,"delete",self.connect,self.cursor)
+
+    def on_Properties_activate(self,widget):
+        Statistics('stats7.glade',self.series_title,self.connect,self.cursor)
         
                   
     def on_notebook1_button_press_event(self,widget,event):
