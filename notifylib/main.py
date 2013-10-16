@@ -41,9 +41,9 @@ class Main:
         self.series_archive = self.builder.get_object('treeSeriesArchive')
         self.notebook1 = self.builder.get_object('notebook1')
         self.window = self.builder.get_object('winlet').show()
-        update_thread = Thread(target= update_movie_series, args=(self.db_file,))
-        update_thread.setDaemon(True)
-        update_thread.start()
+        #update_thread = Thread(target= update_movie_series, args=(self.db_file,))
+        #update_thread.setDaemon(True)
+        #update_thread.start()
         Gtk.main()
 
     def on_winlet_destroy(self,widget):
@@ -82,20 +82,23 @@ class Main:
             episode = series[name][0]
             if re.match(r"^Episode",episode):
                 path = self.series_archive.get_path(name)
-                path_value = str(path)
+                path_value = str(path).split(":")
+                print(path_value)
+                
 
-                episode_title_path = self.series_archive.get_iter(path_value[:1])
-                episode_season_path = self.series_archive.get_iter(path_value[:3])
-                episode_path = self.series_archive.get_iter(path_value)
-
+                episode_title_path = self.series_archive.get_iter(path_value[0])
+                episode_season_path = self.series_archive.get_iter(path_value[0]+":"+path_value[1])
+                episode_path = self.series_archive.get_iter(path_value[0]+":"+
+                                                            path_value[1]+":"+path_value[2])
+                
                 model = self.treeArchive.get_model()
                 episode_title = model.get_value(episode_title_path, 0) 
                 episode_season = model.get_value(episode_season_path, 0)
-                episode_path = model.get_value(episode_path, 0)
+                episode = model.get_value(episode_path, 0)
                 sql_season = episode_season.replace(" ", "-")
                 
                 self.cursor.execute("SELECT episode_link FROM episodes WHERE episode_name=? AND title=? AND episode_link LIKE ?",
-                                    (episode_path, episode_title, "%"+sql_season+"%"))
+                                    (episode, episode_title, "%"+sql_season+"%"))
                 for link in self.cursor.fetchall():
                     webbrowser.open_new("http://www.primewire.ag"+link[0])
             else:
