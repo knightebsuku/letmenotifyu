@@ -54,8 +54,9 @@ def upgrade_database(sqlite_file):
     if database_version == '1.7.1':
         print("Need to update database schema version")
         cursor.execute("UPDATE schema_version SET version='1.7.2' WHERE id=1")
-        connect.close()
+        connect.commit()
         database_version='1.7.2'
+        
     connect.close()
         
 
