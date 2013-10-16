@@ -38,7 +38,6 @@ def upgrade_database(sqlite_file):
     database_version= row[0]
     
     if database_version=='1.7.0':
-        print("Need to upgrade to version 1.7.1")
         try:
             cursor.execute("ALTER TABLE series ADD COLUMN last_update TIMESTAMP")
             cursor.execute("UPDATE series set last_update=? ",(datetime.now(),))
@@ -49,12 +48,18 @@ def upgrade_database(sqlite_file):
             cursor.execute("UPDATE schema_version SET version='1.7.1' WHERE id=1")
             connect.commit()
             database_version="1.7.1"
-            print("Datebase Updated")
         except Exception as e:
             print(e)
-            print("Unable to update Database")
+            #print("Unable to update Database")
         finally:
             connect.close()
+    if database_version == '1.7.1':
+        print("Need to update database schema version")
+        cursor.execute("UPDATE schema_version SET version='1.7.2' WHERE id=1")
+        connect.close()
+        database_version='1.7.2'
+    connect.close()
+        
 
 
         

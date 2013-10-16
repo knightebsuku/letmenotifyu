@@ -7,12 +7,13 @@ class Statistics:
     def __init__(self,glade,title,connect,cursor):
         self.builder = Gtk.Builder()
         self.builder.add_from_file(glade)
-        signals= {'on_btnClose_clicked':self.on_btnClose_clicked}
+        signals= {'on_btnClose_Clicked':self.on_btnClose_clicked}
         self.builder.connect_signals(signals)
         set_stats(title,connect,cursor,self.builder)
         self.builder.get_object('win_stats').show()
         
     def on_btnClose_clicked(self,widget):
+        print("ok")
         self.builder.get_object("win_stats").destroy()
         
 
