@@ -3,13 +3,11 @@ This is the Main Branch Letmenotifyu
 Program to notifyu users of new Episode and Movie releases
 
 
-New Release 1.7.1
+New Release 1.7.2
 ************************
 Changes
 
-*Code cleanup.
-*Ability to delete Series.
-*Ability to stop or start updating a series.
+*Ability to see series statistics such as no. of seasons
 
 
 **Adding of series***

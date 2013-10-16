@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 
 import sqlite3 as sqlite
 import webbrowser
@@ -42,9 +41,9 @@ class Main:
         self.series_archive = self.builder.get_object('treeSeriesArchive')
         self.notebook1 = self.builder.get_object('notebook1')
         self.window = self.builder.get_object('winlet').show()
-        #update_thread = Thread(target= update_movie_series, args=(self.db_file,))
-        #update_thread.setDaemon(True)
-        #update_thread.start()
+        update_thread = Thread(target= update_movie_series, args=(self.db_file,))
+        update_thread.setDaemon(True)
+        update_thread.start()
         Gtk.main()
 
     def on_winlet_destroy(self,widget):

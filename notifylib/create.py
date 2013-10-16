@@ -1,8 +1,7 @@
-#!/usr/bin/python3
 
 import sqlite3 as sqlite
-
 from datetime import datetime
+
 def make_movie_table(cursor):
     cursor.execute('CREATE TABLE movies(id INTEGER PRIMARY KEY, title VARCHAR(20), link VARCHAR(20))')
 
@@ -51,8 +50,7 @@ def upgrade_database(sqlite_file):
         except Exception as e:
             print(e)
             #print("Unable to update Database")
-        finally:
-            connect.close()
+            
     if database_version == '1.7.1':
         print("Need to update database schema version")
         cursor.execute("UPDATE schema_version SET version='1.7.2' WHERE id=1")

@@ -1,7 +1,5 @@
-#!/usr/bin /python3
 
 from gi.repository import Gtk
-
 
 class Statistics:
     def __init__(self,glade,title,connect,cursor):
@@ -15,8 +13,6 @@ class Statistics:
     def on_btnClose_clicked(self,widget):
         self.builder.get_object("win_stats").destroy()
         
-
-
 
 def set_stats(title,connect,cursor,builder):
     cursor.execute("Select series_link,number_of_episodes,number_of_seasons,last_update,status FROM series WHERE title=?",(title,))

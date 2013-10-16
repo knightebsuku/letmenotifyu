@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 
 import re
 import sqlite3 as sqlite
@@ -47,13 +46,15 @@ def get_episode_count(show_title, show_link, episode_count, cursor, connection):
 
 def new_series_add(new_series_detail, cursor, connection):
     """Add new series"""
-    cursor.executemany('INSERT INTO episodes(title,episode_link,episode_name) VALUES(?,?,?)' , new_series_detail)
+    cursor.executemany('INSERT INTO episodes(title,episode_link,episode_name) VALUES(?,?,?)' ,
+                       new_series_detail)
     connection.commit()
     
 def update_series_table(num_episodes, num_seasons, show_title,
                            cursor, connection):
     """Update The number of episodes and seasons"""
-    cursor.execute("Update series set number_of_episodes=?,number_of_seasons=?,last_update=? WHERE title=?", (num_episodes,num_seasons,datetime.now(), show_title,))
+    cursor.execute("Update series set number_of_episodes=?,number_of_seasons=?,last_update=? WHERE title=?",
+                   (num_episodes,num_seasons,datetime.now(), show_title,))
     connection.commit()
 
 def insert_difference(show_title, all_episodes, web_count, db_count, cursor,
@@ -61,7 +62,8 @@ def insert_difference(show_title, all_episodes, web_count, db_count, cursor,
     """Insert only the new episodes"""
     steps = web_count-db_count
     while steps > 0:
-        cursor.execute("INSERT INTO episodes(title,episode_name,episode_link,Date) VALUES(?,?,?,?)", (show_title, all_episodes[-steps][1], all_episodes[-steps][0],datetime.now(),))
+        cursor.execute("INSERT INTO episodes(title,episode_name,episode_link,Date) VALUES(?,?,?,?)",
+                       (show_title, all_episodes[-steps][1], all_episodes[-steps][0],datetime.now(),))
         connection.commit()
         steps-=1
         

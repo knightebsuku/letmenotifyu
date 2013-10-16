@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 
 import re
 import sqlite3 as sqlite
