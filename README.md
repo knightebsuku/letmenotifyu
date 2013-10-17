@@ -8,6 +8,7 @@ New Release 1.7.2
 Changes
 
 *Ability to see series statistics such as no. of seasons
+* Bug Fixes
 
 
 **Adding of series***

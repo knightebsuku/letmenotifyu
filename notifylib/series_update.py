@@ -1,6 +1,5 @@
 
 import re
-import sqlite3 as sqlite
 
 from  urllib.request import Request, urlopen
 from notifylib.notifiy import announce

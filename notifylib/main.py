@@ -41,9 +41,9 @@ class Main:
         self.series_archive = self.builder.get_object('treeSeriesArchive')
         self.notebook1 = self.builder.get_object('notebook1')
         self.window = self.builder.get_object('winlet').show()
-        #update_thread = Thread(target= update_movie_series, args=(self.db_file,))
-        #update_thread.setDaemon(True)
-        #update_thread.start()
+        update_thread = Thread(target= update_movie_series, args=(self.db_file,))
+        update_thread.setDaemon(True)
+        update_thread.start()
         Gtk.main()
 
     def on_winlet_destroy(self,widget):
@@ -74,7 +74,6 @@ class Main:
             get_episode = series[name][0]
             webbrowser.open_new(self.latest_dict[get_episode])
             
-                
     def on_treeArchive_button_press_event(self,widget,event):
         if event.button == 1:
             selected = self.treeArchive.get_selection()
@@ -83,8 +82,6 @@ class Main:
             if re.match(r"^Episode",episode):
                 path = self.series_archive.get_path(name)
                 path_value = str(path).split(":")
-                print(path_value)
-                
 
                 episode_title_path = self.series_archive.get_iter(path_value[0])
                 episode_season_path = self.series_archive.get_iter(path_value[0]+":"+path_value[1])
@@ -120,7 +117,6 @@ class Main:
 
     def on_Properties_activate(self,widget):
         Statistics('stats7.glade',self.series_title,self.connect,self.cursor)
-        
                   
     def on_notebook1_button_press_event(self,widget,event):
         if self.notebook1.get_current_page() == 0:

@@ -14,7 +14,7 @@ class Confirm:
         self.confirm.connect_signals(signals)
         self.message,self.sql=which_sql_message(self.instruction)
         self.confirm.get_object('msgdlg').format_secondary_text(self.message+" "+ self.title+"?")
-        window = self.confirm.get_object('msgdlg').show()
+        self.confirm.get_object('msgdlg').show()
 
     def on_btnOk_clicked(self, widget):
         self.cursor.execute("PRAGMA foreign_keys = ON")

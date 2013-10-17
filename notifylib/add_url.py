@@ -1,6 +1,5 @@
 
 import re
-import sqlite3 as sqlite
 from gi.repository import Gtk
 
 class Add_Series:
@@ -13,8 +12,7 @@ class Add_Series:
               'on_btnOk_clicked': self.on_btnOk_clicked}
         self.dialog.connect_signals(connectors)
         self.notice = self.dialog.get_object('lblNotice')
-        self.window = self.dialog.get_object('linkdialog')
-        self.window.show()
+        self.dialog.get_object('linkdialog').show()
 
         
     def on_btnCancel_clicked(self, widget):
