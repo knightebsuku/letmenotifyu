@@ -1,4 +1,3 @@
-
 import re
 from gi.repository import Gtk
 
