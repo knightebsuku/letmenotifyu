@@ -97,10 +97,7 @@ class Main:
                 self.cursor.execute("SELECT episode_link FROM episodes WHERE episode_name=? AND title=? AND episode_link LIKE ?",
                                     (episode, episode_title, "%"+sql_season+"%"))
                 link=self.cursor.fetchone()
-                 webbrowser.open_new("http://www.primewire.ag"+link[0])
-                
-                #for link in self.cursor.fetchall():
-                    #webbrowser.open_new("http://www.primewire.ag"+link[0])
+                webbrowser.open_new("http://www.primewire.ag"+link[0])
             else:
                 pass
         elif event.button == 3:

@@ -30,7 +30,7 @@ def create_database(sqlite_file):
 
 
 def upgrade_database(sqlite_file):
-    connect= sqlite.connect(sqlite_file)
+    connect= sqlite3.connect(sqlite_file)
     cursor= connect.cursor()
     cursor.execute("SELECT version FROM schema_version")
     row=cursor.fetchone()
