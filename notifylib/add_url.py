@@ -16,7 +16,7 @@ class Add_Series:
 
         
     def on_btnCancel_clicked(self, widget):
-        self.window.destroy()
+        self.dialog.get_object('linkdialog').destroy()
 
     def on_btnOk_clicked(self, widget):
         self.link_box = self.dialog.get_object('entlink')

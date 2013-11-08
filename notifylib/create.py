@@ -1,5 +1,5 @@
 
-import sqlite3 as sqlite
+import sqlite3
 from datetime import datetime
 
 def make_movie_table(cursor):
@@ -18,7 +18,7 @@ def make_version_table(cursor):
 
 
 def create_database(sqlite_file):
-    connection = sqlite.connect(sqlite_file)
+    connection = sqlite3.connect(sqlite_file)
     cursor = connection.cursor()
     cursor.execute("PRAGMA foreign_keys = ON")
     make_movie_table(cursor)

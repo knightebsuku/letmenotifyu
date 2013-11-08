@@ -1,13 +1,13 @@
 
 import time
-import sqlite3 as sqlite
+import sqlite3
 
 from notifylib.series_update import get_series
 from notifylib.movies_update import get_movies
 
 
 def update_movie_series(db_file):
-    connection = sqlite.connect(db_file)
+    connection = sqlite3.connect(db_file)
     cursor = connection.cursor()
     try:
         get_series(cursor, connection)
