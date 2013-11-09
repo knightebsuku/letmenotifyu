@@ -28,14 +28,10 @@ def get_updates(db_file):
     cursor=connect.cursor()
     while True:
             try:
-                    print("Updating")
                     get_movies(cursor,connect)
-                    print("Finished Updating movies")
                     get_series(cursor,connect)
                     time.sleep(21600)
             except Exception as e:
-                    print(e)
-                    print("Sleeping for 5 minutes")
                     time.sleep(300)
                                           
 

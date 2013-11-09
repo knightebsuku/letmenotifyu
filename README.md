@@ -3,7 +3,7 @@ This is the Main Branch Letmenotifyu
 Program to notifyu users of new Episode and Movie releases
 
 
-New Release 1.7.2-7
+New Release 1.7.2-8
 ************************
 
 

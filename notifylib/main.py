@@ -103,7 +103,12 @@ class Main:
             selected = self.treeArchive.get_selection()
             series,name = selected.get_selected()
             self.series_title = series[name][0]
-            self.builder.get_object("Series").popup(None,None,None,None,event.button,event.time)
+            title=self.series_archive.get_path(name)
+            try:
+                int(str(title))
+                self.builder.get_object("Series").popup(None,None,None,None,event.button,event.time)
+            except ValueError as e:
+                pass
             
     def on_Stop_Update_activate(self,widget):
         Confirm('confirm7.glade',self.series_title,"stop",self.connect,self.cursor)
