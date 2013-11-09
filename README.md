@@ -3,12 +3,8 @@ This is the Main Branch Letmenotifyu
 Program to notifyu users of new Episode and Movie releases
 
 
-New Release 1.7.2
+New Release 1.7.2-7
 ************************
-Changes
-
-*Ability to see series statistics such as no. of seasons
-* Bug Fixes
 
 
 **Adding of series***

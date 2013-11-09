@@ -9,8 +9,7 @@ from threading import Thread
 from notifylib.add_url import Add_Series
 from notifylib.about import About
 from notifylib.confirm import Confirm
-from notifylib.create_tree_view import create_parent
-from notifylib.update import update_movie_series
+from notifylib.update import get_updates
 from notifylib.stats import Statistics
 
 GObject.threads_init()
@@ -41,7 +40,7 @@ class Main:
         self.series_archive = self.builder.get_object('treeSeriesArchive')
         self.notebook1 = self.builder.get_object('notebook1')
         self.window = self.builder.get_object('winlet').show()
-        update_thread = Thread(target= update_movie_series, args=(self.db_file,))
+        update_thread = Thread(target=get_updates,args=(self.db_file,))
         update_thread.setDaemon(True)
         update_thread.start()
         Gtk.main()
@@ -137,7 +136,28 @@ class Main:
                 self.builder.get_object('listLatestSeries').append([latest[0]+"-"+latest[2]])
 
         else:
-                pass                    
+            pass
+
+
+
+def create_parent(cursor, series_column):
+    x=1
+    cursor.execute("SELECT title,number_of_seasons from series")
+    for results in cursor.fetchall():
+        parent_title = series_column.append(None, [results[0]])
+        while x <= int(results[1]):
+            create_episodes(cursor, results[0], parent_title, series_column, x)
+            x += 1
+        x = 1
+
+def create_episodes(cursor, series_title, parent_title, series_column, x):
+    name = "season "+str(x)
+    sql_name = "%season-"+str(x)+"%"
+    series_number = series_column.append(parent_title, [name])
+    cursor.execute("SELECT episode_name FROM episodes WHERE title=? and episode_link LIKE ?", (series_title, sql_name))
+    for episode in cursor.fetchall():
+        series_column.append(series_number, [episode[0]])
+    
             
             
 

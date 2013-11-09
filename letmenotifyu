@@ -1,11 +1,8 @@
 #!/usr/bin/python3
 
-
-
 import os
-import sys
-from notifylib.create import create_database
-from notifylib.create import upgrade_database
+import sqlite3
+from notifylib.create import Database
 from notifylib.main import Main
 
 directory_path=os.environ['HOME']+'/.local/share/letmenotifyu/'
@@ -14,13 +11,14 @@ os.chdir("/usr/share/letmenotifyu/")
 db_file=directory_path+'letmenotifyu.sqlite'
 
 if __name__ == "__main__":
-     if os.path.isfile(db_file):
-         upgrade_database(db_file)
-         Main('main7.glade', 'letmenotifyu.png', db_file)
-     else:
-         try:
-             os.makedirs(directory_path)
-         except FileExistsError as e:
-            create_database(db_file)
-            Main('main7.glade', 'letmenotifyu.png', db_file)
-   
+    try:
+        db=Database(db_file)
+        db.upgrade_database()
+    except Exception as e:
+        try:
+            os.makedirs(directory_path)
+        except Exception as e:
+            db=Database(db_file)
+            db.create_database()
+    finally:
+        Main('main7.glade', 'letmenotifyu.png', db_file)
