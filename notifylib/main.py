@@ -8,7 +8,7 @@ from gi.repository import Gtk,GObject
 from threading import Thread
 from notifylib.add_url import Add_Series
 from notifylib.about import About
-from notifylib.confirm import Confirm
+from notifylib.confirm import Confirm,Torrent
 from notifylib.update import get_updates
 from notifylib.stats import Statistics
 
@@ -33,16 +33,20 @@ class Main:
                  'on_Stop_Update_activate':self.on_Stop_Update_activate,
                  'on_Start_Update_activate':self.on_Start_Update_activate,
                  'on_Delete_Series_activate':self.on_Delete_Series_activate,
-                 'on_Properties_activate':self.on_Properties_activate}
+                 'on_Properties_activate':self.on_Properties_activate,
+                 'on_Isohunt_activate':self.on_Isohunt_activate,
+                 'on_Kickass_activate':self.on_Kickass_activate,
+                 'on_Piratebay_activate':self.on_Piratebay_activate,
+                 'on_online_video_activate':self.on_online_video_activate}
         
         self.builder.connect_signals(signals)
         self.treeArchive = self.builder.get_object('treeArchive')
         self.series_archive = self.builder.get_object('treeSeriesArchive')
         self.notebook1 = self.builder.get_object('notebook1')
         self.window = self.builder.get_object('winlet').show()
-        update_thread = Thread(target=get_updates,args=(self.db_file,))
-        update_thread.setDaemon(True)
-        update_thread.start()
+        #update_thread = Thread(target=get_updates,args=(self.db_file,))
+        #update_thread.setDaemon(True)
+        #update_thread.start()
         Gtk.main()
 
     def on_winlet_destroy(self,widget):
@@ -67,12 +71,27 @@ class Main:
             webbrowser.open_new(link[0])
 
     def on_treeLatest_button_press_event(self,widget,event):
-        if event.button == 1:
-            get_latest_series = self.builder.get_object('treeLatest').get_selection()
-            series,name = get_latest_series.get_selected()
-            get_episode = series[name][0]
-            webbrowser.open_new(self.latest_dict[get_episode])
-            
+        if event.button==3:
+            get_latest_series=self.builder.get_object("treeLatest").get_selection()
+            latest,name=get_latest_series.get_selected()
+            self.get_episode=latest[name][0]
+            self.torrent=Torrent(self.get_episode,self.cursor,self.connect)
+            self.builder.get_object("torrents").popup(None,None,None,None,
+                                                       event.button,event.time)
+
+    def on_Isohunt_activate(self,widget):
+        self.torrent.isohunt()
+
+    def on_Piratebay_activate(self,widget):
+        self.torrent.piratebay()
+    
+    def on_Kickass_activate(self,widget):
+        self.torrent.kickass()
+        
+    def on_online_video_activate(self,widget):
+        self.torrent.online(self.latest_dict)
+    
+        
     def on_treeArchive_button_press_event(self,widget,event):
         if event.button == 1:
             selected = self.treeArchive.get_selection()
@@ -106,7 +125,8 @@ class Main:
             title=self.series_archive.get_path(name)
             try:
                 int(str(title))
-                self.builder.get_object("Series").popup(None,None,None,None,event.button,event.time)
+                self.builder.get_object("Series").popup(None,None,None,None,
+                                                        event.button,event.time)
             except ValueError as e:
                 pass
             
