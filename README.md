@@ -1,10 +1,13 @@
-This is the Main Branch Letmenotifyu
-
 Program to notifyu users of new Episode and Movie releases
 
 
-New Release 1.7.2-8
+New Release 1.7.3
 ************************
+There are quite a few changes made in 1.7.3 most of them are under the hood.
+
+*In the help menu, there is an option to force an update, instead of restarting the program.
+*In the lastest series section, you can now right click on the series and select were you want to search for the torrent or go
+directly to the online video.
 
 
 **Adding of series***

@@ -69,8 +69,10 @@ class Torrent:
                 
 def check_updates(thread,db_file):
         if thread.isAlive():
+                print("Thread is still running")
                 pass
         else:
+                print("Starting new Thread")
                 update_thread = Thread(target=get_updates,args=(self.db_file,))
                 update_thread.setDaemon(True)
                 update_thread.start()
