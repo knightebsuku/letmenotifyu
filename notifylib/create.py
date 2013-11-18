@@ -36,7 +36,7 @@ class Database:
             database_version='1.7.3'
             
         if database_version=='1.7.3':
-            print("Datbase upgraded")
+            print("Database Up to date")
             
         
 

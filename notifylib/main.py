@@ -8,7 +8,7 @@ from gi.repository import Gtk,GObject
 from threading import Thread
 from notifylib.add_url import Add_Series
 from notifylib.about import About
-from notifylib.confirm import Confirm,Torrent
+from notifylib.confirm import Confirm,Torrent,check_updates
 from notifylib.update import get_updates
 from notifylib.stats import Statistics
 
@@ -37,16 +37,17 @@ class Main:
                  'on_Isohunt_activate':self.on_Isohunt_activate,
                  'on_Kickass_activate':self.on_Kickass_activate,
                  'on_Piratebay_activate':self.on_Piratebay_activate,
-                 'on_online_video_activate':self.on_online_video_activate}
+                 'on_online_video_activate':self.on_online_video_activate,
+                 'on_Update_activate':self.on_Update_activate}
         
         self.builder.connect_signals(signals)
         self.treeArchive = self.builder.get_object('treeArchive')
         self.series_archive = self.builder.get_object('treeSeriesArchive')
         self.notebook1 = self.builder.get_object('notebook1')
         self.window = self.builder.get_object('winlet').show()
-        #update_thread = Thread(target=get_updates,args=(self.db_file,))
-        #update_thread.setDaemon(True)
-        #update_thread.start()
+        self.update_thread = Thread(target=get_updates,args=(self.db_file,))
+        self.update_thread.setDaemon(True)
+        self.update_thread.start()
         Gtk.main()
 
     def on_winlet_destroy(self,widget):
@@ -60,6 +61,9 @@ class Main:
 
     def on_imageAbout_activate(self,widget):
         About('about7.glade')
+
+    def on_Update_activate(self,widget):
+        check_updates(self.update_thread,self.db_file)
 
     def on_treeviewMovies_button_press_event(self,widget,event):
         if event.button == 1:

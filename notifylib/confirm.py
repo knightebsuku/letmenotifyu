@@ -1,6 +1,7 @@
 
 import webbrowser
 from gi.repository import Gtk
+from threading import Thread
 
 
 class Confirm:
@@ -53,7 +54,7 @@ class Torrent:
                 webbrowser.open_new(result[0]+self.split_title[0])
                 
         def isohunt(self):
-                self.cursor.execute("SELECT name from torernts where id=3")
+                self.cursor.execute("SELECT name from torrents where id=3")
                 result=self.cursor.fetchone()
                 webbrowser.open_new(result[0]+self.split_title[0])
                 
@@ -62,7 +63,15 @@ class Torrent:
                 result=self.cursor.fetchone()
                 webbrowser.open_new(result[0]+self.split_title[0])
                 
-        def online(self):
+        def online(self,dic):
                 webbrowser.open_new(dic[self.title])
 
+                
+def check_updates(thread,db_file):
+        if thread.isAlive():
+                pass
+        else:
+                update_thread = Thread(target=get_updates,args=(self.db_file,))
+                update_thread.setDaemon(True)
+                update_thread.start()
                 
