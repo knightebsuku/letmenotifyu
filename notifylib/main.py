@@ -167,8 +167,6 @@ class Main:
         else:
             pass
 
-
-
 def create_parent(cursor, series_column):
     x=1
     cursor.execute("SELECT title,number_of_seasons from series")
