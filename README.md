@@ -1,6 +1,5 @@
 Program to notifyu users of new Episode and Movie releases
 
-
 New Release 1.7.3
 ************************
 There are quite a few changes made in 1.7.3 most of them are under the hood.
