@@ -1,5 +1,5 @@
 from distutils.core import setup
-
+import py2exe
 if __name__=='__main__':
     setup(name='letmenotifyu',
           version='1.7.3-2',

@@ -1,6 +1,5 @@
 
 import sqlite3
-from datetime import datetime
 
 class Database:
     def __init__(self,db_file):
@@ -36,7 +35,9 @@ class Database:
             database_version='1.7.3'
             
         if database_version=='1.7.3':
-            pass
+            print("Upgrading to 1.8.0")
+            self.cursor.execute("UPDATE schema_version set version='1.8.0' where id=1")
+            self.connect.commit()
             
         
 
