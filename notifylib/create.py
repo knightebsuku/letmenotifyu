@@ -36,7 +36,12 @@ class Database:
             database_version='1.7.3'
             
         if database_version=='1.7.3':
-            pass
+            print("need to upgrade to 1.8.0")
+            self.cursor.execute('DROP table schema_verison')
+            self.cursor.execute('CREATE TABLE schema_version(version VARCHAR(6))')
+            self.cursor.execute("UPDATE schema_version set version='1.8.0'")
+            self.connect.commit()
+            
             
         
 

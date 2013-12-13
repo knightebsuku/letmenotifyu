@@ -45,9 +45,9 @@ class Main:
         self.series_archive = self.builder.get_object('treeSeriesArchive')
         self.notebook1 = self.builder.get_object('notebook1')
         self.window = self.builder.get_object('winlet').show()
-        self.update_thread = Thread(target=get_updates,args=(self.db_file,))
-        self.update_thread.setDaemon(True)
-        self.update_thread.start()
+        #self.update_thread = Thread(target=get_updates,args=(self.db_file,))
+        #self.update_thread.setDaemon(True)
+        #self.update_thread.start()
         Gtk.main()
 
     def on_winlet_destroy(self,widget):
@@ -169,7 +169,7 @@ class Main:
 
 def create_parent(cursor, series_column):
     x=1
-    cursor.execute("SELECT title,number_of_seasons from series")
+    cursor.execute("SELECT title,number_of_seasons from series where status=1")
     for results in cursor.fetchall():
         parent_title = series_column.append(None, [results[0]])
         while x <= int(results[1]):

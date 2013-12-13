@@ -6,8 +6,8 @@ from notifylib.create import Database
 from notifylib.main import Main
 
 directory_path=os.environ['HOME']+'/.local/share/letmenotifyu/'
-os.chdir("/usr/share/letmenotifyu/")
-db_file=directory_path+'letmenotifyu.sqlite'
+os.chdir("ui")
+db_file=directory_path+'dev.sqlite'
 
 if __name__ == "__main__":
     try:
