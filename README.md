@@ -1,12 +1,21 @@
 Program to notifyu users of new Episode and Movie releases
 
-New Release 1.7.3
+New Release 1.8.0-DEV
 ************************
-There are quite a few changes made in 1.7.3 most of them are under the hood.
+The will be quite a few changes made in the release of 1.8.0
 
-*In the help menu, there is an option to force an update, instead of restarting the program.
-*In the lastest series section, you can now right click on the series and select were you want to search for the torrent or go
-directly to the online video.
+**New Features**
+Different tab for series which are not being updated
+Better management of the update thread
+Set update interval
+Movies will be set according to genres
+
+
+***Features***
+Complete GUI
+Adding of new series
+Clickable links to view Movies and series
+Links to torrent sites and online video
 
 
 **Adding of series***
