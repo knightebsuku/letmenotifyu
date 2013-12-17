@@ -7,6 +7,10 @@ from notifylib.notifiy import announce
 from datetime import datetime
 
 
+#need to get genre of movies as well and move towards classes for cleaner code
+
+
+
 def get_series(cursor,connect):
     cursor.execute('SELECT title,series_link,number_of_episodes FROM series WHERE status = 1 ')
     for url in cursor.fetchall():
@@ -55,7 +59,6 @@ def compare(new_movie_info, cursor, connection):
 def get_episode_count(show_title, show_link, episode_count, cursor, connection):
     episode_detail=[]
     new_series_detail=[]
-    
     req= Request(show_link, headers = {'User_Agent':'Mozlla/5.0'})
     tv_show_webpage = urlopen(req).read().decode('ISO-8859-1')
     all_episodes = re.findall(r'<div class="tv_episode_item"> <a href="(.*?)">(.*?)\s+<',
