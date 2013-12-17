@@ -19,29 +19,39 @@ class Database:
         self.connect.close()
 
     def upgrade_database(self):
-        self.cursor.execute("SELECT version FROM schema_version")
-        row=self.cursor.fetchone()
-        database_version= row[0]
-        if database_version=='1.7.2':
-            print("Upgrading to version 1.7.3")
-            self.cursor.execute("CREATE TABLE torrents(Id INTEGER PRIMARY KEY,name VARCHAR(20),link VARCHAR(20))")
-            self.cursor.execute("INSERT INTO torrents(name) VALUES('http://kickass.to/usearch/')")
-            self.connect.commit()
-            self.cursor.execute("INSERT INTO torrents(name) VALUES('http://thepiratebay.sx/search/')")
-            self.connect.commit()
-            self.cursor.execute("INSERT INTO torrents(name) VALUES('http://isohunt.to/torrents/?ihq=')")
-            self.connect.commit()
-            self.cursor.execute("UPDATE schema_version set version='1.7.3' where id=1")
-            self.connect.commit()
-            database_version='1.7.3'
+        try:
+            self.cursor.execute("SELECT version FROM schema_version")
+            row=self.cursor.fetchone()
+            database_version= row[0]
+            if database_version=='1.7.2':
+                print("Upgrading to version 1.7.3")
+                self.cursor.execute("CREATE TABLE torrents(Id INTEGER PRIMARY KEY,name VARCHAR(20),link VARCHAR(20))")
+                self.cursor.execute("INSERT INTO torrents(name) VALUES('http://kickass.to/usearch/')")
+                self.connect.commit()
+                self.cursor.execute("INSERT INTO torrents(name) VALUES('http://thepiratebay.sx/search/')")
+                self.connect.commit()
+                self.cursor.execute("INSERT INTO torrents(name) VALUES('http://isohunt.to/torrents/?ihq=')")
+                self.connect.commit()
+                self.cursor.execute("UPDATE schema_version set version='1.7.3' where id=1")
+                self.connect.commit()
+                database_version='1.7.3'
+            if database_version=='1.7.3':
+                print("need to upgrade to 1.8.0")
+                self.cursor.execute('DROP table schema_version')
+                self.cursor.execute("CREATE TABLE config(id INTEGER PRIMARY KEY, key VARCHAR(20), value VARCHAR(20))")
+                self.cursor.execute("INSERT INTO config(key,value)  VALUES('version','1.8.0')")
+                self.connect.commit()
+                database_version='1.8.0'
+        except sqlite3.OperationalError:
+                self.cursor.execute("Select value from config where key='version'")
+                row=self.cursor.fetchone()
+                database_version=row[0]
+                if database_version=='1.8.0':
+                        print("Database is up to date")
+                        
+        
             
-        if database_version=='1.7.3':
-            print("need to upgrade to 1.8.0")
-            self.cursor.execute('DROP table schema_verison')
-            self.cursor.execute("CREATE TABLE config(verison VARCHAR(6), update_interval
-            self.cursor.execute('CREATE TABLE schema_version(version VARCHAR(6))')
-            self.cursor.execute("UPDATE schema_version set version='1.8.0'")
-            self.connect.commit()
+        
             
             
         
@@ -51,3 +61,6 @@ class Database:
         
         
     
+
+
+
