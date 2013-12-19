@@ -11,6 +11,7 @@ from notifylib.about import About
 from notifylib.confirm import Confirm,Torrent,check_updates
 from notifylib.update import get_updates
 from notifylib.stats import Statistics
+from notifylib.preferences import Preferences
 
 GObject.threads_init()
 
@@ -39,7 +40,8 @@ class Main:
                  'on_Kickass_activate':self.on_Kickass_activate,
                  'on_Piratebay_activate':self.on_Piratebay_activate,
                  'on_online_video_activate':self.on_online_video_activate,
-                 'on_Update_activate':self.on_Update_activate}
+                 'on_Update_activate':self.on_Update_activate,
+                 'on_pref_activate':self.on_pref_activate}
         
         self.builder.connect_signals(signals)
         self.ViewSeriesArchive = self.builder.get_object('ViewSeriesArchive')
@@ -134,9 +136,7 @@ class Main:
                 self.builder.get_object("Series").popup(None,None,None,None,
                                                         event.button,event.time)
             except ValueError as e:
-                pass
-
-        
+                pass        
             
     def on_ViewSeriesArchive(self,widget,event):
         if event.button == 1:
@@ -186,6 +186,9 @@ class Main:
 
     def on_Properties_activate(self,widget):
         Statistics('stats7.glade',self.series_title,self.connect,self.cursor)
+
+    def on_pref_activate(self,widget)
+        
                   
     def on_notebook1(self,widget,event):
         if self.notebook1.get_current_page() == 0:
