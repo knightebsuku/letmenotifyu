@@ -6,12 +6,9 @@ import re
 from datetime import datetime, timedelta
 from gi.repository import Gtk,GObject
 from threading import Thread
-from notifylib.add_url import Add_Series
-from notifylib.about import About
-from notifylib.confirm import Confirm,Torrent,check_updates
+from notifiylib.gui import Add_series,About,Confirm,Statistics,Preferences
 from notifylib.update import get_updates
-from notifylib.stats import Statistics
-from notifylib.preferences import Preferences
+from notifylib.torrent import Torrent
 
 GObject.threads_init()
 
