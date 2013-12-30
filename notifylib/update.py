@@ -3,10 +3,10 @@ import re
 import time
 import sqlite3
 from urllib.request import Request, urlopen
-from notifylib.notifiy import announce
+from notifylib.notify import announce
 from datetime import datetime
-from notifiylib.getmovies import Get_Movies
-from notifiylib.getseries import Get_Series
+from notifylib.getmovies import Get_Movies
+#from notifylib.getseries import Get_Series
 
 def movie_update():
     movie=GetMovies()
@@ -15,7 +15,7 @@ def movie_update():
     movie.compare(new,old)
 
 def series_update():
-    #series class etc
+    print("ok")
 
 def get_series(cursor,connect):
     cursor.execute('SELECT title,series_link,number_of_episodes FROM series WHERE status = 1 ')

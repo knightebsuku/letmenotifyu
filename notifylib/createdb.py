@@ -4,9 +4,9 @@ from datetime import datetime
 
 class Database:
     def __init__(self,db_file):
-        self.db_file=db_file
-        self.connect=sqlite3.connect(self.db_file)
-        self.cursor=self.connect.cursor()
+        self.db_file = db_file
+        self.connect = sqlite3.connect(self.db_file)
+        self.cursor = self.connect.cursor()
         
     def create_database(self):
         self.cursor.execute("PRAGMA foreign_keys = ON")
@@ -21,9 +21,9 @@ class Database:
     def upgrade_database(self):
         try:
             self.cursor.execute("SELECT version FROM schema_version")
-            row=self.cursor.fetchone()
-            database_version= row[0]
-            if database_version=='1.7.2':
+            row = self.cursor.fetchone()
+            database_version = row[0]
+            if database_version == '1.7.2':
                 print("Upgrading to version 1.7.3")
                 self.cursor.execute("CREATE TABLE torrents(Id INTEGER PRIMARY KEY,name VARCHAR(20),link VARCHAR(20))")
                 self.cursor.execute("INSERT INTO torrents(name) VALUES('http://kickass.to/usearch/')")
@@ -32,21 +32,21 @@ class Database:
                 self.connect.commit()
                 self.cursor.execute("INSERT INTO torrents(name) VALUES('http://isohunt.to/torrents/?ihq=')")
                 self.connect.commit()
-                self.cursor.execute("UPDATE schema_version set version='1.7.3' where id=1")
+                self.curosr.execute("UPDATE schema_version set version='1.7.3' where id=1")
                 self.connect.commit()
-                database_version='1.7.3'
-            if database_version=='1.7.3':
+                database_version = '1.7.3'
+            if database_version == '1.7.3':
                 print("need to upgrade to 1.8.0")
                 self.cursor.execute('DROP table schema_version')
                 self.cursor.execute("CREATE TABLE config(id INTEGER PRIMARY KEY, key VARCHAR(20), value VARCHAR(20))")
                 self.cursor.execute("INSERT INTO config(key,value)  VALUES('version','1.8.0')")
                 self.connect.commit()
-                database_version='1.8.0'
+                database_version = '1.8.0'
         except sqlite3.OperationalError:
                 self.cursor.execute("Select value from config where key='version'")
-                row=self.cursor.fetchone()
-                database_version=row[0]
-                if database_version=='1.8.0':
+                row = self.cursor.fetchone()
+                database_version = row[0]
+                if database_version =='1.8.0':
                         print("Database is up to date")
                         
         

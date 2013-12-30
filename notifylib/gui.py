@@ -2,7 +2,6 @@
 import re
 from gi.repository import Gtk
 
-#need to build a super
 class About:
     def __init__(self, gladefile):
         about = Gtk.Builder()
@@ -35,7 +34,7 @@ class Add_Series:
 
 
 
-def check_url(text, notice,dialog, cursor, connection, link_box):
+def check_url(text, notice, dialog, cursor, connection, link_box):
     if re.match(r'http://www.primewire.ag', text):
         enter_link(text, cursor, connection, dialog, link_box)
     else:
@@ -59,18 +58,19 @@ def enter_link(url, cursor, connection, dialog, link_box):
 
 
 class Confirm:
-    def __init__(self, gladefile, title,instruction,connect,cursor):
-        self.connect=connect
-        self.cursor=cursor
+    def __init__(self, gladefile, title, instruction, connect, cursor):
+        self.connect = connect
+        self.cursor = cursor
         self.title = title
-        self.instruction=instruction
+        self.instruction = instruction
         self.confirm = Gtk.Builder()
         self.confirm.add_from_file(gladefile)
         signals = {'on_btnOk_clicked': self.on_btnOk_clicked,
                'on_btnCancel_clicked': self.on_btnCancel_clicked}
         self.confirm.connect_signals(signals)
-        self.message,self.sql=which_sql_message(self.instruction)
-        self.confirm.get_object('msgdlg').format_secondary_text(self.message+" "+ self.title+"?")
+        self.message,self.sql = which_sql_message(self.instruction)
+        self.confirm.get_object('msgdlg').format_secondary_text(self.message+" "+
+                                                                self.title+"?")
         self.confirm.get_object('msgdlg').show()
 
     def on_btnOk_clicked(self, widget):
@@ -84,22 +84,22 @@ class Confirm:
 
         
 def which_sql_message(Instruction):
-    if Instruction=="start":
-         use_sql="UPDATE series SET status=1 where title=?"
+    if Instruction == "start":
+         use_sql = "UPDATE series SET status=1 where title=?"
          message="Are you sure you want to start updating"
-    elif Instruction=="stop":
-        use_sql="UPDATE series SET status=0 where title=?"
+    elif Instruction == "stop":
+        use_sql = "UPDATE series SET status=0 where title=?"
         message="Are you sure you want to stop updating"
-    elif Instruction=="delete":
-            use_sql="DELETE FROM series WHERE title=?"
-            message="Are you sure you want to delete"
+    elif Instruction == "delete":
+            use_sql = "DELETE FROM series WHERE title=?"
+            message = "Are you sure you want to delete"
     return message,use_sql
 
 class Statistics:
-    def __init__(self,glade,title,connect,cursor):
+    def __init__(self, glade, title, connect, cursor):
         self.builder = Gtk.Builder()
         self.builder.add_from_file(glade)
-        signals= {'on_btnClose_clicked':self.on_btnClose_clicked}
+        signals = {'on_btnClose_clicked':self.on_btnClose_clicked}
         self.builder.connect_signals(signals)
         set_stats(title,connect,cursor,self.builder)
         self.builder.get_object('win_stats').show()
@@ -108,51 +108,66 @@ class Statistics:
         self.builder.get_object("win_stats").destroy()
         
 
-def set_stats(title,connect,cursor,builder):
+def set_stats(title, connect, cursor, builder):
     cursor.execute("Select series_link,number_of_episodes,number_of_seasons,last_update,status FROM series WHERE title=?",(title,))
     for data in cursor.fetchall():
-        link= data[0]
-        episodes= str(data[1])
-        seasons= str(data[2])
-        update= str(data[3])
-        status= str(data[4])
+        link =  data[0]
+        episodes = str(data[1])
+        seasons = str(data[2])
+        update = str(data[3])
+        status = str(data[4])
     builder.get_object("title").set_text(title)
     builder.get_object('url').set_text(link)
     builder.get_object('episodes').set_text(episodes)
     builder.get_object('seasons').set_text(seasons)
     builder.get_object('update').set_text(update[:10])
-    if status=='0':
+    if status == '0':
         builder.get_object('status').set_text("Not Updating")
     else:
         builder.get_object('status').set_text("Updating")
 
 
 class Preferences:
-    def __init__(self,gladefile,cursor):
-        self.cursor= cursor
-        self.builder=Gtk.Builder()
-        self.builder.add_from_file(gladefile)
-        signals={'onb_btnSave_activate';self.on_btnSave_activate,
-                 'on_btnCancel_activate':self.on_btnCancel_activate}
-        self.interval=self.builder.get_object('txtInterval')
-        self.builder.get_object('pref').show()
+    def __init__(self, gladefile, cursor, connect):
+        self.cursor = cursor
+        self.connect = connect
+        self.pref = Gtk.Builder()
+        self.pref.add_from_file(gladefile)
+        signals = {'on_btnSave_clicked':self.on_btnSave_clicked,
+                 'on_btnCancel_clicked':self.on_btnCancel_clicked}
+        self.pref.connect_signals(signals)
+        self.interval = self.pref.get_object('txtInterval')
+        self.get_interval()
+        self.pref.get_object('pref').show()
 
     def get_interval(self):
         self.cursor.execute("select value from config where key='update_interval'")
-        key=self.cursor.fetchone()
+        key = self.cursor.fetchone()
         self.interval.set_text(key[0])
 
-    def on_btnSave_activate(self,widget):
+    def on_btnSave_clicked(self,widget):
         if int(self.interval.get_text()):
+            value = str(int(self.interval.get_text()) * 3600)
             self.cursor.execute("UPDATE config set value=? where key='update_interval'",
-                                self.interval,)
+                                (value,))
+            self.connect.commit()
+            self.pref.get_object('pref').destroy()
         else:
-            Error("Interval not a valid value")
+            Error('error.glade')
+
+    def on_btnCancel_clicked(self,widget):
+        self.pref.get_object('pref').destroy()
             
-        
 class Error:
     def __init__(self,gladefile):
-        self.error=Gtk.Builder()        
+        self.error = Gtk.Builder()
+        signals = {'on_btnOk_activate':self.on_btnOk_activate}
+        self.error.connect(signals)
+        self.error.get_object('error').show()
+
+    def on_btnOk_activate(self,widget):
+        self.error.get_object('error').destroy()
+           
         
         
 

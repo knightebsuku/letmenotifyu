@@ -2,22 +2,22 @@
 
 import os
 import sqlite3
-from notifylib.create import Database
+from notifylib.createdb import Database
 from notifylib.main import Main
 
-directory_path=os.environ['HOME']+'/.local/share/letmenotifyu/'
+directory_path = os.environ['HOME']+'/.local/share/letmenotifyu/'
 os.chdir("ui")
-db_file=directory_path+'dev.sqlite'
+db_file = directory_path+'dev.sqlite'
 
 if __name__ == "__main__":
     try:
-        db=Database(db_file)
+        db = Database(db_file)
         db.upgrade_database()
     except sqlite3.OperationalError as e:
         try:
             os.makedirs(directory_path)
         except FileExistsError as e:
-            db=Database(db_file)
+            db = Database(db_file)
             db.create_database()
     finally:
         Main('main7.glade', 'letmenotifyu.png', db_file)
