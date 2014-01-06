@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 from gi.repository import Gtk, GObject
 from threading import Thread
 from notifylib.gui import Add_Series, About, Confirm, Statistics, Preferences
-from notifylib.update import get_updates
+from notifylib.update import start_updates
 from notifylib.torrent import Torrent
 
 GObject.threads_init()
@@ -49,9 +49,9 @@ class Main:
         self.store_series_archive = self.builder.get_object('StoreSeriesArchive')
         self.notebook1 = self.builder.get_object('notebook1')
         self.window = self.builder.get_object('winlet').show()
-        #self.update_thread  = Thread(target=get_updates,args=(self.db_file,))
-        #self.update_thread.setDaemon(True)
-        #self.update_thread.start()
+        self.update_thread  = Thread(target=start_updates,args=(self.db_file,))
+        self.update_thread.setDaemon(True)
+        self.update_thread.start()
         Gtk.main()
 
     def on_winlet_destroy(self, widget):
@@ -124,7 +124,7 @@ class Main:
                 self.cursor.execute("SELECT episode_link FROM episodes WHERE episode_name=? AND title=? AND episode_link LIKE ?",
                                     (episode, episode_title, "%"+sql_season+"%"))
                 link = self.cursor.fetchone()
-                webbrowser.open_new("http://www.pmewire.ag"+link[0])
+                webbrowser.open_new("http://www.primewire.ag"+link[0])
             else:
                 pass
         elif event.button == 3:

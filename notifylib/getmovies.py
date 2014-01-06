@@ -1,5 +1,6 @@
 from urllib.request import Request,urlopen
 from bs4 import BeautifulSoup
+from notifylib.notify import announce
 import re
 
 class Get_Movies:
@@ -10,9 +11,13 @@ class Get_Movies:
     def fetch_old_movies(self):
         old_movie_list = {}
         self.cursor.execute("SELECT title FROM movies")
-        for title in self.cursor.fetchone():
-            old_movie_list[title[0]] = ''
-        return old_movie_list
+        try:
+            for title in self.cursor.fetchone():
+                old_movie_list[title[0]] = ''
+            return old_movie_list
+        except Exception:
+            old_movie_list["dummy"]="dummy"
+            return old_movie_list
 
     def fetch_new_movies(self):
         new_movie_list = {}
@@ -27,11 +32,13 @@ class Get_Movies:
                 new_movie_list[title.replace("Watch","")] = movie_links['href']
         return new_movie_list
 
-    def compare(new_list,old_list):
-        diff_titles = set(new_listo.keys()) - set(old_list.keys())
+    def compare(self,new_list,old_list):
+        diff_titles = set(new_list.keys()) - set(old_list.keys())
+        insert_movies=[]
+        http="www.primewire.ag"
         for title in list(diff_titles):
-            announce('New Movie',title, http+new_movie_info[title])
-            insert_movies.append((title, http+new_movie_info[title]))
+            announce('New Movie',title, http+new_list[title])
+            insert_movies.append((title, http+new_list[title]))
         self.cursor.executemany("INSERT INTO movies(title,link) VALUES(?,?)",insert_movies)
         self.connect.commit()
         
