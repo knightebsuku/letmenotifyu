@@ -41,6 +41,14 @@ class Database:
                 self.cursor.execute("CREATE TABLE config(id INTEGER PRIMARY KEY, key VARCHAR(20), value VARCHAR(20))")
                 self.cursor.execute("INSERT INTO config(key,value)  VALUES('version','1.8.0')")
                 self.connect.commit()
+                self.cursor.execute("INSERT INTO config(key,value) VALUES('update_interval','3600')")
+                self.connect.commit()
+                self.cursor.execute("CREATE TABLE genre(Id INTEGER PRIMARY KEY,genre VARCHAR(20) UNIQUE NOT NULL)")
+                self.cursor.execute("DROP TABLE movies")
+                self.cursor.commit()
+                self.cursor.execute('CREATE TABLE movies(id INTEGER PRIMARY KEY, genre_id INTEGER NOT NULL, title VARCHAR(20) NOT NULL, link VARCHAR(20) NOT NULL)'))
+
+                
                 database_version = '1.8.0'
         except sqlite3.OperationalError:
                 self.cursor.execute("Select value from config where key='version'")

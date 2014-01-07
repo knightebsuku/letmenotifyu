@@ -9,8 +9,8 @@ from datetime import datetime, timedelta
 from gi.repository import Gtk, GObject
 from threading import Thread
 from notifylib.gui import Add_Series, About, Confirm, Statistics, Preferences
-from notifylib.update import start_updates
 from notifylib.torrent import Torrent
+from notifylib.check_updates import UpdateClass
 
 GObject.threads_init()
 
@@ -49,12 +49,15 @@ class Main:
         self.store_series_archive = self.builder.get_object('StoreSeriesArchive')
         self.notebook1 = self.builder.get_object('notebook1')
         self.window = self.builder.get_object('winlet').show()
-        self.update_thread  = Thread(target=start_updates,args=(self.db_file,))
-        self.update_thread.setDaemon(True)
-        self.update_thread.start()
+        self.update=UpdateClass(self.db_file)
+        self.update.start()
+        #self.update_thread  = Thread(target=start_updates,args=(self.db_file,))
+        #self.update_thread.setDaemon(True)
+        #self.update_thread.start()
         Gtk.main()
 
     def on_winlet_destroy(self, widget):
+        self.update.stop()
         Gtk.main_quit()
 
     def on_imageAdd_activate(self, widget):
@@ -190,7 +193,8 @@ class Main:
         Statistics('stats7.glade', self.series_title, self.connect,self.cursor)
 
     def on_pref_activate(self, widget):
-        Preferences('preferences.glade',self.cursor,self.connect)
+        Preferences('preferences.glade',self.cursor,self.connect,
+                    self.update_thread,self.db_file)
         
                   
     def on_notebook1(self, widget, event):

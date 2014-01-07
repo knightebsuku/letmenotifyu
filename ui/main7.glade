@@ -221,15 +221,6 @@
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <child>
-                      <object class="GtkMenuItem" id="Update">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="label" translatable="yes">Update</property>
-                        <property name="use_underline">True</property>
-                        <signal name="activate" handler="on_Update_activate" swapped="no"/>
-                      </object>
-                    </child>
-                    <child>
                       <object class="GtkImageMenuItem" id="imageAbout">
                         <property name="label">gtk-about</property>
                         <property name="visible">True</property>
@@ -388,7 +379,7 @@
               <object class="GtkLabel" id="LatestSeries">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="label" translatable="yes">Latest Series</property>
+                <property name="label" translatable="yes">Latest Series Episodes</property>
               </object>
               <packing>
                 <property name="position">2</property>

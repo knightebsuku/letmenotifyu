@@ -128,11 +128,13 @@ def set_stats(title, connect, cursor, builder):
 
 
 class Preferences:
-    def __init__(self, gladefile, cursor, connect):
+    def __init__(self, gladefile, cursor, connect,thread,db_file):
         self.cursor = cursor
         self.connect = connect
         self.pref = Gtk.Builder()
         self.pref.add_from_file(gladefile)
+        self.thread=thread
+        self.db_file=db_file
         signals = {'on_btnSave_clicked':self.on_btnSave_clicked,
                  'on_btnCancel_clicked':self.on_btnCancel_clicked}
         self.pref.connect_signals(signals)
@@ -141,9 +143,10 @@ class Preferences:
         self.pref.get_object('pref').show()
 
     def get_interval(self):
-        self.cursor.execute("select value from config where key='update_interval'")
+        self.cursor.execute("SELECT value FROM config WHERE key='update_interval'")
         key = self.cursor.fetchone()
-        self.interval.set_text(key[0])
+        value = int(key[0])/3600
+        self.interval.set_text(str(value))
 
     def on_btnSave_clicked(self,widget):
         if int(self.interval.get_text()):
@@ -152,11 +155,13 @@ class Preferences:
                                 (value,))
             self.connect.commit()
             self.pref.get_object('pref').destroy()
+            
         else:
-            Error('error.glade')
+            Error('error.glade')                    
 
     def on_btnCancel_clicked(self,widget):
         self.pref.get_object('pref').destroy()
+    
             
 class Error:
     def __init__(self,gladefile):
