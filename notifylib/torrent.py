@@ -1,4 +1,6 @@
 
+import webbrowser
+
 class Torrent:
         def __init__(self,title,cursor,connect):
                 self.title=title

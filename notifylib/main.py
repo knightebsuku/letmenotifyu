@@ -49,9 +49,9 @@ class Main:
         self.view_movies = self.builder.get_object("ViewMovies")
         self.notebook1 = self.builder.get_object('notebook1')
         self.window = self.builder.get_object('winlet').show()
-        #self.update=UpdateClass(self.db_file)
-        #self.update.setDaemon(True)
-        #self.update.start()
+        self.update=UpdateClass(self.db_file)
+        self.update.setDaemon(True)
+        self.update.start()
         Gtk.main()
 
     def on_winlet_destroy(self, widget):

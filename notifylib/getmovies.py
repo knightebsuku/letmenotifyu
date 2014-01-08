@@ -27,16 +27,16 @@ class Get_Movies:
                 self.cursor.execute("INSERT INTO genre(genre) VALUES(?)",(temp_list[1][0],))
                 self.connect.commit()
             except Exception as e:
-                print("")
+                pass
             try:
                 self.cursor.execute("SELECT Id from genre where genre=?",(temp_list[1][0],))
                 key = self.cursor.fetchone()
                 self.cursor.execute("INSERT INTO movies(title,link,genre_id) VALUES(?,?,?)",
                                         (temp_list[0][0],temp_list[0][1],int(key[0]),))
                 self.connect.commit()
-                announce('New Movie',temp_list[0][0],temp_list[0][1])
+                announce('New Movie',temp_list[0][0],"http://www.primewire.ag"+temp_list[0][1])
             except Exception as e:
-                print("")
+                pass
         
 
 
