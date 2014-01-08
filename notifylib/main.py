@@ -254,12 +254,3 @@ def create_episodes(cursor, series_title, parent_title, series_column, x):
                    (series_title, sql_name))
     for episode in cursor.fetchall():
         series_column.append(series_number, [episode[0]])
-    
-            
-            
-
-
-
-
-
-
