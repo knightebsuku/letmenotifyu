@@ -45,7 +45,7 @@ class Database:
                 self.connect.commit()
                 self.cursor.execute("DROP TABLE movies")
                 self.connect.commit()
-                self.cursor.execute('CREATE TABLE movies(Id INTEGER PRIMARY KEY, genre_id INTEGER  NOT NULL, title VARCHAR(20) UNIQUE NOT NULL, link VARCHAR(20) NOT NULL)')
+                self.cursor.execute('CREATE TABLE movies(Id INTEGER PRIMARY KEY, genre_id INTEGER  NOT NULL, title VARCHAR(20) UNIQUE NOT NULL, link VARCHAR(20) NOT NULL, FOREIGN KEY(genre_id) REFERENCES genre(Id) ON UPDATE CASCADE ON DELETE CASCADE)')
                 self.cursor.execute("CREATE TABLE genre(Id INTEGER PRIMARY KEY, genre VARCHAR(10) UNIQUE NOT NULL )")
                 self.connect.commit()                
                 database_version = '1.8.0'
