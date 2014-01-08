@@ -21,4 +21,4 @@ if __name__ == "__main__":
             db = Database(db_file)
             db.create_database()
     finally:
-        Main('main7.glade', 'letmenotifyu.png', db_file)
+        Main('main.glade', 'letmenotifyu.png', db_file)

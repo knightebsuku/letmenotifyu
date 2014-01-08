@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <!-- interface-requires gtk+ 3.0 -->
+  <object class="GtkWindow" id="win_stats">
+    <property name="can_focus">False</property>
+    <property name="title" translatable="yes">Statistics</property>
+    <property name="modal">True</property>
+    <child>
+      <object class="GtkGrid" id="grid1">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="row_spacing">15</property>
+        <property name="row_homogeneous">True</property>
+        <property name="column_homogeneous">True</property>
+        <child>
+          <object class="GtkLabel" id="lbltitle">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="xalign">0.10000000149011612</property>
+            <property name="label" translatable="yes">Title</property>
+          </object>
+          <packing>
+            <property name="left_attach">0</property>
+            <property name="top_attach">0</property>
+            <property name="width">1</property>
+            <property name="height">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel" id="lblurl">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="xalign">0.10000000149011612</property>
+            <property name="label" translatable="yes">Url</property>
+          </object>
+          <packing>
+            <property name="left_attach">0</property>
+            <property name="top_attach">1</property>
+            <property name="width">1</property>
+            <property name="height">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel" id="lblepisodes">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="xalign">0.10000000149011612</property>
+            <property name="label" translatable="yes">Number of Episodes</property>
+          </object>
+          <packing>
+            <property name="left_attach">0</property>
+            <property name="top_attach">2</property>
+            <property name="width">1</property>
+            <property name="height">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel" id="lblseasons">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="xalign">0.10000000149011612</property>
+            <property name="label" translatable="yes">Number of Seasons</property>
+          </object>
+          <packing>
+            <property name="left_attach">0</property>
+            <property name="top_attach">3</property>
+            <property name="width">1</property>
+            <property name="height">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel" id="lblupdate">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="xalign">0.10000000149011612</property>
+            <property name="label" translatable="yes">Last updated</property>
+          </object>
+          <packing>
+            <property name="left_attach">0</property>
+            <property name="top_attach">4</property>
+            <property name="width">1</property>
+            <property name="height">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel" id="lblstatus">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="xalign">0.10000000149011612</property>
+            <property name="label" translatable="yes">Status</property>
+          </object>
+          <packing>
+            <property name="left_attach">0</property>
+            <property name="top_attach">5</property>
+            <property name="width">1</property>
+            <property name="height">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel" id="title">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="xalign">0</property>
+          </object>
+          <packing>
+            <property name="left_attach">1</property>
+            <property name="top_attach">0</property>
+            <property name="width">1</property>
+            <property name="height">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel" id="url">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="xalign">0</property>
+          </object>
+          <packing>
+            <property name="left_attach">1</property>
+            <property name="top_attach">1</property>
+            <property name="width">1</property>
+            <property name="height">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel" id="episodes">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="xalign">0</property>
+          </object>
+          <packing>
+            <property name="left_attach">1</property>
+            <property name="top_attach">2</property>
+            <property name="width">1</property>
+            <property name="height">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel" id="seasons">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="xalign">0</property>
+          </object>
+          <packing>
+            <property name="left_attach">1</property>
+            <property name="top_attach">3</property>
+            <property name="width">1</property>
+            <property name="height">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel" id="update">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="xalign">0</property>
+          </object>
+          <packing>
+            <property name="left_attach">1</property>
+            <property name="top_attach">4</property>
+            <property name="width">1</property>
+            <property name="height">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel" id="status">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="xalign">0</property>
+          </object>
+          <packing>
+            <property name="left_attach">1</property>
+            <property name="top_attach">5</property>
+            <property name="width">1</property>
+            <property name="height">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkButton" id="btnClose">
+            <property name="label" translatable="yes">Close</property>
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">False</property>
+            <property name="halign">end</property>
+            <property name="valign">center</property>
+            <property name="image_position">right</property>
+            <property name="always_show_image">True</property>
+            <signal name="clicked" handler="on_btnClose_clicked" swapped="no"/>
+          </object>
+          <packing>
+            <property name="left_attach">1</property>
+            <property name="top_attach">6</property>
+            <property name="width">1</property>
+            <property name="height">1</property>
+          </packing>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+      </object>
+    </child>
+  </object>
+</interface>

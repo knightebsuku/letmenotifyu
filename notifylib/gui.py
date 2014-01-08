@@ -150,7 +150,7 @@ class Preferences:
         self.interval.set_text(str(value))
 
     def on_btnSave_clicked(self,widget):
-        if int(self.interval.get_text()):
+        try:
             value = str(int(self.interval.get_text()) * 3600)
             self.cursor.execute("UPDATE config set value=? where key='update_interval'",
                                 (value,))
@@ -162,7 +162,7 @@ class Preferences:
             new_thread.start()
             self.pref.get_object('pref').destroy()
             
-        else:
+        except ValueError:
             Error('error.glade')                    
 
     def on_btnCancel_clicked(self,widget):

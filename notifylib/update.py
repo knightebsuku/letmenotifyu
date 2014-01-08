@@ -27,12 +27,10 @@ class Update:
     
     def start_updates(self):
         try:
-            #self.series()
+            self.series()
             self.movie()
-            print("Series Updates")
         except Exception as e:
             print(e)
-            print("cant update")
         finally:
             self.connect.close()
     

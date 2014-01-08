@@ -1,5 +1,3 @@
-#!/usr/bin/python3
-
 
 import sqlite3
 import webbrowser
@@ -24,7 +22,7 @@ class Main:
         self.builder.add_from_file(gladefile)
         signals = {'on_winlet_destroy': self.on_winlet_destroy,
                  'on_imageAdd_activate': self.on_imageAdd_activate,
-                 'on_imageQuit_destroy': self.on_imageQuit_destroy,
+                 'on_imageQuit_activate': self.on_imageQuit_activate,
                  'on_imageAbout_activate': self.on_imageAbout_activate,
                  'on_notebook1': self.on_notebook1,
                  'on_ViewMovies': self.on_ViewMovies,
@@ -47,38 +45,42 @@ class Main:
         self.view_current_series = self.builder.get_object('ViewCurrentSeries')
         self.store_current_series = self.builder.get_object('StoreCurrentSeries')
         self.store_series_archive = self.builder.get_object('StoreSeriesArchive')
+        self.store_movies = self.builder.get_object("StoreMovies")
+        self.view_movies = self.builder.get_object("ViewMovies")
         self.notebook1 = self.builder.get_object('notebook1')
         self.window = self.builder.get_object('winlet').show()
-        self.update=UpdateClass(self.db_file)
-        self.update.setDaemon(True)
-        self.update.start()
+        #self.update=UpdateClass(self.db_file)
+        #self.update.setDaemon(True)
+        #self.update.start()
         Gtk.main()
 
     def on_winlet_destroy(self, widget):
-        self.update.stop()
         Gtk.main_quit()
 
     def on_imageAdd_activate(self, widget):
-        Add_Series('input7.glade', self.cursor, self.connect)
+        Add_Series('input.glade', self.cursor, self.connect)
 
-    def on_imageQuit_destroy(self, widget):
-        Gtk.main_quit()
+    def on_imageQuit_activate(self, widget):
+        self.on_winlet_destroy(widget)
 
     def on_imageAbout_activate(self, widget):
-        About('about7.glade')
+        About('about.glade')
 
     def on_Update_activate(self, widget):
         check_updates(self.update_thread, self.db_file)
 
     def on_ViewMovies(self, widget, event):
         if event.button == 1:
-            get_title = self.builder.get_object("ViewMovies").get_selection()
-            movie, name = get_title.get_selected()
-            fetch_title = movie[name][0]
-            self.cursor.execute("SELECT link FROM movies WHERE title=?",
+            try:
+                get_title = self.builder.get_object("ViewMovies").get_selection()
+                movie, name = get_title.get_selected()
+                fetch_title = movie[name][0]
+                self.cursor.execute("SELECT link FROM movies WHERE title=?",
                                 (fetch_title,))
-            link=self.cursor.fetchone()
-            webbrowser.open_new(link[0])
+                link=self.cursor.fetchone()
+                webbrowser.open_new("http://www.primewire.ag"+link[0])
+            except TypeError:
+                pass
 
     def on_ViewLatestSeries(self, widget, event):
         if event.button == 3:
@@ -179,16 +181,16 @@ class Main:
                 pass
             
     def on_Stop_Update_activate(self, widget):
-        Confirm('confirm7.glade', self.series_title, "stop", self.connect, self.cursor)
+        Confirm('confirm.glade', self.series_title, "stop", self.connect, self.cursor)
         
     def on_Start_Update_activate(self, widget):
-        Confirm('confirm7.glade', self.series_title, "start", self.connect, self.cursor)
+        Confirm('confirm.glade', self.series_title, "start", self.connect, self.cursor)
         
     def on_Delete_Series_activate(self, widget):
-        Confirm('confirm7.glade', self.series_title, "delete", self.connect, self.cursor)
+        Confirm('confirm.glade', self.series_title, "delete", self.connect, self.cursor)
 
     def on_Properties_activate(self, widget):
-        Statistics('stats7.glade', self.series_title, self.connect,self.cursor)
+        Statistics('stats.glade', self.series_title, self.connect,self.cursor)
 
     def on_pref_activate(self, widget):
         Preferences('preferences.glade',self.cursor,self.connect,
@@ -197,10 +199,9 @@ class Main:
                   
     def on_notebook1(self, widget, event):
         if self.notebook1.get_current_page() == 0:
-            self.builder.get_object('listMovies').clear()
-            self.cursor.execute('SELECT title FROM movies ORDER BY id DESC')
-            for title in self.cursor.fetchall():
-                self.builder.get_object('listMovies').append([title[0]])
+            self.store_movies.clear()
+            query="SELECT Id,genre FROM genre"
+            create_category(self.cursor,self.store_movies,query)
         elif self.notebook1.get_current_page() == 1:
             self.store_current_series.clear()
             query = "SELECT title,number_of_seasons from series where status=1"
@@ -222,6 +223,19 @@ class Main:
         else:
             pass
 
+
+
+def create_category(cursor,store_movies,query):
+    cursor.execute(query)
+    for results in cursor.fetchall():
+        category = store_movies.append(None,[results[1]])
+        add_movies(cursor,results[0],category,store_movies)
+
+def add_movies(cursor,id,category,store_movies):
+    cursor.execute("SELECT title from movies where genre_Id=?",(id,))
+    for movie in cursor.fetchall():
+        store_movies.append(category,[movie[0]])
+        
 def create_parent(cursor, series_column,query):
     x=1
     cursor.execute(query)
