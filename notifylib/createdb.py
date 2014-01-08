@@ -43,19 +43,19 @@ class Database:
                 self.connect.commit()
                 self.cursor.execute("INSERT INTO config(key,value) VALUES('update_interval','3600')")
                 self.connect.commit()
-                self.cursor.execute("CREATE TABLE genre(Id INTEGER PRIMARY KEY,genre VARCHAR(20) UNIQUE NOT NULL)")
                 self.cursor.execute("DROP TABLE movies")
-                self.cursor.commit()
-                self.cursor.execute('CREATE TABLE movies(id INTEGER PRIMARY KEY, genre_id INTEGER NOT NULL, title VARCHAR(20) NOT NULL, link VARCHAR(20) NOT NULL)'))
-
-                
+                self.connect.commit()
+                self.cursor.execute('CREATE TABLE movies(Id INTEGER PRIMARY KEY, genre_id INTEGER  NOT NULL, title VARCHAR(20) UNIQUE NOT NULL, link VARCHAR(20) NOT NULL)')
+                self.cursor.execute("CREATE TABLE genre(Id INTEGER PRIMARY KEY, genre VARCHAR(10) UNIQUE NOT NULL )")
+                self.connect.commit()                
                 database_version = '1.8.0'
-        except sqlite3.OperationalError:
-                self.cursor.execute("Select value from config where key='version'")
-                row = self.cursor.fetchone()
-                database_version = row[0]
-                if database_version =='1.8.0':
-                        print("Database is up to date")
+        except sqlite3.OperationalError as e:
+            print(e)
+            self.cursor.execute("Select value from config where key='version'")
+            row = self.cursor.fetchone()
+            database_version = row[0]
+            if database_version =='1.8.0':
+                print("Database is up to date")
                         
         
             

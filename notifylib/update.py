@@ -10,9 +10,7 @@ class Update:
         
     def movie(self):
         movie = Get_Movies(self.cursor,self.connect)
-        old = movie.fetch_old_movies()
-        new = movie.fetch_new_movies()
-        movie.compare(new,old)
+        movie.fetch_new_movies()
 
     def series(self):
         series = Get_Series(self.cursor,self.connect)
@@ -29,12 +27,14 @@ class Update:
     
     def start_updates(self):
         try:
-            self.series()
+            #self.series()
             self.movie()
             print("Series Updates")
         except Exception as e:
             print(e)
             print("cant update")
+        finally:
+            self.connect.close()
     
     
 

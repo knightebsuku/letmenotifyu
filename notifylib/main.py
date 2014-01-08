@@ -50,10 +50,8 @@ class Main:
         self.notebook1 = self.builder.get_object('notebook1')
         self.window = self.builder.get_object('winlet').show()
         self.update=UpdateClass(self.db_file)
+        self.update.setDaemon(True)
         self.update.start()
-        #self.update_thread  = Thread(target=start_updates,args=(self.db_file,))
-        #self.update_thread.setDaemon(True)
-        #self.update_thread.start()
         Gtk.main()
 
     def on_winlet_destroy(self, widget):
@@ -194,7 +192,7 @@ class Main:
 
     def on_pref_activate(self, widget):
         Preferences('preferences.glade',self.cursor,self.connect,
-                    self.update_thread,self.db_file)
+                    self.update,self.db_file)
         
                   
     def on_notebook1(self, widget, event):

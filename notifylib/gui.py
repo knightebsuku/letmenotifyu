@@ -1,6 +1,7 @@
 
 import re
 from gi.repository import Gtk
+from notifylib.check_updates import UpdateClass
 
 class About:
     def __init__(self, gladefile):
@@ -154,6 +155,11 @@ class Preferences:
             self.cursor.execute("UPDATE config set value=? where key='update_interval'",
                                 (value,))
             self.connect.commit()
+            self.thread.stop()
+            self.thread.join()
+            new_thread = UpdateClass(self.db_file)
+            new_thread.setDaemon(True)
+            new_thread.start()
             self.pref.get_object('pref').destroy()
             
         else:
