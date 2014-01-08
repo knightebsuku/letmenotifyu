@@ -8,7 +8,7 @@ New Features
 Different tab for series which are not being updated
 Better management of the update thread
 Preference to change update interval
-Database changes
+Movies now separated into categories
 
 
 Features
