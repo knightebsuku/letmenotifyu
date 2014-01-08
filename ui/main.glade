@@ -56,15 +56,33 @@
       </object>
     </child>
   </object>
-  <object class="GtkListStore" id="listLatestSeries">
+  <object class="GtkTreeStore" id="StoreCurrentSeries">
     <columns>
-      <!-- column-name LatestSeries -->
+      <!-- column-name Series -->
       <column type="gchararray"/>
     </columns>
   </object>
-  <object class="GtkListStore" id="listMovies">
+  <object class="GtkTreeStore" id="StoreMovies">
     <columns>
-      <!-- column-name Movie -->
+      <!-- column-name movies -->
+      <column type="gchararray"/>
+    </columns>
+  </object>
+  <object class="GtkTreeStore" id="StoreSeriesArchive">
+    <columns>
+      <!-- column-name series -->
+      <column type="gchararray"/>
+    </columns>
+  </object>
+  <object class="GtkImage" id="image1">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="stock">gtk-missing-image</property>
+    <property name="icon-size">6</property>
+  </object>
+  <object class="GtkListStore" id="listLatestSeries">
+    <columns>
+      <!-- column-name LatestSeries -->
       <column type="gchararray"/>
     </columns>
   </object>
@@ -113,12 +131,6 @@
         <signal name="activate" handler="on_online_video_activate" swapped="no"/>
       </object>
     </child>
-  </object>
-  <object class="GtkTreeStore" id="treeSeriesArchive">
-    <columns>
-      <!-- column-name Series -->
-      <column type="gchararray"/>
-    </columns>
   </object>
   <object class="GtkWindow" id="winlet">
     <property name="visible">True</property>
@@ -169,12 +181,35 @@
                     </child>
                     <child>
                       <object class="GtkImageMenuItem" id="imageQuit">
-                        <property name="label">gtk-quit</property>
+                        <property name="label">imagemenuitem</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
+                        <property name="image">image1</property>
+                        <property name="use_stock">False</property>
+                        <signal name="activate" handler="on_imageQuit_activate" swapped="no"/>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="GtkMenuItem" id="menuitem3">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">Edit</property>
+                <property name="use_underline">True</property>
+                <child type="submenu">
+                  <object class="GtkMenu" id="menu2">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <child>
+                      <object class="GtkMenuItem" id="pref">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">Preferences</property>
                         <property name="use_underline">True</property>
-                        <property name="use_stock">True</property>
-                        <signal name="destroy" handler="on_imageQuit_destroy" swapped="no"/>
+                        <signal name="activate" handler="on_pref_activate" swapped="no"/>
                       </object>
                     </child>
                   </object>
@@ -191,15 +226,6 @@
                   <object class="GtkMenu" id="menu3">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <child>
-                      <object class="GtkMenuItem" id="Update">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="label" translatable="yes">Update</property>
-                        <property name="use_underline">True</property>
-                        <signal name="activate" handler="on_Update_activate" swapped="no"/>
-                      </object>
-                    </child>
                     <child>
                       <object class="GtkImageMenuItem" id="imageAbout">
                         <property name="label">gtk-about</property>
@@ -226,21 +252,22 @@
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="tab_pos">left</property>
-            <signal name="button-press-event" handler="on_notebook1_button_press_event" swapped="no"/>
+            <property name="show_border">False</property>
+            <signal name="button-press-event" handler="on_notebook1" swapped="no"/>
             <child>
               <object class="GtkScrolledWindow" id="scrolledwindow1">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="shadow_type">in</property>
                 <child>
-                  <object class="GtkTreeView" id="treeviewMovies">
+                  <object class="GtkTreeView" id="ViewMovies">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
-                    <property name="model">listMovies</property>
+                    <property name="model">StoreMovies</property>
                     <property name="headers_visible">False</property>
                     <property name="headers_clickable">False</property>
                     <property name="hover_selection">True</property>
-                    <signal name="button-press-event" handler="on_treeviewMovies_button_press_event" swapped="no"/>
+                    <signal name="button-press-event" handler="on_ViewMovies" swapped="no"/>
                     <child internal-child="selection">
                       <object class="GtkTreeSelection" id="treeview-selection1"/>
                     </child>
@@ -277,14 +304,14 @@
                 <property name="can_focus">True</property>
                 <property name="shadow_type">in</property>
                 <child>
-                  <object class="GtkTreeView" id="treeArchive">
+                  <object class="GtkTreeView" id="ViewCurrentSeries">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
-                    <property name="model">treeSeriesArchive</property>
+                    <property name="model">StoreCurrentSeries</property>
                     <property name="headers_visible">False</property>
                     <property name="headers_clickable">False</property>
                     <property name="hover_selection">True</property>
-                    <signal name="button-press-event" handler="on_treeArchive_button_press_event" swapped="no"/>
+                    <signal name="button-press-event" handler="on_ViewCurrentSeries" swapped="no"/>
                     <child internal-child="selection">
                       <object class="GtkTreeSelection" id="treeview-selection2"/>
                     </child>
@@ -307,10 +334,10 @@
               </packing>
             </child>
             <child type="tab">
-              <object class="GtkLabel" id="SeriesArchive">
+              <object class="GtkLabel" id="CurrentSeries">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="label" translatable="yes">Series Archive</property>
+                <property name="label" translatable="yes">Current Series</property>
               </object>
               <packing>
                 <property name="position">1</property>
@@ -323,7 +350,7 @@
                 <property name="can_focus">True</property>
                 <property name="shadow_type">in</property>
                 <child>
-                  <object class="GtkTreeView" id="treeLatest">
+                  <object class="GtkTreeView" id="ViewLatestSeries">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="model">listLatestSeries</property>
@@ -331,7 +358,7 @@
                     <property name="headers_clickable">False</property>
                     <property name="search_column">0</property>
                     <property name="hover_selection">True</property>
-                    <signal name="button-press-event" handler="on_treeLatest_button_press_event" swapped="no"/>
+                    <signal name="button-press-event" handler="on_ViewLatestSeries" swapped="no"/>
                     <child internal-child="selection">
                       <object class="GtkTreeSelection" id="treeview-selection3"/>
                     </child>
@@ -358,10 +385,57 @@
               <object class="GtkLabel" id="LatestSeries">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="label" translatable="yes">Latest Series</property>
+                <property name="label" translatable="yes">Latest Series Episodes</property>
               </object>
               <packing>
                 <property name="position">2</property>
+                <property name="tab_fill">False</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkScrolledWindow" id="scrolledwindow4">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="shadow_type">in</property>
+                <child>
+                  <object class="GtkTreeView" id="ViewSeriesArchive">
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="model">StoreSeriesArchive</property>
+                    <property name="headers_visible">False</property>
+                    <property name="headers_clickable">False</property>
+                    <signal name="button-press-event" handler="on_ViewSeriesArchive" swapped="no"/>
+                    <child internal-child="selection">
+                      <object class="GtkTreeSelection" id="treeview-selection4"/>
+                    </child>
+                    <child>
+                      <object class="GtkTreeViewColumn" id="treeviewcolumn4">
+                        <property name="sizing">autosize</property>
+                        <property name="title" translatable="yes">Series Archive</property>
+                        <property name="clickable">True</property>
+                        <child>
+                          <object class="GtkCellRendererText" id="cellrenderertext4"/>
+                          <attributes>
+                            <attribute name="text">0</attribute>
+                          </attributes>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="position">3</property>
+              </packing>
+            </child>
+            <child type="tab">
+              <object class="GtkLabel" id="Series Archive">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">Series Archive</property>
+              </object>
+              <packing>
+                <property name="position">3</property>
                 <property name="tab_fill">False</property>
               </packing>
             </child>

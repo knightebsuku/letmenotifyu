@@ -175,15 +175,12 @@
           </packing>
         </child>
         <child>
-          <placeholder/>
-        </child>
-        <child>
           <object class="GtkButton" id="btnClose">
             <property name="label" translatable="yes">Close</property>
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">False</property>
-            <property name="halign">center</property>
+            <property name="halign">end</property>
             <property name="valign">center</property>
             <property name="image_position">right</property>
             <property name="always_show_image">True</property>
@@ -195,6 +192,9 @@
             <property name="width">1</property>
             <property name="height">1</property>
           </packing>
+        </child>
+        <child>
+          <placeholder/>
         </child>
       </object>
     </child>
