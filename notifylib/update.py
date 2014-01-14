@@ -18,8 +18,12 @@ class Update:
         series_data = series.fetch_series_data()
         for data in series_data:
                 all_episodes,new_ep_number,title,current_ep_number,seasons = series.fetch_new_episdoes(data[0],data[1],data[2])
-                series.insert_new_epsiodes(all_episodes,new_ep_number,
+                try:
+                    series.insert_new_epsiodes(all_episodes,new_ep_number,
                                    title,current_ep_number,seasons)
+                except NoneType as e:
+                    logging.critical("No series to process")
+                    break
 
     def get_interval(self):
         self.cursor.execute("SELECT value FROM config WHERE key = 'update_interval'")
@@ -29,11 +33,11 @@ class Update:
     def start_updates(self):
         try:
             self.series()
-            self.movie()
+            #self.movie()
             logging.debug("Movies and Series Updated")
         except Exception as e:
             logging.info("Could not update")
-            logging.wanr(e)
+            logging.warn(e)
         finally:
             self.connect.close()
     
