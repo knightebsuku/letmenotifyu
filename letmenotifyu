@@ -8,21 +8,15 @@ from notifylib.createdb import Database
 from notifylib.main import Main
 
 directory_path = os.environ['HOME']+'/.local/share/letmenotifyu/'
-<<<<<<< HEAD
 
 os.chdir("/usr/share/letmenotifyu/")
 db_file = directory_path+'letmenotifyu.sqlite'
-=======
-os.chdir("ui")
-db_file = directory_path+'dev1.sqlite'
-
 
 def log():
     logging.basicConfig(filename=directory_path+'letmenotifyu.log',
                         format='%(asctime)s - %(message)s',
                         filemode='w',
                         level=logging.DEBUG)
->>>>>>> 1.8.0
 
 if __name__ == "__main__":
     try:
