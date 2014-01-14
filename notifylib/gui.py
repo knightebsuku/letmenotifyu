@@ -1,5 +1,6 @@
 
 import re
+import logging
 from gi.repository import Gtk
 from notifylib.check_updates import UpdateClass
 
@@ -32,6 +33,8 @@ class Add_Series:
         self.link_box = self.dialog.get_object('entlink')
         check_url(self.link_box.get_text(), self.notice, self.dialog, self.cursor, self.connection, self.link_box) 
         self.link_box.set_text('')
+        
+        
 
 
 
@@ -42,6 +45,7 @@ def check_url(text, notice, dialog, cursor, connection, link_box):
         notice.set_text("Not a valid link")
         notice.set_visible(True)
         dialog.get_object('imcheck').set_visible(True)
+        logging.warn("Invalid link:"+text)
 
 def enter_link(url, cursor, connection, dialog, link_box):
     title = re.search(r"http://www.primewire.ag/(.*)-\d+\-(.*)", url)
@@ -50,9 +54,10 @@ def enter_link(url, cursor, connection, dialog, link_box):
     try:
         cursor.execute('INSERT INTO series(title,series_link,number_of_episodes,number_of_seasons,status) VALUES(?,?,0,0,1)', (show_title, url,))
         connection.commit()
+        logging.debug("Series Added:"+show_title)
         link_box.set_text('')
     except Exception as e:
-        print(e)
+        logging.warn("Link already exsists:"+link_box.get_text())
         dialog.get_object('lblNotice').set_text("Link already exists")
         dialog.get_object('lblNotice').set_visible(True)
         dialog.get_object('imcheck').set_visible(True)
@@ -79,6 +84,7 @@ class Confirm:
         self.cursor.execute(self.sql,(self.title,))
         self.connect.commit()
         self.confirm.get_object('msgdlg').destroy()
+        logging.warn("Deleting:"+self.title)
 
     def on_btnCancel_clicked(self, widget):
         self.confirm.get_object('msgdlg').destroy()
@@ -160,9 +166,12 @@ class Preferences:
             new_thread = UpdateClass(self.db_file)
             new_thread.setDaemon(True)
             new_thread.start()
+            logging.info("Interval updated to"+value)
+            logging.warn("New Thread started")
             self.pref.get_object('pref').destroy()
             
         except ValueError:
+            logging.critical("Invalid Interval specified")
             Error('error.glade')                    
 
     def on_btnCancel_clicked(self,widget):

@@ -1,5 +1,6 @@
 
 import sqlite3
+import logging
 from notifylib.getmovies import Get_Movies
 from notifylib.getseries import Get_Series
 
@@ -29,8 +30,10 @@ class Update:
         try:
             self.series()
             self.movie()
+            logging.debug("Movies and Series Updated")
         except Exception as e:
-            print(e)
+            logging.info("Could not update")
+            logging.wanr(e)
         finally:
             self.connect.close()
     
