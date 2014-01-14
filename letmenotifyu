@@ -3,22 +3,43 @@
 import os
 import sys
 import sqlite3
+import logging
 from notifylib.createdb import Database
 from notifylib.main import Main
 
 directory_path = os.environ['HOME']+'/.local/share/letmenotifyu/'
-os.chdir("/usr/share/letmenotifyu/")
-db_file = directory_path+'letmenotifyu.sqlite'
+os.chdir("ui")
+db_file = directory_path+'dev1.sqlite'
+
+
+def log():
+    logging.basicConfig(filename=directory_path+'letmenotifyu.log',
+                        format='%(asctime)s - %(message)s',
+                        filemode='w',
+                        level=logging.DEBUG)
 
 if __name__ == "__main__":
     try:
+        log()
         db = Database(db_file)
         db.upgrade_database()
-    except sqlite3.OperationalError as e:
-        try:
-            os.makedirs(directory_path)
-        except FileExistsError as e:
+    except Exception as e:
+        if os.path.isdir(directory_path):
+            log()
             db = Database(db_file)
             db.create_database()
+            db.upgrade_database()
+        else:
+            os.makedirs(directory_path)
+            log()
+            db = Database(db_file)
+            db.create_database()
+            db.upgrade_database()
     finally:
         Main('main.glade', 'letmenotifyu.png', db_file)
+
+
+
+
+
+

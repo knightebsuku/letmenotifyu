@@ -2,6 +2,7 @@
 import sqlite3
 import webbrowser
 import re
+import logging
 
 from datetime import datetime, timedelta
 from gi.repository import Gtk, GObject
@@ -37,7 +38,6 @@ class Main:
                  'on_Kickass_activate': self.on_Kickass_activate,
                  'on_Piratebay_activate': self.on_Piratebay_activate,
                  'on_online_video_activate': self.on_online_video_activate,
-                 'on_Update_activate': self.on_Update_activate,
                  'on_pref_activate': self.on_pref_activate}
         
         self.builder.connect_signals(signals)
@@ -66,9 +66,6 @@ class Main:
     def on_imageAbout_activate(self, widget):
         About('about.glade')
 
-    def on_Update_activate(self, widget):
-        check_updates(self.update_thread, self.db_file)
-
     def on_ViewMovies(self, widget, event):
         if event.button == 1:
             try:
@@ -79,6 +76,7 @@ class Main:
                                 (fetch_title,))
                 link=self.cursor.fetchone()
                 webbrowser.open_new("http://www.primewire.ag"+link[0])
+                logging.info("Opening Link:"+link[0])
             except TypeError:
                 pass
 
@@ -128,6 +126,7 @@ class Main:
                                     (episode, episode_title, "%"+sql_season+"%"))
                 link = self.cursor.fetchone()
                 webbrowser.open_new("http://www.primewire.ag"+link[0])
+                logging.info("Opening Link"+link[0])
             else:
                 pass
         elif event.button == 3:
@@ -140,6 +139,7 @@ class Main:
                 self.builder.get_object("Series").popup(None, None, None, None,
                                                         event.button, event.time)
             except ValueError as e:
+                logging.warn(e)
                 pass        
             
     def on_ViewSeriesArchive(self, widget, event):
@@ -166,6 +166,7 @@ class Main:
                                     (episode, episode_title, "%"+sql_season+"%"))
                 link=self.cursor.fetchone()
                 webbrowser.open_new("http://www.primewire.ag"+link[0])
+                logging.info("Opening Link"+link[0])
             else:
                 pass
         elif event.button == 3:
@@ -178,6 +179,7 @@ class Main:
                 self.builder.get_object("Series").popup(None, None, None, None,
                                                         event.button, event.time)
             except ValueError as e:
+                logging.warn(e)
                 pass
             
     def on_Stop_Update_activate(self, widget):
