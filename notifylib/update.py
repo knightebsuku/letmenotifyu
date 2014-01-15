@@ -33,7 +33,7 @@ class Update:
     def start_updates(self):
         try:
             self.series()
-            #self.movie()
+            self.movie()
             logging.debug("Movies and Series Updated")
         except Exception as e:
             logging.info("Could not update")
