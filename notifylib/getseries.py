@@ -25,7 +25,7 @@ class Get_Series:
         all_series_info = []
         div_class = episode_page_data.find_all('div',{'class':'tv_episode_item'})
         if not div_class:
-            logging.warn("Unable to access site")
+            logging.warn("Unable to access site"+ title)
         else:
             for links in div_class:
                 for series_links in  links.find_all('a'):

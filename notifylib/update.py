@@ -21,8 +21,9 @@ class Update:
                 try:
                     series.insert_new_epsiodes(all_episodes,new_ep_number,
                                    title,current_ep_number,seasons)
-                except NoneType as e:
+                except Exception as e:
                     logging.critical("No series to process")
+                    logging.exception("Another Major exception")
                     break
 
     def get_interval(self):
@@ -36,7 +37,7 @@ class Update:
             logging.info("Series has been successfully updated")
         except Exception as e:
                 logging.warn("Unable to update series at this current time")
-                logging.warn(e)
+                logging.exception("Major Exception")
         finally:
                 logging.info("Series Complete")
                 
