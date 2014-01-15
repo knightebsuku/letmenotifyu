@@ -33,13 +33,22 @@ class Update:
     def start_updates(self):
         try:
             self.series()
-            self.movie()
-            logging.debug("Movies and Series Updated")
+            logging.info("Series has been successfully updated")
         except Exception as e:
-            logging.info("Could not update")
-            logging.warn(e)
+                logging.warn("Unable to update series at this current time")
+                logging.warn(e)
         finally:
-            self.connect.close()
+                logging.info("Series Complete")
+                
+        try:
+                self.movie()
+                logging.info("Movies have been successfully updated")
+        except Exception as e:
+                logging.warn("Unable to update movies at this time")
+        finally:
+                logging.info("Movies Complete")
+                
+        self.connect.close()
     
     
 
