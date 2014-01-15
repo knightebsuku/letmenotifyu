@@ -10,20 +10,20 @@ class Update:
         self.cursor = self.connect.cursor()
         
     def movie(self):
-        movie = Get_Movies(self.cursor,self.connect)
+        movie = Get_Movies(self.cursor, self.connect)
         movie.fetch_new_movies()
 
     def series(self):
-        series = Get_Series(self.cursor,self.connect)
+        series = Get_Series(self.cursor, self.connect)
         series_data = series.fetch_series_data()
         for data in series_data:
-                all_episodes,new_ep_number,title,current_ep_number,seasons = series.fetch_new_episdoes(data[0],data[1],data[2])
+                all_episodes, new_ep_number, title, current_ep_number, seasons = series.fetch_new_episdoes(data[0], data[1], data[2])
                 try:
-                    series.insert_new_epsiodes(all_episodes,new_ep_number,
-                                   title,current_ep_number,seasons)
+                    series.insert_new_epsiodes(all_episodes, new_ep_number,
+                                   title, current_ep_number, seasons)
                 except Exception as e:
                     logging.critical("No series to process")
-                    logging.exception("Another Major exception")
+                    logging.exception("Got an exception")
                     break
 
     def get_interval(self):

@@ -8,7 +8,7 @@ logging.getLogger(__name__)
 
 
 class Database:
-    def __init__(self,db_file):
+    def __init__(self, db_file):
         self.db_file = db_file
         self.connect = sqlite3.connect(self.db_file)
         self.cursor = self.connect.cursor()
@@ -55,7 +55,8 @@ class Database:
                 self.connect.commit()
                 self.cursor.execute('CREATE TABLE movies(Id INTEGER PRIMARY KEY, genre_id INTEGER  NOT NULL, title VARCHAR(20) UNIQUE NOT NULL, link VARCHAR(20) NOT NULL, FOREIGN KEY(genre_id) REFERENCES genre(Id) ON UPDATE CASCADE ON DELETE CASCADE)')
                 self.cursor.execute("CREATE TABLE genre(Id INTEGER PRIMARY KEY, genre VARCHAR(10) UNIQUE NOT NULL )")
-                self.connect.commit()                
+                self.connect.commit()
+                logging.info("Database has been upgraded to 1.8.0")               
                 database_version = '1.8.0'
         except sqlite3.OperationalError as e:
             logging.warn(e)

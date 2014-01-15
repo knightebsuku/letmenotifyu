@@ -33,11 +33,7 @@ class Add_Series:
         self.link_box = self.dialog.get_object('entlink')
         check_url(self.link_box.get_text(), self.notice, self.dialog, self.cursor, self.connection, self.link_box) 
         self.link_box.set_text('')
-        
-        
-
-
-
+                
 def check_url(text, notice, dialog, cursor, connection, link_box):
     if re.match(r'http://www.primewire.ag', text):
         enter_link(text, cursor, connection, dialog, link_box)
@@ -54,7 +50,7 @@ def enter_link(url, cursor, connection, dialog, link_box):
     try:
         cursor.execute('INSERT INTO series(title,series_link,number_of_episodes,number_of_seasons,status) VALUES(?,?,0,0,1)', (show_title, url,))
         connection.commit()
-        logging.debug("Series Added:"+show_title)
+        logging.debug("Series Added: "+show_title)
         link_box.set_text('')
     except Exception as e:
         logging.warn("Link already exsists:"+link_box.get_text())
@@ -84,7 +80,7 @@ class Confirm:
         self.cursor.execute(self.sql,(self.title,))
         self.connect.commit()
         self.confirm.get_object('msgdlg').destroy()
-        logging.warn("Deleting:"+self.title)
+        logging.warn("Deleting: "+self.title)
 
     def on_btnCancel_clicked(self, widget):
         self.confirm.get_object('msgdlg').destroy()
@@ -108,7 +104,7 @@ class Statistics:
         self.builder.add_from_file(glade)
         signals = {'on_btnClose_clicked':self.on_btnClose_clicked}
         self.builder.connect_signals(signals)
-        set_stats(title,connect,cursor,self.builder)
+        set_stats(title, connect, cursor, self.builder)
         self.builder.get_object('win_stats').show()
         
     def on_btnClose_clicked(self,widget):
@@ -140,8 +136,8 @@ class Preferences:
         self.connect = connect
         self.pref = Gtk.Builder()
         self.pref.add_from_file(gladefile)
-        self.thread=thread
-        self.db_file=db_file
+        self.thread = thread
+        self.db_file = db_file
         signals = {'on_btnSave_clicked':self.on_btnSave_clicked,
                  'on_btnCancel_clicked':self.on_btnCancel_clicked}
         self.pref.connect_signals(signals)
@@ -166,7 +162,7 @@ class Preferences:
             new_thread = UpdateClass(self.db_file)
             new_thread.setDaemon(True)
             new_thread.start()
-            logging.info("Interval updated to"+value)
+            logging.info("Interval updated to "+value)
             logging.warn("New Thread started")
             self.pref.get_object('pref').destroy()
             
