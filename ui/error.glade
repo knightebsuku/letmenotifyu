@@ -23,11 +23,13 @@
             </child>
             <child>
               <object class="GtkButton" id="btnOk">
-                <property name="label">gtk-ok</property>
+                <property name="label">Ok</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
+                <property name="has_focus">True</property>
+                <property name="is_focus">True</property>
                 <property name="receives_default">True</property>
-                <property name="use_stock">True</property>
+                <signal name="activate" handler="on_btnOk_activate" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">False</property>

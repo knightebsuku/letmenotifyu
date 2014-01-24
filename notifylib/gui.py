@@ -166,8 +166,8 @@ class Preferences:
             logging.warn("New Thread started")
             self.pref.get_object('pref').destroy()
             
-        except ValueError:
-            logging.critical("Invalid Interval specified")
+        except Exception as e:
+            logging.exception("Invalid value")
             Error('error.glade')                    
 
     def on_btnCancel_clicked(self,widget):
@@ -177,8 +177,9 @@ class Preferences:
 class Error:
     def __init__(self,gladefile):
         self.error = Gtk.Builder()
+        self.error.add_from_file(gladefile)
         signals = {'on_btnOk_activate':self.on_btnOk_activate}
-        self.error.connect(signals)
+        self.error.connect_signals(signals)
         self.error.get_object('error').show()
 
     def on_btnOk_activate(self,widget):

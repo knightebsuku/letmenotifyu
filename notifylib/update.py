@@ -28,7 +28,7 @@ class Update:
 
     def get_interval(self):
         self.cursor.execute("SELECT value FROM config WHERE key = 'update_interval'")
-        time_int=self.cursor.fetchone()
+        time_int = self.cursor.fetchone()
         return time_int[0]
     
     def start_updates(self):
@@ -38,16 +38,12 @@ class Update:
         except Exception as e:
                 logging.warn("Unable to update series at this current time")
                 logging.exception("Major Exception")
-        finally:
-                logging.info("Series Complete")
                 
         try:
                 self.movie()
                 logging.info("Movies have been successfully updated")
         except Exception as e:
                 logging.warn("Unable to update movies at this time")
-        finally:
-                logging.info("Movies Complete")
                 
         self.connect.close()
     

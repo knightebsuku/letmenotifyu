@@ -16,9 +16,13 @@ class Database:
     def create_database(self):
         logging.info("Creating new Database")
         self.cursor.execute("PRAGMA foreign_keys = ON")
+        logging.info("****Creating the movie table****")
         self.cursor.execute('CREATE TABLE movies(id INTEGER PRIMARY KEY, title VARCHAR(20), link VARCHAR(20))')
+        logging.info("****Creating the series table****")
         self.cursor.execute('CREATE TABLE series(title VARCHAR(30) PRIMARY KEY,series_link VARCHAR(60),number_of_episodes INTEGER,number_of_seasons INTEGER,last_update TIMESTAMP,status BOOLEAN)')
+        logging.info("****Creating the episodes table****")
         self.cursor.execute('CREATE TABLE episodes(id INTEGER PRIMARY KEY,title VARCHAR(30),episode_name VARCHAR(15), episode_link VARCHAR(40), Date TIMESTAMP, FOREIGN KEY (title) REFERENCES series(title) ON DELETE CASCADE)')
+        logging.info("Creating the Schema table****")
         self.cursor.execute('CREATE TABLE schema_version(id IINTEGER PRIMARY KEY,version VARCHAR(6))')
         self.cursor.execute('INSERT INTO schema_version(version) VALUES ("1.7.2")')
         self.connect.commit()
@@ -31,6 +35,7 @@ class Database:
             database_version = rows[0]
             
             if database_version == '1.7.2':
+                logging.info("****Database is being upgraded to the latest version****")
                 logging.debug("Upgrading to version 1.7.3")
                 self.cursor.execute("CREATE TABLE torrents(Id INTEGER PRIMARY KEY,name VARCHAR(20),link VARCHAR(20))")
                 self.cursor.execute("INSERT INTO torrents(name) VALUES('http://kickass.to/usearch/')")
@@ -51,6 +56,7 @@ class Database:
                 self.connect.commit()
                 self.cursor.execute("INSERT INTO config(key,value) VALUES('update_interval','3600')")
                 self.connect.commit()
+                logging.info("****Droppin old movie table and creating new one****")
                 self.cursor.execute("DROP TABLE movies")
                 self.connect.commit()
                 self.cursor.execute('CREATE TABLE movies(Id INTEGER PRIMARY KEY, genre_id INTEGER  NOT NULL, title VARCHAR(20) UNIQUE NOT NULL, link VARCHAR(20) NOT NULL, FOREIGN KEY(genre_id) REFERENCES genre(Id) ON UPDATE CASCADE ON DELETE CASCADE)')
