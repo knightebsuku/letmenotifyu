@@ -44,8 +44,6 @@ class Update:
                 logging.info("Movies have been successfully updated")
         except Exception as e:
                 logging.warn("Unable to update movies at this time")
-                
-        self.connect.close()
     
     
 
