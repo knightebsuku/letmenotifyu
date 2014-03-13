@@ -24,13 +24,13 @@ class Get_Series:
     def fetch_new_episdoes(self, title, link, eps):
         episode_page_data = self.get_page(link)
         all_series_info = []
-        div_class = episode_page_data.find_all('div',{'class':'tv_episode_item'})
+        div_class = episode_page_data.find_all('ul',{'class':'listings'})
         if not div_class:
             logging.warn("Unable to access site: "+ title)
         else:
             for links in div_class:
                 for series_links in  links.find_all('a'):
-                    all_series_info.append([series_links.get('href'),links.get_text().replace(" ","")])
+                    all_series_info.append([series_links.get('href'),series_links.get_text()])
                 seasons = episode_page_data.findAll("h2", text=re.compile('^Season'))
             return all_series_info, len(all_series_info), title, eps, len(seasons)
 

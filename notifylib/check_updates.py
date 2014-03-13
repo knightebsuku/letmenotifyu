@@ -11,8 +11,8 @@ class UpdateClass(threading.Thread):
         self.event = threading.Event()
 
     def run(self):
-        update = Update(self.db_file)
         while not self.event.is_set():
+            update = Update(self.db_file)
             interval = update.get_interval()
             update.start_updates()
             self.event.wait(int(interval))
