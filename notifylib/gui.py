@@ -35,7 +35,7 @@ class Add_Series:
         self.link_box.set_text('')
                 
 def check_url(text, notice, dialog, cursor, connection, link_box):
-    if re.match(r'http://www.primewire.ag', text):
+    if re.match(r'http://www.watchseries.to', text):
         enter_link(text, cursor, connection, dialog, link_box)
     else:
         notice.set_text("Not a valid link")
@@ -44,15 +44,16 @@ def check_url(text, notice, dialog, cursor, connection, link_box):
         logging.warn("Invalid link:"+text)
 
 def enter_link(url, cursor, connection, dialog, link_box):
-    title = re.search(r"http://www.primewire.ag/(.*)-\d+\-(.*)", url)
-    change_string = title.group(2)
-    show_title = change_string.replace("-", " ")
+    title = re.search(r"http://www.watchseries.to/serie/(.*)", url)
+    change_string = title.group(1)
+    show_title = change_string.replace("_", " ")
     try:
         cursor.execute('INSERT INTO series(title,series_link,number_of_episodes,number_of_seasons,status) VALUES(?,?,0,0,1)', (show_title, url,))
         connection.commit()
         logging.debug("Series Added: "+show_title)
         link_box.set_text('')
     except Exception as e:
+        logging.error(e)
         logging.warn("Link already exsists:"+link_box.get_text())
         dialog.get_object('lblNotice').set_text("Link already exists")
         dialog.get_object('lblNotice').set_visible(True)

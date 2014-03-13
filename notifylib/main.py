@@ -75,7 +75,7 @@ class Main:
                 self.cursor.execute("SELECT link FROM movies WHERE title=?",
                                 (fetch_title,))
                 link=self.cursor.fetchone()
-                webbrowser.open_new("http://www.primewire.ag"+link[0])
+                webbrowser.open_new("http://www.watchseries.to"+link[0])
                 logging.info("Opening Link:"+link[0])
             except TypeError:
                 pass
@@ -119,14 +119,15 @@ class Main:
                 model = self.view_current_series.get_model()
                 episode_title = model.get_value(episode_title_path, 0) 
                 episode_season = model.get_value(episode_season_path, 0)
+                print(episode_season)
                 episode = model.get_value(episode_path, 0)
-                sql_season = episode_season.replace(" ", "-")
+                sql_season = episode_season.replace("season ", "_s")
                 
                 self.cursor.execute("SELECT episode_link FROM episodes WHERE episode_name=? AND title=? AND episode_link LIKE ?",
                                     (episode, episode_title, "%"+sql_season+"%"))
                 link = self.cursor.fetchone()
-                webbrowser.open_new("http://www.primewire.ag"+link[0])
-                logging.info("Opening Link"+link[0])
+                webbrowser.open_new("http://www.watchseries.to"+link[0])
+                logging.info("Opening Link: "+link[0])
             else:
                 pass
         elif event.button == 3:
@@ -165,7 +166,7 @@ class Main:
                 self.cursor.execute("SELECT episode_link FROM episodes WHERE episode_name=? AND title=? AND episode_link LIKE ?",
                                     (episode, episode_title, "%"+sql_season+"%"))
                 link=self.cursor.fetchone()
-                webbrowser.open_new("http://www.primewire.ag"+link[0])
+                webbrowser.open_new("http://www.watchseries.to/"+link[0])
                 logging.info("Opening Link"+link[0])
             else:
                 pass
@@ -214,7 +215,7 @@ class Main:
             self.cursor.execute('SELECT title,episode_link,episode_name FROM episodes WHERE Date BETWEEN  ? AND ?',
                                 (week, datetime.now()))
             for latest in self.cursor.fetchall():
-                self.latest_dict[latest[0]+"-"+latest[2]] = "http://www.primewire.ag"+latest[1]
+                self.latest_dict[latest[0]+"-"+latest[2]] = "http://www.watchseries.to"+latest[1]
                 self.builder.get_object('listLatestSeries').append([latest[0]+"-"+latest[2]])
 
         elif self.notebook1.get_current_page() == 3:
@@ -250,7 +251,7 @@ def create_parent(cursor, series_column,query):
 
 def create_episodes(cursor, series_title, parent_title, series_column, x):
     name = "season "+str(x)
-    sql_name = "%season-"+str(x)+"%"
+    sql_name = "%_s"+str(x)+"_%"
     series_number = series_column.append(parent_title, [name])
     cursor.execute("SELECT episode_name FROM episodes WHERE title=? and episode_link LIKE ?",
                    (series_title, sql_name))
