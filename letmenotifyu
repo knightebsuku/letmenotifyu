@@ -10,10 +10,10 @@ from notifylib.main import Main
 directory_path = os.environ['HOME']+'/.local/share/letmenotifyu/'
 
 os.chdir("/usr/share/letmenotifyu")
-db_file = directory_path+'dev.sqlite'
+db_file = directory_path+'letmenotifyu.sqlite'
 
 def log():
-    logging.basicConfig(filename = directory_path+'dev.log',
+    logging.basicConfig(filename = directory_path+'letmenotifyu.log',
                         format = '%(asctime)s - %(message)s', filemode = 'w',
                         level = logging.DEBUG)
 
