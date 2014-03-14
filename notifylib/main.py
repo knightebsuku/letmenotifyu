@@ -119,7 +119,6 @@ class Main:
                 model = self.view_current_series.get_model()
                 episode_title = model.get_value(episode_title_path, 0) 
                 episode_season = model.get_value(episode_season_path, 0)
-                print(episode_season)
                 episode = model.get_value(episode_path, 0)
                 sql_season = episode_season.replace("season ", "_s")
                 
@@ -208,7 +207,7 @@ class Main:
         elif self.notebook1.get_current_page() == 1:
             self.store_current_series.clear()
             query = "SELECT title,number_of_seasons from series where status=1"
-            create_parent(self.cursor, self.store_current_series, query)
+            create_current_parent(self.cursor, self.store_current_series, query)
         elif self.notebook1.get_current_page() == 2:
             week = datetime.now() - timedelta(days=7)
             self.builder.get_object('listLatestSeries').clear()
@@ -220,14 +219,13 @@ class Main:
 
         elif self.notebook1.get_current_page() == 3:
             self.store_series_archive.clear()
-            query="SELECT title,number_of_seasons from series where status=0"
+            query="SELECT title,number_of_seasons from series"
             create_parent(self.cursor, self.store_series_archive, query)
-
         else:
             pass
 
 
-
+#Movie list creation
 def create_category(cursor,store_movies,query):
     cursor.execute(query)
     for results in cursor.fetchall():
@@ -238,7 +236,26 @@ def add_movies(cursor,id,category,store_movies):
     cursor.execute("SELECT title from movies where genre_Id=?",(id,))
     for movie in cursor.fetchall():
         store_movies.append(category,[movie[0]])
-        
+
+
+#Latest Series list creation
+def create_current_parent(cursor,series_column,query):
+    cursor.execute(query)
+    for results in cursor.fetchall():
+        parent_title = series_column.append(None,[results[0]])
+        create_current_episodes(cursor,results[0],parent_title,series_column,results[1])
+
+def create_current_episodes(cursor,series_title,parent_title,
+                            series_column,current_season):
+    name ="season " + str(current_season)
+    sql_name = "%_s"+str(current_season)+"_%"
+    series_number = series_column.append(parent_title,[name])
+    cursor.execute("SELECT episode_name FROM episodes WHERE title=? and episode_link LIKE ?",
+                   (series_title, sql_name))
+    for episode in cursor.fetchall():
+        series_column.append(series_number,[episode[0]])
+
+#Series archive creation
 def create_parent(cursor, series_column,query):
     x=1
     cursor.execute(query)
