@@ -129,18 +129,6 @@ class Main:
                 logging.info("Opening Link: "+link[0])
             else:
                 pass
-        elif event.button == 3:
-            selected = self.view_current_series.get_selection()
-            series, name = selected.get_selected()
-            self.series_title = series[name][0]
-            title = self.store_current_series.get_path(name)
-            try:
-                int(str(title))
-                self.builder.get_object("Series").popup(None, None, None, None,
-                                                        event.button, event.time)
-            except ValueError as e:
-                logging.warn(e)
-                pass        
             
     def on_ViewSeriesArchive(self, widget, event):
         if event.button == 1:
@@ -170,17 +158,19 @@ class Main:
             else:
                 pass
         elif event.button == 3:
-            selected = self.view_series_archive.get_selection()
+            selected = self.view_series_archive.get_selection()x
             series, name = selected.get_selected()
             self.series_title = series[name][0]
-            title = self.store_series_archive.get_path(name)
-            try:
-                int(str(title))
-                self.builder.get_object("Series").popup(None, None, None, None,
+            if not re.match(r"^Episode",self.series_title) or re.match(r'^season',
+                                                                               self.series_title):
+                title = self.store_series_archive.get_path(name)
+                try:
+                    int(str(title))
+                    self.builder.get_object("Series").popup(None, None, None, None,
                                                         event.button, event.time)
-            except ValueError as e:
-                logging.warn(e)
-                pass
+                except ValueError as e:
+                    logging.warn(e)
+                    pass
             
     def on_Stop_Update_activate(self, widget):
         Confirm('confirm.glade', self.series_title, "stop", self.connect, self.cursor)
