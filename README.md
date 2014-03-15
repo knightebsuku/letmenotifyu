@@ -1,6 +1,6 @@
 Program to notifyu users of new Episode and Movie releases
 
-New Release 1.9.0
+New Release 1.9.1
 ************************
 
 New Features
@@ -8,6 +8,7 @@ New Features
 Updating now occurs at http://www.watchseries.to/
 
 I made the change because series updates are better managed there.
+Current Series only shows the Season of the series which is currently on air
 
 
 Features
