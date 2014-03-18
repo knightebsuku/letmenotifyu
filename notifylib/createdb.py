@@ -37,7 +37,7 @@ class Database:
         self.connect.commit()
         self.cursor.execute("INSERT INTO torrents(name,link) VALUES('Isohunt','http://isohunt.to/torrents/?ihq=')")
         self.connect.commit()
-        self.cursor.execute("INSERT INTO config(key,value) VALUES('movie_directory,'0')")
+        self.cursor.execute("INSERT INTO config(key,value) VALUES('movie_directory','0')")
         self.connect.commit()
         self.cursor.execute("INSERT INTO config(key,value) VALUES('series_directory','0')")
         self.connect.commit()
@@ -46,36 +46,30 @@ class Database:
         logging.info("Database has been created")
 
     def upgrade_database(self):
-        try:
-            self.cursor.execute("SELECT value FROM config WHERE key='version'")
-            version = self.cursor.fetchone()
-            database_version = version[0]
-            
-            if database_version == '1.8.0':
-                logging.info("****Database is being upgraded to version 1.9.0****")
-                logging.warn("Dropping table torrents and recreating it.")
-                self.cursor.execute("DROP TABLE torrents")
-                self.cursor.execute("CREATE TABLE torrents(Id INTEGER PRIMARY KEY NOT NULL,name VARCHAR(20) NOT NULL,link VARCHAR(20) NOT NULL)")
-                self.cursor.execute("INSERT INTO torrents(name,link) VALUES('Kickass','http://kickass.to/usearch/')")
-                self.connect.commit()
-                self.cursor.execute("INSERT INTO torrents(name,link) VALUES('The Pirate Bay','http://thepiratebay.sx/search/')")
-                self.connect.commit()
-                self.cursor.execute("INSERT INTO torrents(name,link) VALUES('Isohunt','http://isohunt.to/torrents/?ihq=')")
-                self.connect.commit()
-                logging.info("Inserting new config values ")
-                self.cursor.execute("INSERT INTO config(key,value) VALUES('movie_directory','0')")
-                self.connect.commit()
-                self.cursor.execute("INSERT INTO config(key,value) VALUES('series_directory','0')")
-                self.connect.commit()
-                
-                self.cursor.execute("UPDATE config SET value='1.9.0' WHERE key='version'")
-                self.connect.commit()
-                logging.info("Database has being upgraded to version 1.9.0")
-                
-        except sqlite3.OperationalError as e:
-            logging.critical("Unable to Upgrade database")
-            logging.warn(e)
-        
+        self.cursor.execute("SELECT value FROM config WHERE key='version'")
+        version = self.cursor.fetchone()
+        database_version = version[0]
+
+        if database_version == '1.8.0':
+            logging.info("****Database is being upgraded to version 1.9.0****")
+            logging.warn("Dropping table torrents and recreating it.")
+            self.cursor.execute("DROP TABLE torrents")
+            self.cursor.execute("CREATE TABLE torrents(Id INTEGER PRIMARY KEY NOT NULL,name VARCHAR(20) NOT NULL,link VARCHAR(20) NOT NULL)")
+            self.cursor.execute("INSERT INTO torrents(name,link) VALUES('Kickass','http://kickass.to/usearch/')")
+            self.connect.commit()
+            self.cursor.execute("INSERT INTO torrents(name,link) VALUES('The Pirate Bay','http://thepiratebay.sx/search/')")
+            self.connect.commit()
+            self.cursor.execute("INSERT INTO torrents(name,link) VALUES('Isohunt','http://isohunt.to/torrents/?ihq=')")
+            self.connect.commit()
+            logging.info("Inserting new config values ")
+            self.cursor.execute("INSERT INTO config(key,value) VALUES('movie_directory','0')")
+            self.connect.commit()
+            self.cursor.execute("INSERT INTO config(key,value) VALUES('series_directory','0')")
+            self.connect.commit()
+
+            self.cursor.execute("UPDATE config SET value='1.9.0' WHERE key='version'")
+            self.connect.commit()
+            logging.info("Database has being upgraded to version 1.9.0")
             
         
             
