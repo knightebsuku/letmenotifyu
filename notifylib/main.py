@@ -75,7 +75,7 @@ class Main:
                 self.cursor.execute("SELECT link FROM movies WHERE title=?",
                                 (fetch_title,))
                 link=self.cursor.fetchone()
-                webbrowser.open_new("http://www.watchseries.to"+link[0])
+                webbrowser.open_new("http://www.primewire.ag"+link[0])
                 logging.info("Opening Link:"+link[0])
             except TypeError:
                 pass
