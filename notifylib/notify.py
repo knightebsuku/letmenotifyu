@@ -1,8 +1,8 @@
 
 from gi.repository import Notify
 
-def announce(*args):
+def announce(type_s,title,link=''):
     Notify.init("Letmenotifyu")
-    announcement = Notify.Notification.new(args[0]+'\n',args[1]+'\n'+args[2],
+    announcement = Notify.Notification.new(type_s+'\n',title+'\n'+link,
                                              'dialog-information')
     announcement.show()
