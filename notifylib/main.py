@@ -158,7 +158,7 @@ class Main:
             else:
                 pass
         elif event.button == 3:
-            selected = self.view_series_archive.get_selection()x
+            selected = self.view_series_archive.get_selection()
             series, name = selected.get_selected()
             self.series_title = series[name][0]
             if not re.match(r"^Episode",self.series_title) or re.match(r'^season',

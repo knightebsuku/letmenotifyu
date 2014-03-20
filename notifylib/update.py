@@ -37,7 +37,6 @@ class Update:
             logging.info("Series has been successfully updated")
         except Exception as e:
                 logging.warn("Unable to update series at this current time")
-                logging.exception("Major Exception")
                 
         try:
                 self.movie()
