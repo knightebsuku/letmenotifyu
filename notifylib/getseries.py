@@ -44,6 +44,7 @@ class Get_Series:
             self.cursor.execute("UPDATE series set number_of_episodes=?,number_of_seasons=?,last_update=?  where title=?",
                             (ep_number, no_seasons, datetime.now(),title,))
             self.connect.commit()
+            logging.info(" Series Added: "+ title)
             announce("New Series Added",title)
         else:
             while diff > 0:
