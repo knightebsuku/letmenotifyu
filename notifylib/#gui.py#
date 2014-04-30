@@ -81,9 +81,11 @@ def check_url(text, notice, dialog, cursor, connection, link_box):
 
 def enter_link(url, cursor, connection, dialog, link_box):
     if re.search(r"http://www.watchseries.to/serie/(.*)"):
+        
         replace_string="_"
     elif re.search(r"http://www.primewire.ag/(.*)-\d+\-(.*)"):
         replace_string = "-"
+        
     change_string = title.group(1)
     logging.info("Obtaining Series Title: %s" %change_string)
     show_title = change_string.replace("_", " ")
