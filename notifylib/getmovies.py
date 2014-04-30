@@ -1,6 +1,7 @@
 from urllib.request import Request,urlopen
 from bs4 import BeautifulSoup
 from notifylib.notify import announce
+import logging
 import re
 
 class Get_Movies:
@@ -27,6 +28,7 @@ class Get_Movies:
                 self.cursor.execute("INSERT INTO genre(genre) VALUES(?)",(temp_list[1][0],))
                 self.connect.commit()
             except Exception as e:
+                logging.info("Genre already exists")
                 pass
             try:
                 self.cursor.execute("SELECT Id from genre where genre=?",(temp_list[1][0],))
@@ -36,13 +38,12 @@ class Get_Movies:
                 self.connect.commit()
                 announce('New Movie',temp_list[0][0],"http://www.primewire.ag"+temp_list[0][1])
             except Exception as e:
+                logging.critical("Unable to insert new Movie")
+                logging.error(e)
                 pass
-        
 
+    def check_local_movies(self):
+        print("Code to Fetch from Local directory")
 
-                
-
-
-
-
-
+    def check_remote_movies(self):
+        print("Code here to fetch over network")

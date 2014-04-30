@@ -6,8 +6,7 @@ import logging
 
 from datetime import datetime, timedelta
 from gi.repository import Gtk, GObject
-from threading import Thread
-from notifylib.gui import Add_Series, About, Confirm, Statistics, Preferences
+from notifylib.gui import Add_Series, About, Confirm, Statistics, Preferences,Add_Series_Source
 from notifylib.torrent import Torrent
 from notifylib.check_updates import UpdateClass
 
@@ -38,7 +37,8 @@ class Main:
                  'on_Kickass_activate': self.on_Kickass_activate,
                  'on_Piratebay_activate': self.on_Piratebay_activate,
                  'on_online_video_activate': self.on_online_video_activate,
-                 'on_pref_activate': self.on_pref_activate}
+                 'on_pref_activate': self.on_pref_activate,
+                 'on_imageWebsite_activate':self.on_imageWebsite_activate}
         
         self.builder.connect_signals(signals)
         self.view_series_archive = self.builder.get_object('ViewSeriesArchive')
@@ -58,7 +58,10 @@ class Main:
         Gtk.main_quit()
 
     def on_imageAdd_activate(self, widget):
-        Add_Series('input.glade', self.cursor, self.connect)
+        Add_Series('add_series.glade',self.cursor,self.connect)
+
+    def on_imageWebsite_activate(self,widget):
+        Add_Series_Source('add_source.glade',self.cursor,self.connect)
 
     def on_imageQuit_activate(self, widget):
         self.on_winlet_destroy(widget)

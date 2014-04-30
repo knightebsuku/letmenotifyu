@@ -1,11 +1,8 @@
 
 import sqlite3
 import logging
-from datetime import datetime
-
 
 logging.getLogger(__name__)
-
 
 class Database:
     def __init__(self, db_file):
@@ -70,6 +67,24 @@ class Database:
             self.cursor.execute("UPDATE config SET value='1.9.0' WHERE key='version'")
             self.connect.commit()
             logging.info("Database has being upgraded to version 1.9.0")
+            database_version = '1.9.0'
+
+
+        if database_version =='1.9.0':
+            logging.warn("Need to update the database to version 1.9.2")
+            logging.warn("***Starting upgrade***")
+            #self.cursor.execute("alter table series add current_season INTEGER")
+            #self.connect.commit()
+            self.cursor.execute("CREATE TABLE series_source(Id INTEGER PRIMARY KEY,name  VARCHAR NOT NULL)")
+            logging.info("Database upgrade has being completed")
+            self.cursor.execute("UPDATE config set value='1.9.2' where key='version'")
+
+
+            
+            
+            
+        
+            
             
         
             

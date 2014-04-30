@@ -4,6 +4,11 @@ import logging
 from gi.repository import Gtk
 from notifylib.check_updates import UpdateClass
 
+
+class Base_UI:
+    def __init__(self):
+        print("This will be the base class for all guis")
+
 class About:
     def __init__(self, gladefile):
         about = Gtk.Builder()
@@ -12,6 +17,37 @@ class About:
         window.run()
         window.destroy()
 
+class Add_Series_Source:
+    def __init__(self,gladefile,cursor,connection):
+        self.cursor = cursor
+        self.connection = connection
+        self.dialog = Gtk.Builder()
+        self.dialog.add_from_file(gladefile)
+        connectors = {'on_btnCancel_clicked': self.on_btnCancel_clicked,
+                      'on_btnOk_clicked': self.on_btnOk_clicked}
+        self.dialog.connect_signals(connectors)
+        self.dialog.get_object('AddSeriesSource').show()
+
+    def on_btnOk_clicked(self,widget):
+        if re.match(r'http://www',self.dialog.get_object('txtSource').get_text()):
+            try:
+                self.cursor.execute('INSERT INTO series_source(name) values(?)',
+                                    (self.dialog.get_object('txtSource').get_text(),))
+                self.connection.commit()
+                self.dialog.get_object('AddSeriesSource').destroy()
+            except Exception as e:
+                logging.error("Unable to insert new series source")
+                logging.exception(e)
+        else:
+            self.dialog.get_object('lblerror').set_visible(True)
+            self.dialog.get_object('txtSource').set_text('')
+                    
+    def on_btnCancel_clicked(self,widget):
+        self.dialog.get_object("AddSeriesSource").destroy()
+            
+
+
+        
 
 class Add_Series:
     def __init__(self, gladefile, cursor, connection):
@@ -35,7 +71,7 @@ class Add_Series:
         self.link_box.set_text('')
                 
 def check_url(text, notice, dialog, cursor, connection, link_box):
-    if re.match(r'http://www.watchseries.to', text):
+    if re.match(r'(http://www.watchseries.to|http://www.primewire.ag)', text):
         enter_link(text, cursor, connection, dialog, link_box)
     else:
         notice.set_text("Not a valid link")
@@ -44,14 +80,18 @@ def check_url(text, notice, dialog, cursor, connection, link_box):
         logging.warn("Invalid link:"+text)
 
 def enter_link(url, cursor, connection, dialog, link_box):
-    title = re.search(r"http://www.watchseries.to/serie/(.*)", url)
+    if re.search(r"http://www.watchseries.to/serie/(.*)"):
+        print("wait")
+    title = re.search(r"(http://www.watchseries.to/serie/(.*)|http://www.primewire.ag/tv(.*))", url)
     change_string = title.group(1)
+    logging.info("Obtaining Series Title: %s" %change_string)
     show_title = change_string.replace("_", " ")
     try:
-        cursor.execute('INSERT INTO series(title,series_link,number_of_episodes,number_of_seasons,status) VALUES(?,?,0,0,1)', (show_title, url,))
+        cursor.execute('INSERT INTO series(title,series_link,number_of_episodes,number_of_seasons,status,current_season) VALUES(?,?,0,0,1,0)', (show_title, url,))
         connection.commit()
         logging.debug("Series Added: "+show_title)
         link_box.set_text('')
+        dialog.get_object('linkdialog').destroy()
     except Exception as e:
         logging.error(e)
         logging.warn("Link already exsists:"+link_box.get_text())
