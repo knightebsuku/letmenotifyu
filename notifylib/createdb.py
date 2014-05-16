@@ -4,6 +4,7 @@ import logging
 
 logging.getLogger(__name__)
 
+
 class Database:
     def __init__(self, db_file):
         self.db_file = db_file
@@ -33,10 +34,6 @@ class Database:
         self.cursor.execute("INSERT INTO torrents(name,link) VALUES('The Pirate Bay','http://thepiratebay.sx/search/')")
         self.connect.commit()
         self.cursor.execute("INSERT INTO torrents(name,link) VALUES('Isohunt','http://isohunt.to/torrents/?ihq=')")
-        self.connect.commit()
-        self.cursor.execute("INSERT INTO config(key,value) VALUES('movie_directory','0')")
-        self.connect.commit()
-        self.cursor.execute("INSERT INTO config(key,value) VALUES('series_directory','0')")
         self.connect.commit()
         self.cursor.execute("UPDATE config SET value='1.9.0' WHERE key='version'")
         self.connect.commit()
@@ -70,35 +67,13 @@ class Database:
             database_version = '1.9.0'
 
 
-        if database_version =='1.9.0':
-            logging.warn("Need to update the database to version 1.9.2")
+        if database_version == '1.9.0':
+            logging.warn("Need to update the database to version 1.10")
             logging.warn("***Starting upgrade***")
+            logging.info("Adding new column in series, current_season")
             #self.cursor.execute("alter table series add current_season INTEGER")
             #self.connect.commit()
-            self.cursor.execute("CREATE TABLE series_source(Id INTEGER PRIMARY KEY,name  VARCHAR NOT NULL)")
             logging.info("Database upgrade has being completed")
-            self.cursor.execute("UPDATE config set value='1.9.2' where key='version'")
-
-
-            
-            
-            
-        
-            
-            
-        
-            
-            
-        
-
-
-        
-        
-        
-    
-
-
-
-
-
-
+            self.cursor.execute("UPDATE config set value='1.10' where key='version'")
+            self.connect.commit()
+            logging.info("Database has being upgraded to 1.10")

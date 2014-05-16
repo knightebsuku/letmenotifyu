@@ -10,6 +10,7 @@ directory_path = os.environ['HOME']+'/.local/share/letmenotifyu/'
 os.chdir("ui")
 db_file = directory_path+'dev.sqlite'
 
+
 def log():
     logging.basicConfig(filename = directory_path+'dev.log',
                         format = '%(asctime)s - %(message)s', filemode = 'w',

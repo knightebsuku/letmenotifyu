@@ -4,50 +4,15 @@ import logging
 from gi.repository import Gtk
 from notifylib.check_updates import UpdateClass
 
-
-class Base_UI:
-    def __init__(self):
-        print("This will be the base class for all guis")
-
-class About:
+class About(Gtk.Builder):
     def __init__(self, gladefile):
-        about = Gtk.Builder()
-        about.add_from_file(gladefile)
-        window = about.get_object('abtdlg')
-        window.run()
-        window.destroy()
-
-class Add_Series_Source:
-    def __init__(self,gladefile,cursor,connection):
-        self.cursor = cursor
-        self.connection = connection
-        self.dialog = Gtk.Builder()
-        self.dialog.add_from_file(gladefile)
-        connectors = {'on_btnCancel_clicked': self.on_btnCancel_clicked,
-                      'on_btnOk_clicked': self.on_btnOk_clicked}
-        self.dialog.connect_signals(connectors)
-        self.dialog.get_object('AddSeriesSource').show()
-
-    def on_btnOk_clicked(self,widget):
-        if re.match(r'http://www',self.dialog.get_object('txtSource').get_text()):
-            try:
-                self.cursor.execute('INSERT INTO series_source(name) values(?)',
-                                    (self.dialog.get_object('txtSource').get_text(),))
-                self.connection.commit()
-                self.dialog.get_object('AddSeriesSource').destroy()
-            except Exception as e:
-                logging.error("Unable to insert new series source")
-                logging.exception(e)
-        else:
-            self.dialog.get_object('lblerror').set_visible(True)
-            self.dialog.get_object('txtSource').set_text('')
-                    
-    def on_btnCancel_clicked(self,widget):
-        self.dialog.get_object("AddSeriesSource").destroy()
-            
-
-
-        
+        add_from_file(gladefile)
+        get_object('abtdlg').run()
+        #about = Gtk.Builder()
+        #about.add_from_file(gladefile)
+        #window = about.get_object('abtdlg')
+        #window.run()
+        #window.destroy()
 
 class Add_Series:
     def __init__(self, gladefile, cursor, connection):
@@ -61,44 +26,37 @@ class Add_Series:
         self.notice = self.dialog.get_object('lblNotice')
         self.dialog.get_object('linkdialog').show()
 
-        
     def on_btnCancel_clicked(self, widget):
         self.dialog.get_object('linkdialog').destroy()
 
     def on_btnOk_clicked(self, widget):
         self.link_box = self.dialog.get_object('entlink')
-        check_url(self.link_box.get_text(), self.notice, self.dialog, self.cursor, self.connection, self.link_box) 
+        check_url(self.link_box.get_text(), self.notice, self.dialog,
+                  self.cursor, self.connection, self.link_box)
         self.link_box.set_text('')
-                
+
+
 def check_url(text, notice, dialog, cursor, connection, link_box):
-    if re.match(r'(http://www.watchseries.to|http://www.primewire.ag)', text):
-        enter_link(text, cursor, connection, dialog, link_box)
+    if re.search(r'http://www.primewire.ag/(.*)-\d+\-(.*)',text):
+        title = re.search(r"http://www.primewire.ag/(.*)-\d+\-(.*)",text)
+        change_string = title.group(2)
+        show_title = change_string.replace("-", " ")
+        logging.info("Inserting new series %s" % show_title)
+        try:
+            cursor.execute('INSERT INTO series(title,series_link,number_of_episodes,number_of_seasons,status,current_season) VALUES(?,?,0,0,1,0)', (show_title.title(), text, ))
+            connection.commit()
+            logging.debug("Series Added: "+show_title)
+            link_box.set_text('')
+        except Exception as e:
+            logging.critical("Unable to enter  series %s" % text)
+            logging.exception(e)
+        finally:
+            dialog.get_object('linkdialog').destroy()
     else:
-        notice.set_text("Not a valid link")
+        notice.set_text("Not a valid link or link already exists")
         notice.set_visible(True)
         dialog.get_object('imcheck').set_visible(True)
         logging.warn("Invalid link:"+text)
-
-def enter_link(url, cursor, connection, dialog, link_box):
-    if re.search(r"http://www.watchseries.to/serie/(.*)"):
-        replace_string="_"
-    elif re.search(r"http://www.primewire.ag/(.*)-\d+\-(.*)"):
-        replace_string = "-"
-    change_string = title.group(1)
-    logging.info("Obtaining Series Title: %s" %change_string)
-    show_title = change_string.replace("_", " ")
-    try:
-        cursor.execute('INSERT INTO series(title,series_link,number_of_episodes,number_of_seasons,status,current_season) VALUES(?,?,0,0,1,0)', (show_title, url,))
-        connection.commit()
-        logging.debug("Series Added: "+show_title)
-        link_box.set_text('')
-        dialog.get_object('linkdialog').destroy()
-    except Exception as e:
-        logging.error(e)
-        logging.warn("Link already exsists:"+link_box.get_text())
-        dialog.get_object('lblNotice').set_text("Link already exists")
-        dialog.get_object('lblNotice').set_visible(True)
-        dialog.get_object('imcheck').set_visible(True)
 
 
 class Confirm:
@@ -224,10 +182,40 @@ class Error:
         self.error.connect_signals(signals)
         self.error.get_object('error').show()
 
-    def on_btnOk_activate(self,widget):
+    def on_btnOk_activate(self, widget):
         self.error.get_object('error').destroy()
-           
-        
-        
 
 
+class Current_Season:
+    def __init__(self, gladefile, cursor, connection, series_title):
+        self.cursor = cursor
+        self.connection = connection
+        self.series_title = series_title
+        self.current_season = Gtk.Builder()
+        self.current_season.add_from_file(gladefile)
+        signals = {'on_btnApply_activate': self.on_btnApply_activate,
+                 'on_btnCancel_activate': self.on_btnCancel_activate}
+        self.current_season.connect_signals(signals)
+        cur_sea = fetch_current_season(cursor, connection, series_title)
+        self.current_season.get_object('txtCurrent').set_text(cur_sea)
+        self.current_season.get_object("CurrentSeason").show()
+
+    def on_btnCancel_activate(self, widget):
+        self.current_season.get_object('CurrentSeason').close()
+
+    def on_btnApply_activate(self, widget):
+        try:
+            cur_season = self.current_season.get_object('txtCurrent').get_text()
+            self.cursor.execute('UPDATE series set current_season = ? where title=?',
+                           (cur_season, self.series_title,))
+            self.connection.commit()
+            self.current_season.get_object("CurrentSeason").destroy()
+        except Exception as e:
+            logging.warn("Unable to set current season")
+            logging.exception(e)
+
+        
+def fetch_current_season(cursor, connection, series_title):
+    cursor.execute('SELECT current_season from series where title=?', (series_title,))
+    no_season = cursor.fetchone()
+    return str(no_season[0])
