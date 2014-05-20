@@ -12,12 +12,19 @@ class Database:
         self.cursor = self.connect.cursor()
         
     def create_database(self):
-        logging.info("Creating new Database")
+        logging.info("***Creating new Database***")
         self.cursor.execute("PRAGMA foreign_keys = ON")
         logging.info("****Creating table Genre****")
-        self.cursor.execute("CREATE TABLE genre(Id INTEGER PRIMARY KEY, genre VARCHAR(10) UNIQUE NOT NULL )")
+        self.cursor.execute("CREATE TABLE genre(" +
+                            "Id INTEGER PRIMARY KEY," +
+                            "genre VARCHAR(10) UNIQUE NOT NULL )")
         logging.info("****Creating movie table****")
-        self.cursor.execute('CREATE TABLE movies(Id INTEGER PRIMARY KEY, genre_id INTEGER  NOT NULL, title VARCHAR(20) UNIQUE NOT NULL, link VARCHAR(20) NOT NULL, FOREIGN KEY(genre_id) REFERENCES genre(Id) ON UPDATE CASCADE ON DELETE CASCADE)')
+        self.cursor.execute('CREATE TABLE movies(' +
+                            'Id INTEGER PRIMARY KEY, ' +
+                            'genre_id INTEGER  NOT NULL,' +
+                            ' title VARCHAR(20) UNIQUE NOT NULL,' +
+                            ' link VARCHAR(20) NOT NULL,' +
+                            ' FOREIGN KEY(genre_id) REFERENCES genre(Id) ON UPDATE CASCADE ON DELETE CASCADE)')
         logging.info("****Creating series table****")
         self.cursor.execute('CREATE TABLE series(title VARCHAR(30) PRIMARY KEY,series_link VARCHAR(60),number_of_episodes INTEGER,number_of_seasons INTEGER,current_season INTEGER,last_update TIMESTAMP,status BOOLEAN)')
         logging.info("****Creating episodes table****")

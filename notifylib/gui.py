@@ -4,15 +4,15 @@ import logging
 from gi.repository import Gtk
 from notifylib.check_updates import UpdateClass
 
-class About(Gtk.Builder):
+
+class About:
     def __init__(self, gladefile):
-        add_from_file(gladefile)
-        get_object('abtdlg').run()
-        #about = Gtk.Builder()
-        #about.add_from_file(gladefile)
-        #window = about.get_object('abtdlg')
-        #window.run()
-        #window.destroy()
+        about = Gtk.Builder()
+        about.add_from_file(gladefile)
+        window = about.get_object('abtdlg')
+        window.run()
+        window.destroy()
+
 
 class Add_Series:
     def __init__(self, gladefile, cursor, connection):
@@ -70,14 +70,14 @@ class Confirm:
         signals = {'on_btnOk_clicked': self.on_btnOk_clicked,
                'on_btnCancel_clicked': self.on_btnCancel_clicked}
         self.confirm.connect_signals(signals)
-        self.message,self.sql = which_sql_message(self.instruction)
-        self.confirm.get_object('msgdlg').format_secondary_text(self.message+" "+
+        self.message, self.sql = which_sql_message(self.instruction)
+        self.confirm.get_object('msgdlg').format_secondary_text(self.message+" " +
                                                                 self.title+"?")
         self.confirm.get_object('msgdlg').show()
 
     def on_btnOk_clicked(self, widget):
         self.cursor.execute("PRAGMA foreign_keys = ON")
-        self.cursor.execute(self.sql,(self.title,))
+        self.cursor.execute(self.sql, (self.title,))
         self.connect.commit()
         self.confirm.get_object('msgdlg').destroy()
         logging.warn("Deleting: "+self.title)
@@ -85,36 +85,37 @@ class Confirm:
     def on_btnCancel_clicked(self, widget):
         self.confirm.get_object('msgdlg').destroy()
 
-        
+
 def which_sql_message(Instruction):
     if Instruction == "start":
-         use_sql = "UPDATE series SET status=1 where title=?"
-         message="Are you sure you want to start updating"
+        use_sql = "UPDATE series SET status=1 where title=?"
+        message = "Are you sure you want to start updating"
     elif Instruction == "stop":
         use_sql = "UPDATE series SET status=0 where title=?"
-        message="Are you sure you want to stop updating"
+        message = "Are you sure you want to stop updating"
     elif Instruction == "delete":
             use_sql = "DELETE FROM series WHERE title=?"
             message = "Are you sure you want to delete"
-    return message,use_sql
+    return message, use_sql
+
 
 class Statistics:
     def __init__(self, glade, title, connect, cursor):
         self.builder = Gtk.Builder()
         self.builder.add_from_file(glade)
-        signals = {'on_btnClose_clicked':self.on_btnClose_clicked}
+        signals = {'on_btnClose_clicked': self.on_btnClose_clicked}
         self.builder.connect_signals(signals)
         set_stats(title, connect, cursor, self.builder)
         self.builder.get_object('win_stats').show()
-        
-    def on_btnClose_clicked(self,widget):
+
+    def on_btnClose_clicked(self, widget):
         self.builder.get_object("win_stats").destroy()
-        
+
 
 def set_stats(title, connect, cursor, builder):
     cursor.execute("Select series_link,number_of_episodes,number_of_seasons,last_update,status FROM series WHERE title=?",(title,))
     for data in cursor.fetchall():
-        link =  data[0]
+        link = data[0]
         episodes = str(data[1])
         seasons = str(data[2])
         update = str(data[3])
@@ -131,15 +132,15 @@ def set_stats(title, connect, cursor, builder):
 
 
 class Preferences:
-    def __init__(self, gladefile, cursor, connect,thread,db_file):
+    def __init__(self, gladefile, cursor, connect, thread, db_file):
         self.cursor = cursor
         self.connect = connect
         self.pref = Gtk.Builder()
         self.pref.add_from_file(gladefile)
         self.thread = thread
         self.db_file = db_file
-        signals = {'on_btnSave_clicked':self.on_btnSave_clicked,
-                 'on_btnCancel_clicked':self.on_btnCancel_clicked}
+        signals = {'on_btnSave_clicked': self.on_btnSave_clicked,
+                 'on_btnCancel_clicked': self.on_btnCancel_clicked}
         self.pref.connect_signals(signals)
         self.interval = self.pref.get_object('txtInterval')
         self.get_interval()
@@ -151,7 +152,7 @@ class Preferences:
         value = int(key[0])/3600
         self.interval.set_text(str(value))
 
-    def on_btnSave_clicked(self,widget):
+    def on_btnSave_clicked(self, widget):
         try:
             value = str(int(self.interval.get_text()) * 3600)
             self.cursor.execute("UPDATE config set value=? where key='update_interval'",
@@ -165,20 +166,21 @@ class Preferences:
             logging.info("Interval updated to "+value)
             logging.warn("New Thread started")
             self.pref.get_object('pref').destroy()
-            
-        except Exception as e:
-            logging.exception("Invalid value")
-            Error('error.glade')                    
 
-    def on_btnCancel_clicked(self,widget):
+        except Exception as e:
+            logging.info("unable to add value")
+            logging.exception(e)
+            Error('error.glade')
+
+    def on_btnCancel_clicked(self, widget):
         self.pref.get_object('pref').destroy()
-    
-            
+
+
 class Error:
-    def __init__(self,gladefile):
+    def __init__(self, gladefile):
         self.error = Gtk.Builder()
         self.error.add_from_file(gladefile)
-        signals = {'on_btnOk_activate':self.on_btnOk_activate}
+        signals = {'on_btnOk_activate': self.on_btnOk_activate}
         self.error.connect_signals(signals)
         self.error.get_object('error').show()
 
@@ -193,17 +195,17 @@ class Current_Season:
         self.series_title = series_title
         self.current_season = Gtk.Builder()
         self.current_season.add_from_file(gladefile)
-        signals = {'on_btnApply_activate': self.on_btnApply_activate,
-                 'on_btnCancel_activate': self.on_btnCancel_activate}
+        signals = {'on_btnApply_clicked': self.on_btnApply_clicked,
+                 'on_btnCancel_clicked': self.on_btnCancel_clicked}
         self.current_season.connect_signals(signals)
         cur_sea = fetch_current_season(cursor, connection, series_title)
         self.current_season.get_object('txtCurrent').set_text(cur_sea)
         self.current_season.get_object("CurrentSeason").show()
 
-    def on_btnCancel_activate(self, widget):
+    def on_btnCancel_clicked(self, widget):
         self.current_season.get_object('CurrentSeason').close()
 
-    def on_btnApply_activate(self, widget):
+    def on_btnApply_clicked(self, widget):
         try:
             cur_season = self.current_season.get_object('txtCurrent').get_text()
             self.cursor.execute('UPDATE series set current_season = ? where title=?',
@@ -214,7 +216,7 @@ class Current_Season:
             logging.warn("Unable to set current season")
             logging.exception(e)
 
-        
+
 def fetch_current_season(cursor, connection, series_title):
     cursor.execute('SELECT current_season from series where title=?', (series_title,))
     no_season = cursor.fetchone()

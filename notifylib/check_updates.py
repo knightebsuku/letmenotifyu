@@ -12,9 +12,10 @@ class UpdateClass(threading.Thread):
     def run(self):
         while not self.event.is_set():
             update = Update(self.db_file)
-            update.movie()
+            #update.movie()
             update.series()
             interval = update.get_interval()
+            update.close()
             self.event.wait(int(interval))
             
     def stop(self):

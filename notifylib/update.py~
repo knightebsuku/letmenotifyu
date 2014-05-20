@@ -21,14 +21,13 @@ class Update:
             try:
                 all_episodes, new_ep_number, title, current_ep_number, no_seasons = series.fetch_new_episdoes(data[0], data[1], data[2])
                 if current_ep_number == 0:
+                    logging.info("Adding Series episodes")
                     series.new_series_episodes(all_episodes, new_ep_number, title, no_seasons)
                 else:
-                    if len(all_episodes) == current_ep_number:
-                        logging.info("no new episodes for: %s", data[1])
-                    else:
-                        new_episodes = compare(self.cursor, all_episodes, title)
-                        series.insert_new_epsiodes(new_episodes, new_ep_number,
-                                                   title, no_seasons)
+                    logging.info("Comparing new and old list")
+                    new_episodes = compare(all_episodes)
+                    #series.insert_new_epsiodes(new_episodes, new_ep_number,
+                                           #title, no_seasons)
             except Exception as e:
                 logging.info(e)
                 continue
@@ -42,13 +41,21 @@ class Update:
         self.connect.close()
 
 
-def compare(cursor, new_list, title):
+def compare(cursor, title, new_list):
     old_list = []
     cursor.execute("SELECT episode_link,episode_name from episodes where title=?",
                    (title,))
     data = cursor.fetchall()
-    for old_episode in data:
-        old_list.append(old_episode)
-    list_difference = set(new_list).difference(old_list)
-    logging.info(list_difference)
-    return list_difference
+    if data:
+        for old_data in data:
+            old_list.append(old_data[0])
+            list_difference = set(new_list).difference(old_list)
+        if len(list_difference) == 0:
+            logging.info("No New episodes")
+            return
+        else:
+            logging.info("There are the new episodes")
+            return list_difference, "announce"
+    else:
+        logging.info("new series episodes to be added")
+        return new_list

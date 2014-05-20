@@ -41,6 +41,15 @@
       </object>
     </child>
     <child>
+      <object class="GtkMenuItem" id="Current_Season">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="label" translatable="yes">Current Season</property>
+        <property name="use_underline">True</property>
+        <signal name="activate" handler="on_Current_Season_activate" swapped="no"/>
+      </object>
+    </child>
+    <child>
       <object class="GtkSeparatorMenuItem" id="menuitem2">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
@@ -74,11 +83,6 @@
       <!-- column-name series -->
       <column type="gchararray"/>
     </columns>
-  </object>
-  <object class="GtkImage" id="image1">
-    <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <property name="stock">gtk-add</property>
   </object>
   <object class="GtkImage" id="image2">
     <property name="visible">True</property>
@@ -122,17 +126,6 @@
                   <object class="GtkMenu" id="menu1">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <child>
-                      <object class="GtkImageMenuItem" id="imageWebsite">
-                        <property name="label" translatable="yes">Add Website</property>
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="use_underline">True</property>
-                        <property name="image">image1</property>
-                        <property name="use_stock">False</property>
-                        <signal name="activate" handler="on_imageWebsite_activate" swapped="no"/>
-                      </object>
-                    </child>
                     <child>
                       <object class="GtkImageMenuItem" id="imageAdd">
                         <property name="label">Add New Series</property>

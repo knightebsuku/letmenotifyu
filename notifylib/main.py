@@ -40,7 +40,7 @@ class Main:
                  'on_online_video_activate': self.on_online_video_activate,
                  'on_pref_activate': self.on_pref_activate,
                  'on_Current_Season_activate': self.on_Current_Season_activate}
-        
+
         self.builder.connect_signals(signals)
         self.view_series_archive = self.builder.get_object('ViewSeriesArchive')
         self.view_current_series = self.builder.get_object('ViewCurrentSeries')
@@ -60,7 +60,7 @@ class Main:
 
     def on_imageAdd_activate(self, widget):
         Add_Series('add_series.glade', self.cursor, self.connect)
-        
+
     def on_imageQuit_activate(self, widget):
         self.on_winlet_destroy(widget)
 
@@ -95,13 +95,13 @@ class Main:
 
     def on_Piratebay_activate(self, widget):
         self.torrent.piratebay()
-        
+
     def on_Kickass_activate(self, widget):
         self.torrent.kickass()
-        
+
     def on_online_video_activate(self, widget):
         self.torrent.online(self.latest_dict)
-    
+
     def on_ViewCurrentSeries(self, widget, event):
         if event.button == 1:
             selected = self.view_current_series.get_selection()
@@ -114,14 +114,14 @@ class Main:
                 episode_title_path = self.store_current_series.get_iter(path_value[0])
                 episode_season_path = self.store_current_series.get_iter(path_value[0] +
                                                                          ":"+path_value[1])
-                episode_path = self.store_current_series.get_iter(path_value[0] +":" +
+                episode_path = self.store_current_series.get_iter(path_value[0] + ":" +
                                                             path_value[1]+":"+path_value[2])
                 
                 model = self.view_current_series.get_model()
-                episode_title = model.get_value(episode_title_path, 0) 
+                episode_title = model.get_value(episode_title_path, 0)
                 episode_season = model.get_value(episode_season_path, 0)
                 episode = model.get_value(episode_path, 0)
-                sql_season = episode_season.replace("season ", "_s")
+                sql_season = episode_season.replace(" ", "-")
                 
                 self.cursor.execute("SELECT episode_link FROM episodes WHERE episode_name=? AND title=? AND episode_link LIKE ?",
                                     (episode, episode_title, "%"+sql_season+"%"))
@@ -191,9 +191,7 @@ class Main:
         
     def on_Current_Season_activate(self, widget):
         Current_Season("set_season.glade", self.cursor, self.connect, self.series_title)
-        
-        
-        
+
     def on_notebook1(self, widget, event):
         if self.notebook1.get_current_page() == 0:
             self.store_movies.clear()
@@ -201,7 +199,7 @@ class Main:
             create_category(self.cursor, self.store_movies, query)
         elif self.notebook1.get_current_page() == 1:
             self.store_current_series.clear()
-            query = "SELECT title,number_of_seasons from series where status=1"
+            query = "SELECT title,current_season from series where status=1"
             create_current_parent(self.cursor, self.store_current_series, query)
         elif self.notebook1.get_current_page() == 2:
             week = datetime.now() - timedelta(days=7)

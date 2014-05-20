@@ -19,35 +19,31 @@ class Get_Series:
             return primewire(title, link, eps)
         else:
             logging.warn("Unable to find matching link for %s" % title)
-        
-    def insert_new_epsiodes(self, all_eps, ep_number, title,
-                            old_ep_number, no_seasons):
-        diff = ep_number - old_ep_number
-        if old_ep_number == 0:
-            logging.info("Adding New series %s" % title)
-            while diff > 0:
-                self.cursor.execute("INSERT INTO episodes(title,episode_link,episode_name) VALUES(?,?,?)",(title, all_eps[-diff][0], all_eps[-diff][1],))
-                self.connect.commit()
-                diff -= 1
-            self.cursor.execute("UPDATE series set number_of_episodes=?,number_of_seasons=?,last_update=?  where title=?",(ep_number, no_seasons, datetime.now(), title,))
-            self.connect.commit()
-            logging.info(" Series Added: " + title)
-            announce("New Series Added",title)
-        else:
-            while diff > 0:
-                self.cursor.execute("INSERT INTO episodes(title,episode_link,episode_name,Date) VALUES(?,?,?,?)",(str(title).title, all_eps[-diff][0], all_eps[-diff][1], datetime.now(),))
-                self.connect.commit()
-                announce("New Series Episode", title,"www.primewire.ag" + all_eps[-diff][0])
-                diff -= 1
-            self.cursor.execute("UPDATE series set number_of_episodes=?,number_of_seasons=?,last_update=?  where title=?",(ep_number, no_seasons, datetime.now(),title,))
-            self.connect.commit()
 
- 
-        
-        
-                    
-            
+    def insert_new_epsiodes(self, all_eps, new_ep_number, title, no_seasons):
+        logging.info("adding new episodes")
+        self.cursor.execute("BEGIN TRANSACTION")
+        try:
+            for new_data in all_eps:
+                self.cursor.execute("INSERT INTO episodes(title,episode_link,episode_name,Date) VALUES(?,?,?,?)",(title, new_data[0], new_data[1], datetime.now(),))
+                announce("New Series Episode", title, "www.primewire.ag" + new_data[0])
+            self.cursor.execute("COMMIT")
+            self.cursor.execute("UPDATE series set number_of_episodes=?,number_of_seasons=?,last_update=?  where title=?", (new_ep_number, no_seasons, datetime.now(), title,))
+        except Exception as e:
+            logging.error("Unable to add new episodes")
+            logging.exception(e)
+            self.cursor.execute("ROLLBACK")
 
-
-
-
+    def new_series_episodes(self, all_episodes, new_ep_number, title, no_seasons):
+        logging.info("adding new series epsiodes")
+        self.cursor.execute("BEGIN TRANSACTION")
+        try:
+            for new_data in all_episodes:
+                self.cursor.execute("INSERT INTO episodes(title,episode_link,episode_name) VALUES(?,?,?)",(title, new_data[0], new_data[1],))
+            self.cursor.execute("COMMIT")
+            self.cursor.execute("UPDATE series set number_of_episodes=?,number_of_seasons=?,last_update=?,current_season=?  where title=?", (new_ep_number, no_seasons, datetime.now(), no_seasons,  title,))
+            logging.info("New series episodes added")
+        except Exception as e:
+            logging.error("unable to add series episodes")
+            logging.exception(e)
+            self.cursor.execute("ROLLBACK")

@@ -17,8 +17,8 @@ def primewire(title, episode_site, eps):
             else:
                 for links in div_class:
                     for series_links in links.find_all('a'):
-                        all_series_info.append([series_links.get('href'),
-                                                links.get_text().replace(" ","")])
+                        all_series_info.append((series_links.get('href'),
+                                                links.get_text().replace(" ","")))
                     seasons = episode_page_data.findAll("h2",
                                                         text=re.compile(r'^Season'))
                 return all_series_info, len(all_series_info), title, eps, len(seasons)
