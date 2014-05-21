@@ -9,7 +9,7 @@ if __name__=='__main__':
           license='GPL',
           scripts=['letmenotifyu'],
           packages=['notifylib'],
-          data_files=[('share/applications',['ui/letmenotifyu.desktop']),('share/letmenotifyu',['ui/about.glade','ui/confirm.glade','ui/input.glade', 'ui/main.glade','ui/stats.glade','ui/error.glade','ui/preferences.glade','ui/set_season.glade']), ('share/letmenotifyu',['ui/letmenotifyu.png','ui/letmenotifyu.xpm'])]
+          data_files=[('share/applications',['ui/letmenotifyu.desktop']),('share/letmenotifyu',['ui/about.glade','ui/confirm.glade','ui/input.glade', 'ui/main.glade','ui/stats.glade','ui/error.glade','ui/preferences.glade','ui/set_season.glade','add_series.glade']), ('share/letmenotifyu',['ui/letmenotifyu.png','ui/letmenotifyu.xpm'])]
                       
           )
             
