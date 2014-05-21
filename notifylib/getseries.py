@@ -22,28 +22,28 @@ class Get_Series:
 
     def insert_new_epsiodes(self, all_eps, new_ep_number, title, no_seasons):
         logging.info("adding new episodes")
-        self.cursor.execute("BEGIN TRANSACTION")
         try:
             for new_data in all_eps:
                 self.cursor.execute("INSERT INTO episodes(title,episode_link,episode_name,Date) VALUES(?,?,?,?)",(title, new_data[0], new_data[1], datetime.now(),))
+                self.connect.commit()
                 announce("New Series Episode", title, "www.primewire.ag" + new_data[0])
-            self.cursor.execute("COMMIT")
             self.cursor.execute("UPDATE series set number_of_episodes=?,number_of_seasons=?,last_update=?  where title=?", (new_ep_number, no_seasons, datetime.now(), title,))
+            self.connect.commit()
         except Exception as e:
             logging.error("Unable to add new episodes")
             logging.exception(e)
-            self.cursor.execute("ROLLBACK")
+            self.connect.rollback()
 
     def new_series_episodes(self, all_episodes, new_ep_number, title, no_seasons):
         logging.info("adding new series epsiodes")
-        self.cursor.execute("BEGIN TRANSACTION")
         try:
             for new_data in all_episodes:
                 self.cursor.execute("INSERT INTO episodes(title,episode_link,episode_name) VALUES(?,?,?)",(title, new_data[0], new_data[1],))
-            self.cursor.execute("COMMIT")
+                self.connect.commit()
             self.cursor.execute("UPDATE series set number_of_episodes=?,number_of_seasons=?,last_update=?,current_season=?  where title=?", (new_ep_number, no_seasons, datetime.now(), no_seasons,  title,))
+            self.connect.commit()
             logging.info("New series episodes added")
         except Exception as e:
             logging.error("unable to add series episodes")
             logging.exception(e)
-            self.cursor.execute("ROLLBACK")
+            self.connect.rollback()

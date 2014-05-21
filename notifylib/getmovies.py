@@ -1,8 +1,9 @@
-from urllib.request import Request,urlopen
+from urllib.request import Request, urlopen
 from bs4 import BeautifulSoup
 from notifylib.notify import announce
 import logging
 import re
+
 
 class Get_Movies:
     def __init__(self, cursor, connect):
@@ -20,9 +21,9 @@ class Get_Movies:
             temp_list = []
             for movie_links in links.find_all('a',{'href':re.compile("(/watch|/?genre)")}):
                 title = movie_links.get_text()
-                movie_title=title.replace("Watch", "")
-                links =  movie_links['href']
-                temp_list.append([movie_title,links])
+                movie_title = title.replace("Watch", "")
+                links = movie_links['href']
+                temp_list.append([movie_title, links])
             new_data.append([temp_list[0][0],temp_list[0][1],temp_list[1][0]])
             try:
                 self.cursor.execute("INSERT INTO genre(genre) VALUES(?)",(temp_list[1][0],))
