@@ -116,13 +116,13 @@ class Main:
                                                                          ":"+path_value[1])
                 episode_path = self.store_current_series.get_iter(path_value[0] + ":" +
                                                             path_value[1]+":"+path_value[2])
-                
+
                 model = self.view_current_series.get_model()
                 episode_title = model.get_value(episode_title_path, 0)
                 episode_season = model.get_value(episode_season_path, 0)
                 episode = model.get_value(episode_path, 0)
                 sql_season = episode_season.replace(" ", "-")
-                
+
                 self.cursor.execute("SELECT episode_link FROM episodes WHERE episode_name=? AND title=? AND episode_link LIKE ?",
                                     (episode, episode_title, "%"+sql_season+"%"))
                 link = self.cursor.fetchone()
@@ -130,7 +130,7 @@ class Main:
                 logging.info("Opening Link: "+link[0])
             else:
                 pass
-            
+
     def on_ViewSeriesArchive(self, widget, event):
         if event.button == 1:
             selected = self.view_series_archive.get_selection()
@@ -144,13 +144,13 @@ class Main:
                                                                          ":"+path_value[1])
                 episode_path = self.store_series_archive.get_iter(path_value[0]+":"+
                                                             path_value[1]+":"+path_value[2])
-                
+
                 model = self.view_series_archive.get_model()
-                episode_title = model.get_value(episode_title_path, 0) 
+                episode_title = model.get_value(episode_title_path, 0)
                 episode_season = model.get_value(episode_season_path, 0)
                 episode = model.get_value(episode_path, 0)
                 sql_season = episode_season.replace(" ", "-")
-                
+
                 self.cursor.execute("SELECT episode_link FROM episodes WHERE episode_name=? AND title=? AND episode_link LIKE ?",
                                     (episode, episode_title, "%"+sql_season+"%"))
                 link = self.cursor.fetchone()
@@ -172,13 +172,13 @@ class Main:
                 except ValueError as e:
                     logging.warn(e)
                     pass
-            
+
     def on_Stop_Update_activate(self, widget):
         Confirm('confirm.glade', self.series_title, "stop", self.connect, self.cursor)
-        
+
     def on_Start_Update_activate(self, widget):
         Confirm('confirm.glade', self.series_title, "start", self.connect, self.cursor)
-        
+
     def on_Delete_Series_activate(self, widget):
         Confirm('confirm.glade', self.series_title, "delete", self.connect, self.cursor)
 
@@ -188,7 +188,7 @@ class Main:
     def on_pref_activate(self, widget):
         Preferences('preferences.glade',self.cursor, self.connect,
                     self.update, self.db_file)
-        
+
     def on_Current_Season_activate(self, widget):
         Current_Season("set_season.glade", self.cursor, self.connect, self.series_title)
 
@@ -199,7 +199,7 @@ class Main:
             create_category(self.cursor, self.store_movies, query)
         elif self.notebook1.get_current_page() == 1:
             self.store_current_series.clear()
-            query = "SELECT title,current_season from series where status=1"
+            query = "SELECT title,current_season from series where status=1 order by title"
             create_current_parent(self.cursor, self.store_current_series, query)
         elif self.notebook1.get_current_page() == 2:
             week = datetime.now() - timedelta(days=7)
@@ -212,7 +212,7 @@ class Main:
 
         elif self.notebook1.get_current_page() == 3:
             self.store_series_archive.clear()
-            query = "SELECT title,number_of_seasons from series"
+            query = "SELECT title,number_of_seasons from series order by title"
             create_parent(self.cursor, self.store_series_archive, query)
         else:
             pass
