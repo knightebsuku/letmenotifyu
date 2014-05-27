@@ -17,6 +17,6 @@ class UpdateClass(threading.Thread):
             interval = update.get_interval()
             update.close()
             self.event.wait(int(interval))
-            
+
     def stop(self):
         self.event.set()

@@ -1,4 +1,3 @@
-
 import re
 import logging
 from gi.repository import Gtk
@@ -158,12 +157,13 @@ class Preferences:
             self.cursor.execute("UPDATE config set value=? where key='update_interval'",
                                 (value,))
             self.connect.commit()
+            logging.warn("Stoping old thread and starting new thread")
             self.thread.stop()
             self.thread.join()
             new_thread = UpdateClass(self.db_file)
             new_thread.setDaemon(True)
             new_thread.start()
-            logging.info("Interval updated to "+value)
+            logging.info("Interval updated to "+value + "seconds")
             logging.warn("New Thread started")
             self.pref.get_object('pref').destroy()
 

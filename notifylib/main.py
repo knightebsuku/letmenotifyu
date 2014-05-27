@@ -204,7 +204,7 @@ class Main:
         elif self.notebook1.get_current_page() == 2:
             week = datetime.now() - timedelta(days=7)
             self.builder.get_object('listLatestSeries').clear()
-            self.cursor.execute('SELECT title,episode_link,episode_name FROM episodes WHERE Date BETWEEN  ? AND ?',
+            self.cursor.execute('SELECT title,episode_link,episode_name FROM episodes WHERE Date BETWEEN  ? AND ? order by title',
                                 (week, datetime.now()))
             for latest in self.cursor.fetchall():
                 self.latest_dict[latest[0]+"-"+latest[2]] = "http://www.primewire.ag"+latest[1]
