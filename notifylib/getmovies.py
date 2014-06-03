@@ -12,39 +12,54 @@ class Get_Movies:
 
     def fetch_new_movies(self):
         request = Request("http://www.primewire.ag/index.php?sort=featured",
-                  headers = {'User-Agent':'Mozilla/5.0'})
+                  headers = {'User-Agent': 'Mozilla/5.0'})
         featured_movies = urlopen(request).read().decode('UTF-8')
         soup = BeautifulSoup(featured_movies)
         div_class = soup.find_all('div',{'class':'index_item index_item_ie'})
+        new_data = []
         for links in div_class:
-            new_data = []
             temp_list = []
-            for movie_links in links.find_all('a',{'href':re.compile("(/watch|/?genre)")}):
+            for movie_links in links.find_all('a', {'href': re.compile("(/watch|/?genre)")}):
                 title = movie_links.get_text()
                 movie_title = title.replace("Watch", "")
                 links = movie_links['href']
                 temp_list.append([movie_title, links])
-            new_data.append([temp_list[0][0],temp_list[0][1],temp_list[1][0]])
             try:
-                self.cursor.execute("INSERT INTO genre(genre) VALUES(?)",(temp_list[1][0],))
+                self.cursor.execute("INSERT INTO genre(genre) VALUES(?)",
+                                    (temp_list[1][0],))
                 self.connect.commit()
             except Exception as e:
-                logging.info("Genre already exists")
                 pass
             try:
-                self.cursor.execute("SELECT Id from genre where genre=?",(temp_list[1][0],))
+                self.cursor.execute("SELECT Id from genre where genre=?",
+                                    (temp_list[1][0],))
                 key = self.cursor.fetchone()
-                self.cursor.execute("INSERT INTO movies(title,link,genre_id) VALUES(?,?,?)",
-                                        (temp_list[0][0],temp_list[0][1],int(key[0]),))
-                self.connect.commit()
-                announce('New Movie',temp_list[0][0],"http://www.primewire.ag"+temp_list[0][1])
+                new_data.append((int(key[0]), temp_list[0][0], temp_list[0][1]))
             except Exception as e:
-                logging.critical("Unable to insert new Movie")
-                logging.error(e)
-                pass
+                logging.warn("Unable to fill new_data list")
+                logging.exception(e)
+        return new_data
 
-    def check_local_movies(self):
-        print("Code to Fetch from Local directory")
+    def insert_new_movies(self, new_movie_list):
+        diff_movie = compare(self.cursor, new_movie_list)
+        try:
+                for movie_data in diff_movie:
+                        self.cursor.execute("INSERT INTO movies(genre_id,title,link) VALUES(?,?,?)",
+                                     (movie_data[0], movie_data[1], movie_data[2]),)
+                        self.connect.commit()
+                        announce('New Movie',movie_data[1],
+                                 "http://www.primewire.ag"+movie_data[2])
+        except Exception as e:
+                logging.error("Unable to insert movie")
+                logging.exception(e)
+                self.connect.rollback()
 
-    def check_remote_movies(self):
-        print("Code here to fetch over network")
+
+def compare(cursor, new_list):
+    old_list = []
+    cursor.execute('SELECT genre_id,title,link from movies')
+    data = cursor.fetchall()
+    for old_data in data:
+        old_list.append((old_data[0], old_data[1], old_data[2]))
+    diff_movies = set(new_list).difference(old_list)
+    return diff_movies

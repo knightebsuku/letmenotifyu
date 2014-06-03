@@ -11,7 +11,8 @@ class Update:
 
     def movie(self):
         movie = Get_Movies(self.cursor, self.connect)
-        movie.fetch_new_movies()
+        new_movie_list = movie.fetch_new_movies()
+        movie.insert_new_movies(new_movie_list)
 
     def series(self):
         series = Get_Series(self.cursor, self.connect)
