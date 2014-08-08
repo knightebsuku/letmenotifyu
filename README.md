@@ -5,8 +5,11 @@ Letmenotifyu
 Program to notifyu users of new Episode and Movie releases from primewire.ag
 
 
-New Release 1.10
+Upcoming Release 2.0
 -----------------------------
+
+- I'm currently working on revamping letmenotifyu
+
 
 Program Features
 ------------------------------

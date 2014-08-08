@@ -66,14 +66,15 @@ class Database:
                             'id INTEGER PRIMARY KEY'+
                             'series_id VARCHAR(20) UNIQUE NOT NULL'
                             'name VARCHAR(20) NOT NULL'+
-                            'image_path VARCHAR(20)'+
-                            'FOREIGN KEY (series) REFERENCES series(title) ON DELETE CASCADE)')
+                            'path VARCHAR(20)'+
+                            'FOREIGN KEY (series_id) REFERENCES series(title))')
         logging.info("****Creating next images table")
         self.cursor.execute('CREATE table movie_images('+
                             'id INTEGER PRIMARY KEY'+
                             'movie_id VARCHAR(20) UNIQUE NOT NULL'+
                             'name VARCHAR(20) NOT NULL'+
-                            'image_path VARCHAR(20) NOT NULL')
+                            'path VARCHAR(20) NOT NULL'+
+                            'FOREIGN KEY(movie_id) REFERENCES movies(Id))')
         self.cursor.execute("INSERT INTO config(key,value) VALUES('version','2.0.0')")
         logging.info("Database has been created")
 
