@@ -4,32 +4,28 @@ import os
 import logging
 from notifylib.createdb import Database
 from notifylib.main import Main
+from notifylib import settings
 
-directory_path = os.environ['HOME']+'/.local/share/letmenotifyu/'
-
-os.chdir("/usr/share/letmenotifyu")
-db_file = directory_path+'letmenotifyu.sqlite'
-
+os.chdir("ui")
 
 def log():
-    logging.basicConfig(filename= directory_path+'letmenotifyu.log',
+    logging.basicConfig(filename=settings.LOG_FILE_PATH,
                         format = '%(asctime)s - %(message)s', filemode = 'w',
                         level = logging.DEBUG)
 
 if __name__ == "__main__":
+    log()
     try:
-        log()
-        db = Database(db_file)
+        db = Database(settings.DATABASE_PATH)
         db.upgrade_database()
     except Exception as e:
-        if os.path.isdir(directory_path):
-            log()
-            db = Database(db_file)
+        if os.path.isdir(settings.DIRECTORY_PATH):
+            db = Database(settings.DATABASE_PATH)
             db.create_database()
         else:
-            os.makedirs(directory_path)
-            log()
-            db = Database(db_file)
+            os.makedirs(settings.DIRECTORY_PATH)
+            os.makedirs(settings.IMAGE_PATH)
+            db = Database(settings.DATABASE_PATH)
             db.create_database()
     finally:
-        Main('main.glade', 'letmenotifyu.png', db_file)
+        Main('main.glade', 'letmenotifyu.png', settings.DATABASE_PATH)

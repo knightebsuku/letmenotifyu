@@ -63,3 +63,6 @@ def compare(cursor, new_list):
         old_list.append((old_data[0], old_data[1], old_data[2]))
     diff_movies = set(new_list).difference(old_list)
     return diff_movies
+
+def fetch_movie_image(page):
+    #fetch the image from here and insert into image db
