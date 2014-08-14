@@ -29,8 +29,8 @@ class Database:
                             ' FOREIGN KEY(genre_id) REFERENCES genre(Id) ON UPDATE CASCADE ON DELETE CASCADE)')
         logging.info("****Creating series table****")
         self.cursor.execute('CREATE TABLE series(' +
-                            'id INTEGER PRIMARY KEY,'+
-                            'title VARCHAR(30) UNIQUE NOT NULL' +
+                            'id INTEGER PRIMARY KEY,' +
+                            'title VARCHAR(30) UNIQUE NOT NULL,' +
                             'series_link VARCHAR(60) NOT NULL,' +
                             'number_of_episodes INTEGER NOT NULL,' +
                             'number_of_seasons INTEGER NOT NULL,' +
@@ -85,9 +85,30 @@ class Database:
 
         if database_version == '1.10':
             logging.info("***Upgrading database***")
+            self.cursor.execute("CREATE TEMP TABLE series_temp as SELECT * FROM series")
+            self.cursor.execute("DROP TABLE series")
+            self.connect.commit()
+            self.cursor.execute('CREATE TABLE series(' +
+                            'id INTEGER PRIMARY KEY,' +
+                            'title VARCHAR(30) UNIQUE NOT NULL,' +
+                            'series_link VARCHAR(60) NOT NULL,' +
+                            'number_of_episodes INTEGER NOT NULL,' +
+                            'number_of_seasons INTEGER NOT NULL,' +
+                            'current_season INTEGER,' +
+                            'last_update TIMESTAMP,' +
+                            'status BOOLEAN)')
+            self.cursor.execute('INSERT INTO series(' +
+                                'title,' +
+                                'series_link,' +
+                                'number_of_episodes,' +
+                                'number_of_seasons,' +
+                                'current_season,' +
+                                'last_update,' +
+                                'status) SELECT * from temp.series_temp')
+            self.connect.commit()
             self.cursor.execute('CREATE table series_images(' +
                             'id INTEGER PRIMARY KEY,' +
-                            'series_id VARCHAR(20) UNIQUE NOT NULL,'
+                            'series_id INTEGER NOT NULL,'
                             'path VARCHAR(20) NOT NULL,' +
                             'FOREIGN KEY(series_id) REFERENCES series(title))')
             logging.info("****Creating next images table")
