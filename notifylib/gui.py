@@ -3,7 +3,6 @@ import logging
 from gi.repository import Gtk
 from notifylib.check_updates import UpdateClass
 
-
 class About:
     def __init__(self, gladefile):
         about = Gtk.Builder()
