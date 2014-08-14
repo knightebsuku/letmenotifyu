@@ -5,10 +5,12 @@ import logging
 from notifylib.createdb import Database
 from notifylib.main import Main
 from notifylib import settings
+import sqlite3
 
 os.chdir("ui")
 
 def log():
+    "start logging"
     logging.basicConfig(filename=settings.LOG_FILE_PATH,
                         format = '%(asctime)s - %(message)s', filemode = 'w',
                         level = logging.DEBUG)
@@ -18,13 +20,12 @@ if __name__ == "__main__":
     try:
         db = Database(settings.DATABASE_PATH)
         db.upgrade_database()
-    except Exception as e:
+    except sqlite3.OperationalError as e:
         if os.path.isdir(settings.DIRECTORY_PATH):
             db = Database(settings.DATABASE_PATH)
             db.create_database()
         else:
             os.makedirs(settings.DIRECTORY_PATH)
-            os.makedirs(settings.IMAGE_PATH)
             db = Database(settings.DATABASE_PATH)
             db.create_database()
     finally:

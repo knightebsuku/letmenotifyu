@@ -101,3 +101,7 @@ class Database:
             logging.info("***Database has been upgraded***")
             logging.info("***Creating Images Directory***")
             os.mkdir(settings.IMAGE_PATH)
+            database_version = '2.0'
+
+        if database_version == '2.0':
+            logging.info("database is the latest")
