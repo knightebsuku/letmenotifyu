@@ -1,4 +1,3 @@
-
 import sqlite3
 import logging
 from notifylib import settings
@@ -12,8 +11,9 @@ class Database:
         self.db_file = db_file
         self.connect = sqlite3.connect(self.db_file)
         self.cursor = self.connect.cursor()
-        
+
     def create_database(self):
+        "create new database"
         logging.info("***Creating new Database***")
         self.cursor.execute("PRAGMA foreign_keys = ON")
         logging.info("****Creating table Genre****")
@@ -29,17 +29,18 @@ class Database:
                             ' FOREIGN KEY(genre_id) REFERENCES genre(Id) ON UPDATE CASCADE ON DELETE CASCADE)')
         logging.info("****Creating series table****")
         self.cursor.execute('CREATE TABLE series(' +
-                            'title VARCHAR(30) PRIMARY KEY,' +
-                            'series_link VARCHAR(60),' +
-                            'number_of_episodes INTEGER,' +
-                            'number_of_seasons INTEGER,' +
+                            'id INTEGER PRIMARY KEY,'+
+                            'title VARCHAR(30) UNIQUE NOT NULL' +
+                            'series_link VARCHAR(60) NOT NULL,' +
+                            'number_of_episodes INTEGER NOT NULL,' +
+                            'number_of_seasons INTEGER NOT NULL,' +
                             'current_season INTEGER,' +
                             'last_update TIMESTAMP,' +
                             'status BOOLEAN)')
         logging.info("****Creating episodes table****")
         self.cursor.execute('CREATE TABLE episodes(' +
                             'id INTEGER PRIMARY KEY,' +
-                            'title VARCHAR(30) NOT NULL,' +
+                            'series_id INTEGER  NOT NULL,' +
                             'episode_name VARCHAR(15) NOT NULL,' +
                             'episode_link VARCHAR(40) NOT NULL,' +
                             'Date TIMESTAMP,' +
@@ -53,7 +54,7 @@ class Database:
         self.connect.commit()
         self.cursor.execute('CREATE TABLE torrents(' +
                             'Id INTEGER PRIMARY KEY,' +
-                            'name VARCHAR(20) NOT NULL,' +
+                            'name VARCHAR(20) UNIQUE NOT NULL,' +
                             'link VARCHAR(20) NOT NULL)')
         logging.info("****Inserting default records****")
         self.cursor.execute("INSERT INTO torrents(name,link) VALUES('Kickass','http://kickass.to/usearch/')")
@@ -62,17 +63,16 @@ class Database:
         self.connect.commit()
         self.cursor.execute("INSERT INTO torrents(name,link) VALUES('Isohunt','http://isohunt.to/torrents/?ihq=')")
         self.connect.commit()
-        self.connect.commit()
         logging.info("****Creating Images table****")
         self.cursor.execute('CREATE table series_images(' +
                             'id INTEGER PRIMARY KEY,' +
-                            'series_id VARCHAR(20) UNIQUE NOT NULL,'
+                            'series_id INTEGER NOT NULL,'
                             'path VARCHAR(20) NOT NULL,' +
-                            'FOREIGN KEY (series_id) REFERENCES series(title))')
+                            'FOREIGN KEY (series_id) REFERENCES series(id))')
         logging.info("****Creating next images table")
         self.cursor.execute('CREATE table movie_images(' +
                             'id INTEGER PRIMARY KEY,' +
-                            'movie VARCHAR(20) UNIQUE NOT NULL,' +
+                            'movie_id INTEGER NOT NULL,' +
                             'path VARCHAR(20) NOT NULL,' +
                             'FOREIGN KEY(movie_id) REFERENCES movies(Id))')
         self.cursor.execute("INSERT INTO config(key,value) VALUES('version','2.0.0')")
@@ -93,9 +93,9 @@ class Database:
             logging.info("****Creating next images table")
             self.cursor.execute('CREATE table movie_images(' +
                             'id INTEGER PRIMARY KEY,' +
-                            'movie VARCHAR(20) UNIQUE NOT NULL,' +
+                            'movie_id INTEGER NOT NULL,' +
                             'path VARCHAR(20) NOT NULL,' +
-                            'FOREIGN KEY(movie) REFERENCES movies(title))')
+                            'FOREIGN KEY(movie_id) REFERENCES movies(id))')
             self.cursor.execute("UPDATE config set value='2.0' where key='version'")
             self.connect.commit()
             logging.info("***Database has been upgraded***")
