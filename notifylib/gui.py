@@ -2,6 +2,7 @@ import re
 import logging
 from gi.repository import Gtk
 from notifylib.check_updates import UpdateClass
+from datetime import datetime
 
 class About:
     def __init__(self, gladefile):
@@ -28,10 +29,10 @@ class Add_Series:
         self.dialog.get_object('linkdialog').destroy()
 
     def on_btnOk_clicked(self, widget):
-        self.link_box = self.dialog.get_object('entlink')
-        check_url(self.link_box.get_text(), self.notice, self.dialog,
-                  self.cursor, self.connection, self.link_box)
-        self.link_box.set_text('')
+        link_box = self.dialog.get_object('entlink')
+        check_url(link_box.get_text(), self.notice, self.dialog,
+                  self.cursor, self.connection, link_box)
+        link_box.set_text('')
 
 
 def check_url(text, notice, dialog, cursor, connection, link_box):
@@ -40,16 +41,18 @@ def check_url(text, notice, dialog, cursor, connection, link_box):
         change_string = title.group(2)
         show_title = change_string.replace("-", " ")
         logging.info("Inserting new series %s" % show_title)
-        try:
-            cursor.execute('INSERT INTO series(title,series_link,number_of_episodes,number_of_seasons,status,current_season) VALUES(?,?,0,0,1,0)', (show_title.title(), text, ))
-            connection.commit()
-            logging.debug("Series Added: "+show_title)
-            link_box.set_text('')
-        except Exception as e:
-            logging.critical("Unable to enter  series %s" % text)
-            logging.exception(e)
-        finally:
-            dialog.get_object('linkdialog').destroy()
+        cursor.execute('INSERT INTO series(title,' +
+                           'series_link,' +
+                           'number_of_episodes,' +
+                           'number_of_seasons,' +
+                           'status,' +
+                           'current_season,' +
+                           'last_update)' +
+                           ' VALUES(?,?,0,0,1,0,?)', (show_title.title(), text, datetime.now(),))
+        connection.commit()
+        logging.debug("Series Added: "+show_title)
+        link_box.set_text('')
+        dialog.get_object('linkdialog').destroy()
     else:
         notice.set_text("Not a valid link or link already exists")
         notice.set_visible(True)

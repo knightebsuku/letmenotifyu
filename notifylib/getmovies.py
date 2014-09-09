@@ -48,8 +48,7 @@ class Get_Movies:
                 self.cursor.execute("INSERT INTO movies(genre_id,title,link) VALUES(?,?,?)",
                                      (movie_data[0], movie_data[1], movie_data[2]),)
                 self.connect.commit()
-                announce('New Movie', movie_data[1],
-                             "http://www.primewire.ag"+movie_data[2])
+                announce('New Movie', movie_data[1],"http://www.primewire.ag"+movie_data[2])
                 get_movie_poster(jpg_links, movie_data[1], movie_data[2],
                                  self.cursor, self.connect)
         except sqlite3.IntegrityError as e:
@@ -75,7 +74,7 @@ def get_movie_poster(jpg_links, movie_title, movie_link, cursor, connect):
                 image_file.write(urlopen(links).read())
                 logging.info("Image fetched")
                 cursor.execute("SELECT id FROM movies WHERE title=?", (movie_title),)
-                key  = cursor.fetcone()
+                key = cursor.fetcone()
                 cursor.execute("INSERT INTO movie_images(movie_id,path) VALUES(?,?)",
                                (key, settings.IMAGE_PATH+movie_title),)
                 connect.commit()

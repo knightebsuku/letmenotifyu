@@ -34,9 +34,9 @@ class Database:
                             'series_link VARCHAR(60) NOT NULL,' +
                             'number_of_episodes INTEGER NOT NULL,' +
                             'number_of_seasons INTEGER NOT NULL,' +
-                            'current_season INTEGER,' +
-                            'last_update TIMESTAMP,' +
-                            'status BOOLEAN)')
+                            'current_season INTEGER NOT NULL,' +
+                            'last_update TIMESTAMP NOT NULL,' +
+                            'status BOOLEAN NOT NULL)')
         logging.info("****Creating episodes table****")
         self.cursor.execute('CREATE TABLE episodes(' +
                             'id INTEGER PRIMARY KEY,' +
@@ -44,7 +44,7 @@ class Database:
                             'episode_name VARCHAR(15) NOT NULL,' +
                             'episode_link VARCHAR(40) NOT NULL,' +
                             'Date TIMESTAMP,' +
-                            ' FOREIGN KEY (title) REFERENCES series(title) ON DELETE CASCADE)')
+                            ' FOREIGN KEY (series_id) REFERENCES series(id) ON DELETE CASCADE)')
         logging.info("****Creating Config table****")
         self.cursor.execute('CREATE TABLE config(' +
                             'id INTEGER PRIMARY KEY, ' +
@@ -73,10 +73,11 @@ class Database:
         self.cursor.execute('CREATE table movie_images(' +
                             'id INTEGER PRIMARY KEY,' +
                             'movie_id INTEGER NOT NULL,' +
-                            'path VARCHAR(20) NOT NULL,' +
+                            'path VARCHAR(20) UNIQUE NOT NULL,' +
                             'FOREIGN KEY(movie_id) REFERENCES movies(Id))')
         self.cursor.execute("INSERT INTO config(key,value) VALUES('version','2.0.0')")
         logging.info("Database has been created")
+        self.connect.close()
 
     def upgrade_database(self):
         self.cursor.execute("SELECT value FROM config WHERE key='version'")
@@ -94,9 +95,9 @@ class Database:
                             'series_link VARCHAR(60) NOT NULL,' +
                             'number_of_episodes INTEGER NOT NULL,' +
                             'number_of_seasons INTEGER NOT NULL,' +
-                            'current_season INTEGER,' +
-                            'last_update TIMESTAMP,' +
-                            'status BOOLEAN)')
+                            'current_season INTEGER NOT NULL,' +
+                            'last_update TIMESTAMP NOT NULL,' +
+                            'status BOOLEAN NOT NULL)')
             self.cursor.execute('INSERT INTO series(' +
                                 'title,' +
                                 'series_link,' +
@@ -115,7 +116,7 @@ class Database:
             self.cursor.execute('CREATE table movie_images(' +
                             'id INTEGER PRIMARY KEY,' +
                             'movie_id INTEGER NOT NULL,' +
-                            'path VARCHAR(20) NOT NULL,' +
+                            'path VARCHAR(20) UNIQUE NOT NULL,' +
                             'FOREIGN KEY(movie_id) REFERENCES movies(id))')
             self.cursor.execute("UPDATE config set value='2.0' where key='version'")
             self.connect.commit()
@@ -126,3 +127,4 @@ class Database:
 
         if database_version == '2.0':
             logging.info("database is the latest")
+            self.connect.close()
