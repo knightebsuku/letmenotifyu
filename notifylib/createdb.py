@@ -69,7 +69,7 @@ class Database:
                             'series_id INTEGER NOT NULL,'
                             'path VARCHAR(20) NOT NULL,' +
                             'FOREIGN KEY (series_id) REFERENCES series(id))')
-        logging.info("****Creating next images table")
+        logging.info("****Creating movie images table")
         self.cursor.execute('CREATE table movie_images(' +
                             'id INTEGER PRIMARY KEY,' +
                             'movie_id INTEGER NOT NULL,' +
@@ -107,17 +107,38 @@ class Database:
                                 'last_update,' +
                                 'status) SELECT * from temp.series_temp')
             self.connect.commit()
+            logging.info("Modifying Torrent Table****")
+            self.cursor.execute("CREATE TEMP TABLE torrent_temp as SELECT * from torrents")
+            self.cursor.execute("DROP TABLE torrents")
+            self.cursor.execute('CREATE TABLE torrent_sites(' +
+                            'Id INTEGER PRIMARY KEY,' +
+                            'name VARCHAR(20) UNIQUE NOT NULL,' +
+                            'link VARCHAR(20) NOT NULL)')
+            self.cursor.execute('INSERT INTO torrents('+
+                                'name,'+
+                                'link) SELECT * from torrent_temp')
             self.cursor.execute('CREATE table series_images(' +
                             'id INTEGER PRIMARY KEY,' +
                             'series_id INTEGER NOT NULL,'
                             'path VARCHAR(20) NOT NULL,' +
                             'FOREIGN KEY(series_id) REFERENCES series(title))')
-            logging.info("****Creating next images table")
+            logging.info("****Creating next images table****")
             self.cursor.execute('CREATE table movie_images(' +
                             'id INTEGER PRIMARY KEY,' +
                             'movie_id INTEGER NOT NULL,' +
                             'path VARCHAR(20) UNIQUE NOT NULL,' +
                             'FOREIGN KEY(movie_id) REFERENCES movies(id))')
+            logging.info("***Creating torrent link table***")
+            self.cursor.execute('CREATE TABLE series_torrent_links('+
+                                'id INTEGER PRIMARY,'+
+                                'episode_id INTEGER NOT NULL UNIQUE',+
+                                'link VARCHAR(20) NOT NULL UNIQUE,'+
+                                'FOREIGN KEY(episode_id) REFERENCES episodes(id))')
+            self.cursor.execute('CREATE TABLE movie_torrent_links('+
+                                'id INTEGER PRIMARY KEY,'+
+                                'movie_id INTEGER NOT NULL UNIQUE,'+
+                                'link VARCHAR(20) NOT NULL UNIQUE,'+
+                                'FOREIGN KEY(movie_id) REFERENCES movie(id))')
             self.cursor.execute("UPDATE config set value='2.0' where key='version'")
             self.connect.commit()
             logging.info("***Database has been upgraded***")

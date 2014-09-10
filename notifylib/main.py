@@ -33,7 +33,6 @@ class Main:
                  'on_Start_Update_activate': self.on_Start_Update_activate,
                  'on_Delete_Series_activate': self.on_Delete_Series_activate,
                  'on_Properties_activate': self.on_Properties_activate,
-                 'on_Isohunt_activate': self.on_Isohunt_activate,
                  'on_Kickass_activate': self.on_Kickass_activate,
                  'on_Piratebay_activate': self.on_Piratebay_activate,
                  'on_online_video_activate': self.on_online_video_activate,
@@ -85,12 +84,9 @@ class Main:
             get_latest_series = self.builder.get_object("ViewLatestSeries").get_selection()
             latest, name = get_latest_series.get_selected()
             self.get_episode = latest[name][0]
-            self.torrent = Torrent(self.get_episode, self.cursor, self.connect)
+            self.torrent = Torrent(self.get_episode, self.cursor)
             self.builder.get_object("torrents").popup(None, None, None, None,
                                                        event.button, event.time)
-
-    def on_Isohunt_activate(self, widget):
-        self.torrent.isohunt()
 
     def on_Piratebay_activate(self, widget):
         self.torrent.piratebay()
