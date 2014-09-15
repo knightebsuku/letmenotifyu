@@ -1,6 +1,7 @@
 from urllib.request import Request, urlopen
 from bs4 import BeautifulSoup
 from notifylib.notify import announce
+from datetime import datetime
 from notifylib import settings
 import logging
 import re
@@ -45,8 +46,8 @@ class Get_Movies:
         diff_movie = compare(self.cursor, new_movie_list)
         try:
             for movie_data in diff_movie:
-                self.cursor.execute("INSERT INTO movies(genre_id,title,link) VALUES(?,?,?)",
-                                     (movie_data[0], movie_data[1], movie_data[2]),)
+                self.cursor.execute("INSERT INTO movies(genre_id,title,link,date_added) VALUES(?,?,?,?)",
+                                     (movie_data[0], movie_data[1], movie_data[2]),datetime.now(),)
                 self.connect.commit()
                 announce('New Movie', movie_data[1],"http://www.primewire.ag"+movie_data[2])
                 get_movie_poster(jpg_links, movie_data[1], movie_data[2],

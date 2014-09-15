@@ -26,6 +26,7 @@ class Database:
                             'genre_id INTEGER  NOT NULL,' +
                             ' title VARCHAR(20) UNIQUE NOT NULL,' +
                             ' link VARCHAR(20) NOT NULL,' +
+                            'date_added TIMESTAMP NOT NULL,' +
                             ' FOREIGN KEY(genre_id) REFERENCES genre(Id) ON UPDATE CASCADE ON DELETE CASCADE)')
         logging.info("****Creating series table****")
         self.cursor.execute('CREATE TABLE series(' +
@@ -86,6 +87,22 @@ class Database:
 
         if database_version == '1.10':
             logging.info("***Upgrading database***")
+            logging.info("***Modifying Movie table***")
+            self.cursor.execute("CREATE TEMP TABLE movie_temp as SELECT * from movies")
+            self.cursor.execute("DROP TABLE movies")
+            self.cursor.execute('CREATE TABLE movies(' +
+                            'Id INTEGER PRIMARY KEY, ' +
+                            'genre_id INTEGER  NOT NULL,' +
+                            ' title VARCHAR(20) UNIQUE NOT NULL,' +
+                            ' link VARCHAR(20) NOT NULL,' +
+                            'date_added TIMESTAMP NOT NULL DEFAULT(0),' +
+                            ' FOREIGN KEY(genre_id) REFERENCES genre(Id) ON UPDATE CASCADE ON DELETE CASCADE)')
+            self.cursor.execute('INSERT INTO movies(' + 
+                                'genre,' +
+                                'title,'+
+                                'link)')
+            self.connect.commit()
+            logging.info("***Modifying Series Table***")
             self.cursor.execute("CREATE TEMP TABLE series_temp as SELECT * FROM series")
             self.cursor.execute("DROP TABLE series")
             self.connect.commit()
