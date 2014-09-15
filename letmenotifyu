@@ -33,4 +33,4 @@ if __name__ == "__main__":
             db = Database(settings.DATABASE_PATH)
             db.create_database()
     finally:
-        Main('ui/main2.glade',  settings.DATABASE_PATH)
+        Main('ui/main2.glade', settings.DATABASE_PATH)

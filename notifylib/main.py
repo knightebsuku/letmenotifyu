@@ -22,12 +22,11 @@ class Main:
         self.builder.add_from_file(gladefile)
         signals = {'on_AppWindow_destroy': self.on_AppWindow_destroy,
                    'on_headers_button_press_event': self.on_headers_click,
-                   'on_Icons_button_press_event': self.on_icons_button_event}
+                   'on_Icons_button_press_event': self.on_icons_button_event,
+                   'on_AddSeries_activate': self.on_AddSeries_activate,
+                   'on_Quit_activate': self.on_Quit_activate,
+                   'on_About_activate': self.on_About_activate,}
         ## signals = {'on_winlet_destroy': self.on_winlet_destroy,
-        ##          'on_imageAdd_activate': self.on_imageAdd_activate,
-        ##          'on_imageQuit_activate': self.on_imageQuit_activate,
-        ##          'on_imageAbout_activate': self.on_imageAbout_activate,
-        ##          
         ##          'on_ViewMovies': self.on_ViewMovies,
         ##          'on_ViewCurrentSeries': self.on_ViewCurrentSeries,
         ##          'on_ViewLatestSeries': self.on_ViewLatestSeries,
@@ -45,7 +44,7 @@ class Main:
         self.builder.connect_signals(signals)
         create_headers(self.builder, self.cursor)
         self.builder.get_object("Headers").expand_all()
-        self.window = self.builder.get_object('AppWindow').show()
+        self.builder.get_object('AppWindow').show()
         #self.update = UpdateClass(self.db_file)
         #self.update.setDaemon(True)
         #self.update.start()
@@ -65,32 +64,27 @@ class Main:
             self.builder.get_object("Genre").clear()
             self.cursor.execute("SELECT genre from genre")
             result = self.cursor.fetchall()
-            pixbuf = Gtk.IconTheme.get_default().load_icon("gtk-copy", 64, 0)
+            image = Gtk.Image()
+            pixbuf = image.set_from_file("icons/movies.png")
             for genre in result:
                 self.builder.get_object("Genre").append([pixbuf, genre[0]])
 
     def on_icons_button_event(self, widget, event):
-        genre_selection = self.builder.get_object("Icons").get_text_column()
+        genre_selection = self.builder.get_object("Icons").get_selected_items()[0]
         print(genre_selection)
         print("OK")
-        genre, it = genre_selection.get_selected()
-        genre = genre[it][0]
-        print(genre)
+        #genre, it = genre_selection
+        #genre = genre[it][0]
+        #print(genre)
         
-            
-            
-        
-        
-        
+    def on_AddSeries_activate(self, widget):
+        Add_Series('ui/add_series.glade', self.cursor, self.connect)
 
-    def on_imageAdd_activate(self, widget):
-        Add_Series('add_series.glade', self.cursor, self.connect)
+    def on_Quit_activate(self, widget):
+        Gtk.main_quit()
 
-    def on_imageQuit_activate(self, widget):
-        self.on_winlet_destroy(widget)
-
-    def on_imageAbout_activate(self, widget):
-        About('about.glade')
+    def on_About_activate(self, widget):
+        About('ui/about.glade')
 
     def on_ViewMovies(self, widget, event):
         if event.button == 1:
