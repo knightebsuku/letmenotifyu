@@ -133,7 +133,7 @@ class Database:
                             'FOREIGN KEY(movie_id) REFERENCES movies(id))')
             logging.info("***Creating series torrent link table***")
             self.cursor.execute('CREATE TABLE series_torrent_links(' +
-                                'id INTEGER PRIMARY,' +
+                                'id INTEGER PRIMARY KEY,' +
                                 'episode_id INTEGER UNIQUE NOT NULL,' +
                                 'link VARCHAR(20) NOT NULL,' +
                                 'FOREIGN KEY(episode_id) REFERENCES episodes(id))')
@@ -151,5 +151,5 @@ class Database:
             database_version = '2.0'
 
         if database_version == '2.0':
-            logging.info("No need to update database")
+            logging.info("Database on latest version")
             self.connect.close()

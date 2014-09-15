@@ -7,25 +7,16 @@ from notifylib.main import Main
 from notifylib import settings
 import sqlite3
 
-<<<<<<< HEAD
-os.chdir("ui")
-
-def log():
-    "start logging"
-    logging.basicConfig(filename=settings.LOG_FILE_PATH,
-                        format = '%(asctime)s - %(message)s',filemode = 'w',
-=======
 directory_path = os.environ['HOME']+'/.local/share/letmenotifyu/'
 
-os.chdir("ui")
+#os.chdir("ui")
 db_file = directory_path+'dev.sqlite'
 
 
 def log():
-    logging.basicConfig(filename= directory_path+'dev.log',
-                        format = '%(asctime)s - %(message)s', filemode = 'w',
->>>>>>> 7094388ba5884151cd2f888300de4d19ebf71095
-                        level = logging.DEBUG)
+    logging.basicConfig(filename=directory_path+'dev.log',
+                        format='%(asctime)s - %(message)s', filemode='w',
+                        level=logging.DEBUG)
 
 if __name__ == "__main__":
     log()
@@ -42,4 +33,4 @@ if __name__ == "__main__":
             db = Database(settings.DATABASE_PATH)
             db.create_database()
     finally:
-        Main('main.glade', 'letmenotifyu.png', settings.DATABASE_PATH)
+        Main('ui/main2.glade',  settings.DATABASE_PATH)

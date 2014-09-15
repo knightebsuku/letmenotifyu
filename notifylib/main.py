@@ -13,48 +13,75 @@ GObject.threads_init()
 
 
 class Main:
-    def __init__(self, gladefile, pic, db):
+    def __init__(self, gladefile, db):
         self.connect = sqlite3.connect(db)
         self.cursor = self.connect.cursor()
         self.db_file = db
         self.latest_dict = {}
         self.builder = Gtk.Builder()
         self.builder.add_from_file(gladefile)
-        signals = {'on_winlet_destroy': self.on_winlet_destroy,
-                 'on_imageAdd_activate': self.on_imageAdd_activate,
-                 'on_imageQuit_activate': self.on_imageQuit_activate,
-                 'on_imageAbout_activate': self.on_imageAbout_activate,
-                 'on_notebook1': self.on_notebook1,
-                 'on_ViewMovies': self.on_ViewMovies,
-                 'on_ViewCurrentSeries': self.on_ViewCurrentSeries,
-                 'on_ViewLatestSeries': self.on_ViewLatestSeries,
-                 'on_ViewSeriesArchive': self.on_ViewSeriesArchive,
-                 'on_Stop_Update_activate': self.on_Stop_Update_activate,
-                 'on_Start_Update_activate': self.on_Start_Update_activate,
-                 'on_Delete_Series_activate': self.on_Delete_Series_activate,
-                 'on_Properties_activate': self.on_Properties_activate,
-                 'on_Kickass_activate': self.on_Kickass_activate,
-                 'on_Piratebay_activate': self.on_Piratebay_activate,
-                 'on_online_video_activate': self.on_online_video_activate,
-                 'on_pref_activate': self.on_pref_activate,
-                 'on_Current_Season_activate': self.on_Current_Season_activate}
+        signals = {'on_AppWindow_destroy': self.on_AppWindow_destroy,
+                   'on_headers_button_press_event': self.on_headers_click,
+                   'on_Icons_button_press_event': self.on_icons_button_event}
+        ## signals = {'on_winlet_destroy': self.on_winlet_destroy,
+        ##          'on_imageAdd_activate': self.on_imageAdd_activate,
+        ##          'on_imageQuit_activate': self.on_imageQuit_activate,
+        ##          'on_imageAbout_activate': self.on_imageAbout_activate,
+        ##          
+        ##          'on_ViewMovies': self.on_ViewMovies,
+        ##          'on_ViewCurrentSeries': self.on_ViewCurrentSeries,
+        ##          'on_ViewLatestSeries': self.on_ViewLatestSeries,
+        ##          'on_ViewSeriesArchive': self.on_ViewSeriesArchive,
+        ##          'on_Stop_Update_activate': self.on_Stop_Update_activate,
+        ##          'on_Start_Update_activate': self.on_Start_Update_activate,
+        ##          'on_Delete_Series_activate': self.on_Delete_Series_activate,
+        ##          'on_Properties_activate': self.on_Properties_activate,
+        ##          'on_Kickass_activate': self.on_Kickass_activate,
+        ##          'on_Piratebay_activate': self.on_Piratebay_activate,
+        ##          'on_online_video_activate': self.on_online_video_activate,
+        ##          'on_pref_activate': self.on_pref_activate,
+        ##          'on_Current_Season_activate': self.on_Current_Season_activate}
 
         self.builder.connect_signals(signals)
-        self.view_series_archive = self.builder.get_object('ViewSeriesArchive')
-        self.view_current_series = self.builder.get_object('ViewCurrentSeries')
-        self.store_current_series = self.builder.get_object('StoreCurrentSeries')
-        self.store_series_archive = self.builder.get_object('StoreSeriesArchive')
-        self.store_movies = self.builder.get_object("StoreMovies")
-        self.view_movies = self.builder.get_object("ViewMovies")
-        self.notebook1 = self.builder.get_object('notebook1')
-        self.window = self.builder.get_object('winlet').show()
-        self.update = UpdateClass(self.db_file)
-        self.update.setDaemon(True)
-        self.update.start()
+        create_headers(self.builder, self.cursor)
+        self.builder.get_object("Headers").expand_all()
+        self.window = self.builder.get_object('AppWindow').show()
+        #self.update = UpdateClass(self.db_file)
+        #self.update.setDaemon(True)
+        #self.update.start()
         Gtk.main()
 
-    def on_winlet_destroy(self, widget):
+    def on_AppWindow_destroy(self, widget):
         Gtk.main_quit()
+
+    def on_headers_click(self, widget, event):
+        selection = self.builder.get_object("Headers").get_selection()
+        t, l = selection.get_selected()
+        fetch_selection = t[l][0]
+        if fetch_selection == "Latest Movies":
+            print("Show Latest Movies")
+            #show movies within the week
+        elif fetch_selection == "Archive":
+            self.builder.get_object("Genre").clear()
+            self.cursor.execute("SELECT genre from genre")
+            result = self.cursor.fetchall()
+            pixbuf = Gtk.IconTheme.get_default().load_icon("gtk-copy", 64, 0)
+            for genre in result:
+                self.builder.get_object("Genre").append([pixbuf, genre[0]])
+
+    def on_icons_button_event(self, widget, event):
+        genre_selection = self.builder.get_object("Icons").get_text_column()
+        print(genre_selection)
+        print("OK")
+        genre, it = genre_selection.get_selected()
+        genre = genre[it][0]
+        print(genre)
+        
+            
+            
+        
+        
+        
 
     def on_imageAdd_activate(self, widget):
         Add_Series('add_series.glade', self.cursor, self.connect)
@@ -204,7 +231,6 @@ class Main:
 
     def on_notebook1(self, widget, event):
         if self.notebook1.get_current_page() == 0:
-            self.store_movies.clear()
             query = "SELECT Id,genre FROM genre"
             create_category(self.cursor, self.store_movies, query)
         elif self.notebook1.get_current_page() == 1:
@@ -228,56 +254,25 @@ class Main:
             pass
 
 
-#Movie list creation
-def create_category(cursor, store_movies, query):
-    cursor.execute(query)
-    for results in cursor.fetchall():
-        category = store_movies.append(None, [results[1]])
-        add_movies(cursor, results[0],category, store_movies)
-
-        
-def add_movies(cursor, id, category, store_movies):
-    cursor.execute("SELECT title from movies where genre_Id=?",(id,))
-    for movie in cursor.fetchall():
-        store_movies.append(category, [movie[0]])
+def create_headers(builder, cursor):
+    "Crete the side bar headers"
+    header_list = ['Movies',  'Series']
+    for header in header_list:
+        if header == 'Movies':
+            Movie_header(builder, cursor, header)
+        else:
+            Series_Header(builder, cursor, header)
 
 
-#Latest Series list creation
-def create_current_parent(cursor, series_column, query):
-    cursor.execute(query)
-    for results in cursor.fetchall():
-        parent_title = series_column.append(None, [results[0]])
-        create_current_episodes(cursor, results[0], parent_title, series_column, results[1])
+def Movie_header(builder, cursor, header):
+    top_header = builder.get_object("HeaderList").append(None, [header])
+    movie_header_list = ['Lastest Movies', 'Archive']
+    for sub_header in movie_header_list:
+        builder.get_object("HeaderList").append(top_header, [sub_header])
 
-        
-def create_current_episodes(cursor, series_title, parent_title,
-                            series_column, current_season):
-    name = "season " + str(current_season)
-    sql_name = "%season-"+str(current_season)+"%"
-    series_number = series_column.append(parent_title, [name])
-    cursor.execute("SELECT episode_name FROM episodes WHERE title=? and episode_link LIKE ?",
-                   (series_title, sql_name))
-    for episode in cursor.fetchall():
-        series_column.append(series_number, [episode[0]])
 
-        
-#Series archive creation
-def create_parent(cursor, series_column, query):
-    x = 1
-    cursor.execute(query)
-    for results in cursor.fetchall():
-        parent_title = series_column.append(None, [results[0]])
-        while x <= int(results[1]):
-            create_episodes(cursor, results[0], parent_title, series_column, x)
-            x += 1
-        x = 1
-
-        
-def create_episodes(cursor, series_title, parent_title, series_column, x):
-    name = "season "+str(x)
-    sql_name = "%season-"+str(x)+"-%"
-    series_number = series_column.append(parent_title, [name])
-    cursor.execute("SELECT episode_name FROM episodes WHERE title=? and episode_link LIKE ?",
-                   (series_title, sql_name))
-    for episode in cursor.fetchall():
-        series_column.append(series_number, [episode[0]])
+def Series_Header(builder, cursor, header):
+    top_header = builder.get_object("HeaderList").append(None, [header])
+    series_header_list = ["Latest episodes", "Active Series", "Archive"]
+    for sub_header in series_header_list:
+        builder.get_object("HeaderList").append(top_header, [sub_header])
