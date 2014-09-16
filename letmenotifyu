@@ -8,8 +8,6 @@ from notifylib import settings
 import sqlite3
 
 directory_path = os.environ['HOME']+'/.local/share/letmenotifyu/'
-
-#os.chdir("ui")
 db_file = directory_path+'dev.sqlite'
 
 

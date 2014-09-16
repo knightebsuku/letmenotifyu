@@ -69,15 +69,20 @@ def process_page(movie_page):
 def get_movie_poster(jpg_links, movie_title, movie_link, cursor, connect):
     "Get images"
     number = re.search(r'\d{4,}', movie_link)
-    for links in jpg_links:
-        if re.search(number.group(0), links):
+    for url_link in jpg_links:
+        if re.search(number.group(0), url_link):
             with open("%s" %(settings.IMAGE_PATH+movie_title),'wb') as image_file:
-                image_file.write(urlopen(links).read())
+                image_request = Request(url_link,
+                                        header={'User-Agent': 'Mozilla/5.0'})
+                image_file.write(urlopen(url_link).read())
                 logging.info("Image fetched")
-                cursor.execute("SELECT id FROM movies WHERE title=?", (movie_title),)
+                cursor.execute("SELECT id FROM movies WHERE title=?",
+                               (movie_title),)
                 key = cursor.fetcone()
                 cursor.execute("INSERT INTO movie_images(movie_id,path) VALUES(?,?)",
                                (key, settings.IMAGE_PATH+movie_title),)
+                cursor.execute("UPDATE config set value=? where key='last_movie_id'",
+                               (key,))
                 connect.commit()
 
 def compare(cursor, new_list):

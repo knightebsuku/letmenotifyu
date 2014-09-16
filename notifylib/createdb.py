@@ -175,3 +175,17 @@ class Database:
         if database_version == '2.0':
             logging.info("Database on latest version")
             self.connect.close()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
