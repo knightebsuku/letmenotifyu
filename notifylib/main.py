@@ -65,7 +65,7 @@ class Main:
             self.cursor.execute("SELECT genre from genre")
             result = self.cursor.fetchall()
             image = Gtk.Image()
-            pixbuf = image.set_from_file("icons/movies.png")
+            pixbuf = image.set_from_icon_name("ui/movies.png",64)
             for genre in result:
                 self.builder.get_object("Genre").append([pixbuf, genre[0]])
 

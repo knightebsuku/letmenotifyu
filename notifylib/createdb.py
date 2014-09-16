@@ -52,6 +52,9 @@ class Database:
                             'key VARCHAR(20) NOT NULL,' +
                              'value VARCHAR(20) NOT NULL)')
         self.cursor.execute("INSERT INTO config(key,value) VALUES('update_interval','3600')")
+        self.connect.execute()
+        self.cursor.execute("INSERT INTO config(key,value) VALUES('last_movie_id, '0')")
+        self.cursor.execute("INSERT INTO config(key,value VALUES('last_series_id,'0')")
         self.connect.commit()
         self.cursor.execute('CREATE TABLE torrents(' +
                             'Id INTEGER PRIMARY KEY,' +
@@ -61,8 +64,6 @@ class Database:
         self.cursor.execute("INSERT INTO torrents(name,link) VALUES('Kickass','http://kickass.to/usearch/')")
         self.connect.commit()
         self.cursor.execute("INSERT INTO torrents(name,link) VALUES('The Pirate Bay','http://thepiratebay.sx/search/')")
-        self.connect.commit()
-        self.cursor.execute("INSERT INTO torrents(name,link) VALUES('Isohunt','http://isohunt.to/torrents/?ihq=')")
         self.connect.commit()
         logging.info("****Creating Images table****")
         self.cursor.execute('CREATE table series_images(' +
@@ -98,9 +99,9 @@ class Database:
                             'date_added TIMESTAMP NOT NULL DEFAULT(0),' +
                             ' FOREIGN KEY(genre_id) REFERENCES genre(Id) ON UPDATE CASCADE ON DELETE CASCADE)')
             self.cursor.execute('INSERT INTO movies(' + 
-                                'genre,' +
+                                'genre_id,' +
                                 'title,'+
-                                'link)')
+                                'link) SELECT genre_id,title,link from movie_temp')
             self.connect.commit()
             logging.info("***Modifying Series Table***")
             self.cursor.execute("CREATE TEMP TABLE series_temp as SELECT * FROM series")
@@ -160,6 +161,10 @@ class Database:
                                 'movie_id INTEGER UNIQUE NOT NULL,' +
                                 'link VARCHAR(20) NOT NULL,' +
                                 'FOREIGN KEY(movie_id) REFERENCES movie(id))')
+            self.cursor.execute("INSERT INTO config(key,value) VALUES('last_movie_id', '0')")
+            self.connect.commit()
+            self.cursor.execute("INSERT INTO config(key,value) VALUES('last_series_id','0')")
+            self.connect.commit()
             self.cursor.execute("UPDATE config set value='2.0' where key='version'")
             self.connect.commit()
             logging.info("***Database has been upgraded***")
