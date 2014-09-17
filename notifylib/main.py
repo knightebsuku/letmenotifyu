@@ -77,11 +77,9 @@ class Main:
 
     def on_icons_button_event(self, widget, event):
         genre_selection = self.builder.get_object("Icons").get_selected_items()[0]
-        print(genre_selection)
-        print("OK")
-        #genre, it = genre_selection
-        #genre = genre[it][0]
-        #print(genre)
+        if genre_selection == "Action":
+            self.cursor.execute()
+            
         
     def on_AddSeries_activate(self, widget):
         Add_Series('ui/add_series.glade', self.cursor, self.connect)
