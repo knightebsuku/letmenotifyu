@@ -173,7 +173,18 @@ class Database:
             database_version = '2.0'
 
         if database_version == '2.0':
-            logging.info("Database on latest version")
+            logging.info("***Upgrading Database to new version***")
+            self.cursor.execute("INSERT INTO config(key,value)"+
+                                " VALUES('movie_duration,'7')")
+            self.cursor.execute("INSERT INTO config(key,value)"+
+                                " VALUES('series_duration','7')")
+            self.connect.commit()
+            self.cursor.execute("UPDATE config set  value='2.1' where key='version'")
+            self.connect.commit()
+            database_version = '2.1'
+
+        if database_version == '2.1':
+            logging.info("Database is on latest version")
             self.connect.close()
 
 

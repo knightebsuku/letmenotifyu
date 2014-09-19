@@ -16,13 +16,14 @@ class Main:
     def __init__(self, gladefile, db):
         self.connect = sqlite3.connect(db)
         self.cursor = self.connect.cursor()
+        cat = 4
         self.db_file = db
         self.latest_dict = {}
         self.builder = Gtk.Builder()
         self.builder.add_from_file(gladefile)
         signals = {'on_AppWindow_destroy': self.on_AppWindow_destroy,
                    'on_headers_button_press_event': self.on_headers_click,
-                   'on_Icons_button_press_event': self.on_icons_button_event,
+                   'on_Icons_item_activated':self.on_item_activated,
                    'on_AddSeries_activate': self.on_AddSeries_activate,
                    'on_Quit_activate': self.on_Quit_activate,
                    'on_About_activate': self.on_About_activate,}
@@ -58,29 +59,43 @@ class Main:
         t, l = selection.get_selected()
         fetch_selection = t[l][0]
         if fetch_selection == "Latest Movies":
-            print("Show Latest Movies")
-            #show movies within the week
+            week = datetime.now() - timedelta(days=7)
+            print("only show the latest")
         elif fetch_selection == "Archive":
             self.builder.get_object("Genre").clear()
             self.cursor.execute("SELECT genre from genre")
             result = self.cursor.fetchall()
             image = Gtk.Image()
-            pixbuf = image.set_from_icon_name("ui/movies.png",64)
+            image.set_from_file("ui/movies.png")
+            pixbuf = image.get_pixbuf()
             for genre in result:
                 self.builder.get_object("Genre").append([pixbuf, genre[0]])
         elif fetch_selection == "Latest Episodes":
             print("Show the latest show with image")
         elif fetch_selection == "Active Series":
             print("Will show current playing series")
-        elif fetch_selection == "Archive":
+        elif fetch_selection == "Archive Series":
             print("Show all series")
 
-    def on_icons_button_event(self, widget, event):
-        genre_selection = self.builder.get_object("Icons").get_selected_items()[0]
-        if genre_selection == "Action":
-            self.cursor.execute()
-            
-        
+    def on_item_activated(self, widget, event):
+        icon_view = self.builder.get_object("Icons")
+        genre = self.builder.get_object("Genre")
+        genre_tree_path = icon_view.get_selected_items()
+        genre_iter = genre.get_iter(genre_tree_path)
+        model = icon_view.get_model()
+        selected_genre = model.get_value(genre_iter, 1)
+        self.cursor.execute("SELECT id from genre where genre=?",
+                            (selected_genre,))
+        genre_key= self.cursor.fetchone()
+        self.cursor.execute("SELECT title,path from movies join movie_images on  movies.id=movie_images.movie_id and  movies.genre_id=?",(genre_key[0],))
+        movie_info = self.cursor.fetchall()
+        genre.clear()
+        image = Gtk.Image()
+        for results in movie_info:
+            image.set_from_file(results[1])
+            poster = image.get_pixbuf()
+            genre.append([pic, results[0]])
+
     def on_AddSeries_activate(self, widget):
         Add_Series('ui/add_series.glade', self.cursor, self.connect)
 
@@ -274,3 +289,4 @@ def Series_Header(builder, cursor, header):
     series_header_list = ["Latest Episodes", "Active Series", "Archive"]
     for sub_header in series_header_list:
         builder.get_object("HeaderList").append(top_header, [sub_header])
+
