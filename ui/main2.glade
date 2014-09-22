@@ -16,6 +16,14 @@
       <column type="gchararray"/>
     </columns>
   </object>
+  <object class="GtkListStore" id="Movies">
+    <columns>
+      <!-- column-name GdkPixbuf1 -->
+      <column type="GdkPixbuf"/>
+      <!-- column-name gchararray1 -->
+      <column type="gchararray"/>
+    </columns>
+  </object>
   <object class="GtkImage" id="image1">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
@@ -110,107 +118,98 @@
           </packing>
         </child>
         <child>
-          <object class="GtkGrid" id="grid1">
+          <object class="GtkNotebook" id="headers">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="column_homogeneous">True</property>
+            <property name="can_focus">True</property>
+            <property name="tab_pos">left</property>
+            <property name="show_border">False</property>
+            <property name="scrollable">True</property>
+            <signal name="select-page" handler="on_headers_select_page" swapped="no"/>
+            <child>
+              <object class="GtkScrolledWindow" id="scrolledwindow1">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="shadow_type">in</property>
+                <child>
+                  <object class="GtkIconView" id="LatestMovieIcon">
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="margin">6</property>
+                    <property name="model">Movies</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child type="tab">
+              <object class="GtkLabel" id="label1">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">Latest Movies</property>
+              </object>
+              <packing>
+                <property name="tab_fill">False</property>
+              </packing>
+            </child>
             <child>
               <object class="GtkScrolledWindow" id="scrolledwindow2">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="shadow_type">in</property>
-                <property name="min_content_width">137</property>
-                <property name="min_content_height">277</property>
                 <child>
-                  <object class="GtkTreeView" id="Headers">
-                    <property name="width_request">0</property>
-                    <property name="height_request">0</property>
+                  <object class="GtkIconView" id="GenreIcon">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
-                    <property name="border_width">0</property>
-                    <property name="model">HeaderList</property>
-                    <property name="headers_visible">False</property>
-                    <property name="headers_clickable">False</property>
-                    <property name="expander_column">treeviewcolumn1</property>
-                    <property name="activate_on_single_click">True</property>
-                    <signal name="button-press-event" handler="on_headers_button_press_event" swapped="no"/>
-                    <child internal-child="selection">
-                      <object class="GtkTreeSelection" id="treeview-selection1"/>
-                    </child>
-                    <child>
-                      <object class="GtkTreeViewColumn" id="treeviewcolumn1">
-                        <property name="title" translatable="yes">Movies</property>
-                        <child>
-                          <object class="GtkCellRendererText" id="cellrenderertext1">
-                            <property name="cell_background_gdk">#000000000000</property>
-                            <property name="cell_background_rgba">rgba(0,0,0,0)</property>
-                            <property name="xpad">2</property>
-                            <property name="ypad">2</property>
-                            <property name="xalign">0</property>
-                          </object>
-                          <attributes>
-                            <attribute name="text">0</attribute>
-                            <attribute name="weight">0</attribute>
-                          </attributes>
-                        </child>
-                      </object>
-                    </child>
+                    <property name="margin">6</property>
+                    <property name="model">Genre</property>
                   </object>
                 </child>
               </object>
               <packing>
-                <property name="left_attach">0</property>
-                <property name="top_attach">0</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+            <child type="tab">
+              <object class="GtkLabel" id="label2">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">Movie Archive</property>
+              </object>
+              <packing>
+                <property name="position">1</property>
+                <property name="tab_fill">False</property>
               </packing>
             </child>
             <child>
-              <object class="GtkScrolledWindow" id="scrolledwindow5">
+              <object class="GtkScrolledWindow" id="scrolledwindow3">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="shadow_type">in</property>
                 <child>
-                  <object class="GtkViewport" id="viewport1">
+                  <object class="GtkIconView" id="LatestSeriesIcon">
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="hscroll_policy">natural</property>
-                    <property name="vscroll_policy">natural</property>
-                    <child>
-                      <object class="GtkIconView" id="Icons">
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="margin">6</property>
-                        <property name="hexpand">True</property>
-                        <property name="vexpand">True</property>
-                        <property name="hscroll_policy">natural</property>
-                        <property name="vscroll_policy">natural</property>
-                        <property name="model">Genre</property>
-                        <property name="activate_on_single_click">True</property>
-                        <signal name="item-activated" handler="on_Icons_item_activated" swapped="no"/>
-                        <child>
-                          <object class="GtkCellRendererPixbuf" id="cellrenderertext2"/>
-                          <attributes>
-                            <attribute name="pixbuf">0</attribute>
-                          </attributes>
-                        </child>
-                        <child>
-                          <object class="GtkCellRendererText" id="cellrenderertext3"/>
-                          <attributes>
-                            <attribute name="text">1</attribute>
-                          </attributes>
-                        </child>
-                      </object>
-                    </child>
+                    <property name="can_focus">True</property>
+                    <property name="margin">6</property>
                   </object>
                 </child>
               </object>
               <packing>
-                <property name="left_attach">1</property>
-                <property name="top_attach">0</property>
+                <property name="position">2</property>
+              </packing>
+            </child>
+            <child type="tab">
+              <object class="GtkLabel" id="label3">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">Latest Series</property>
+              </object>
+              <packing>
+                <property name="position">2</property>
+                <property name="tab_fill">False</property>
               </packing>
             </child>
           </object>
           <packing>
-            <property name="expand">False</property>
+            <property name="expand">True</property>
             <property name="fill">True</property>
             <property name="position">1</property>
           </packing>

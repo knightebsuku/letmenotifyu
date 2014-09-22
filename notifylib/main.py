@@ -21,8 +21,7 @@ class Main:
         self.image = Gtk.Image()
         self.builder.add_from_file(gladefile)
         signals = {'on_AppWindow_destroy': self.on_AppWindow_destroy,
-                   'on_headers_button_press_event': self.on_headers_click,
-                   'on_Icons_item_activated':self.on_item_activated,
+                   'on_headers_select_page': on_headers_select_page,
                    'on_AddSeries_activate': self.on_AddSeries_activate,
                    'on_Quit_activate': self.on_Quit_activate,
                    'on_About_activate': self.on_About_activate,}
@@ -45,21 +44,18 @@ class Main:
         create_headers(self.builder, self.cursor)
         self.builder.get_object("Headers").expand_all()
         self.builder.get_object('AppWindow').show()
-        self.update = UpdateClass(self.db_file)
-        self.update.setDaemon(True)
-        self.update.start()
+        update = UpdateClass(self.db_file)
+        update.setDaemon(True)
+        update.start()
         Gtk.main()
 
-    def on_AppWindow_destroy(self, widget):
-        Gtk.main_quit()
-
-    def on_headers_click(self, widget, event):
-        self.builder.get_object('Genre').clear()
-        selection = self.builder.get_object("Headers").get_selection()
-        t, l = selection.get_selected()
-        fetch_selection = t[l][0]
-        print(fetch_selection)
-        if fetch_selection == "Latest Movies":
+    def on_headers_select_page(self, widget, event):
+        headers = self.builder.get_object("headers")
+        movie_model = self.builder.get_object("Movies")
+        genre_model = self.builder.get_object("Genre")
+        if self.headers.get_current_page == 0:
+            logging.debug("Latest M page")
+            movie_model.clear()
             self.cursor.execute("SELECT value from config where key='movie_duration'")
             duration = self.cursor.fetchone()
             week = datetime.now() - timedelta(days=int(duration[0]))
@@ -69,15 +65,39 @@ class Main:
             for movie in movies:
                 self.image.set_from_file(movie[1])
                 pixbuf = self.image.get_pixbuf()
-                self.builder.get_object("Genre").append([pixbuf, movie[0]])
-        elif fetch_selection == "Archive":
-            self.builder.get_object("Genre").clear()
+                movie_model.append([pixbuf, movie[0]])
+        elif self.headers.get_current_page == 1:
+            logging.debug("Movie Archive Page")
+            genre_model.clear()
             self.cursor.execute("SELECT genre from genre")
             result = self.cursor.fetchall()
             self.image.set_from_file("ui/movies.png")
             pixbuf = self.image.get_pixbuf()
             for genre in result:
-                self.builder.get_object("Genre").append([pixbuf, genre[0]])
+                genre_model.append([pixbuf, genre[0]])
+            
+            
+            
+        
+
+    def on_AppWindow_destroy(self, widget):
+        Gtk.main_quit()
+
+        
+
+    def on_headers_click(self, widget, event):
+        movie_model = self.builder.get_object("Movies")
+        genre_model = self.builder.get_object("Genre")
+        icon_view = self.builder.get_object("Icons")
+        selection = self.builder.get_object("Headers").get_selection()
+        t, l = selection.get_selected()
+        fetch_selection = t[l][0]
+        if fetch_selection == "Latest Movies":
+            movie_model.clear()
+            icon_view.set_model(movie_model)
+                
+        elif fetch_selection == "Archive":
+                
         elif fetch_selection == "Latest Episodes":
             print("Show the latest show with image")
         elif fetch_selection == "Active Series":
@@ -87,7 +107,8 @@ class Main:
 
     def on_item_activated(self, widget, event):
         icon_view = self.builder.get_object("Icons")
-        genre = self.builder.get_object("Genre")
+        current_model = icon_view.get_model()
+        print(current_model[0][1])
         genre_tree_path = icon_view.get_selected_items()
         genre_iter = genre.get_iter(genre_tree_path)
         model = icon_view.get_model()
