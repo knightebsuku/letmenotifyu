@@ -161,6 +161,7 @@
                     <property name="can_focus">True</property>
                     <property name="margin">6</property>
                     <property name="model">Genre</property>
+                    <signal name="item-activated" handler="on_GenreIcon_item_activated" swapped="no"/>
                   </object>
                 </child>
               </object>

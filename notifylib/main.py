@@ -21,7 +21,8 @@ class Main:
         self.image = Gtk.Image()
         self.builder.add_from_file(gladefile)
         signals = {'on_AppWindow_destroy': self.on_AppWindow_destroy,
-                   'on_headers_select_page': on_headers_select_page,
+                   'on_headers_select_page': self.on_headers_select_page,
+                   'on_GenreIcon_activated': self.on_GenreIcon_activated,
                    'on_AddSeries_activate': self.on_AddSeries_activate,
                    'on_Quit_activate': self.on_Quit_activate,
                    'on_About_activate': self.on_About_activate,}
@@ -75,46 +76,14 @@ class Main:
             pixbuf = self.image.get_pixbuf()
             for genre in result:
                 genre_model.append([pixbuf, genre[0]])
-            
-            
-            
-        
 
-    def on_AppWindow_destroy(self, widget):
-        Gtk.main_quit()
-
-        
-
-    def on_headers_click(self, widget, event):
-        movie_model = self.builder.get_object("Movies")
-        genre_model = self.builder.get_object("Genre")
-        icon_view = self.builder.get_object("Icons")
-        selection = self.builder.get_object("Headers").get_selection()
-        t, l = selection.get_selected()
-        fetch_selection = t[l][0]
-        if fetch_selection == "Latest Movies":
-            movie_model.clear()
-            icon_view.set_model(movie_model)
-                
-        elif fetch_selection == "Archive":
-                
-        elif fetch_selection == "Latest Episodes":
-            print("Show the latest show with image")
-        elif fetch_selection == "Active Series":
-            print("Will show current playing series")
-        elif fetch_selection == "Archive Series":
-            print("Show all series")
-
-    def on_item_activated(self, widget, event):
-        icon_view = self.builder.get_object("Icons")
-        current_model = icon_view.get_model()
-        print(current_model[0][1])
-        genre_tree_path = icon_view.get_selected_items()
-        genre_iter = genre.get_iter(genre_tree_path)
-        model = icon_view.get_model()
-        selected_genre = model.get_value(genre_iter, 1)
+    def on_GenreIcon_activated(self, widget):
+        genre_icon_view = self.builder.get_object("GenreIcon")
+        genre = self.builder.get_object("Genre")
+        selection = genre_icon_view.get_model()
+        genre_selection = selection[0][1]
         self.cursor.execute("SELECT id from genre where genre=?",
-                            (selected_genre,))
+                            (genre_selection,))
         genre_key= self.cursor.fetchone()
         self.cursor.execute("SELECT title,path from movies join movie_images on  movies.id=movie_images.movie_id and  movies.genre_id=?",(genre_key[0],))
         movie_info = self.cursor.fetchall()
@@ -124,6 +93,26 @@ class Main:
             poster = self.image.get_pixbuf()
             genre.append([poster, results[0]])
 
+        
+
+            
+            
+            
+        
+
+    def on_AppWindow_destroy(self, widget):
+        Gtk.main_quit()
+
+    
+    def on_item_activated(self, widget, event):
+        icon_view = self.builder.get_object("Icons")
+        current_model = icon_view.get_model()
+        print(current_model[0][1])
+        genre_tree_path = icon_view.get_selected_items()
+        genre_iter = genre.get_iter(genre_tree_path)
+        model = icon_view.get_model()
+        selected_genre = model.get_value(genre_iter, 1)
+        
     def on_AddSeries_activate(self, widget):
         Add_Series('ui/add_series.glade', self.cursor, self.connect)
 
