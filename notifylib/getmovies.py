@@ -47,7 +47,7 @@ class Get_Movies:
         try:
             for movie_data in diff_movie:
                 self.cursor.execute("INSERT INTO movies(genre_id,title,link,date_added) VALUES(?,?,?,?)",
-                                     (movie_data[0], movie_data[1], movie_data[2]),datetime.now(),)
+                                     (movie_data[0], movie_data[1], movie_data[2],datetime.now(),))
                 self.connect.commit()
                 announce('New Movie', movie_data[1],"http://www.primewire.ag"+movie_data[2])
                 get_movie_poster(jpg_links, movie_data[1], movie_data[2],
@@ -73,16 +73,16 @@ def get_movie_poster(jpg_links, movie_title, movie_link, cursor, connect):
         if re.search(number.group(0), url_link):
             with open("%s" %(settings.IMAGE_PATH+movie_title),'wb') as image_file:
                 image_request = Request(url_link,
-                                        header={'User-Agent': 'Mozilla/5.0'})
-                image_file.write(urlopen(url_link).read())
+                                        headers={'User-Agent': 'Mozilla/5.0'})
+                image_file.write(urlopen(image_request).read())
                 logging.info("Image fetched")
                 cursor.execute("SELECT id FROM movies WHERE title=?",
-                               (movie_title),)
-                key = cursor.fetcone()
+                               (movie_title,))
+                key = cursor.fetchone()
                 cursor.execute("INSERT INTO movie_images(movie_id,path) VALUES(?,?)",
-                               (key, settings.IMAGE_PATH+movie_title),)
+                               (key[0], settings.IMAGE_PATH+movie_title,))
                 cursor.execute("UPDATE config set value=? where key='last_movie_id'",
-                               (key,))
+                               (key[0],))
                 connect.commit()
 
 def compare(cursor, new_list):

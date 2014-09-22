@@ -16,10 +16,9 @@ class Main:
     def __init__(self, gladefile, db):
         self.connect = sqlite3.connect(db)
         self.cursor = self.connect.cursor()
-        cat = 4
         self.db_file = db
-        self.latest_dict = {}
         self.builder = Gtk.Builder()
+        self.image = Gtk.Image()
         self.builder.add_from_file(gladefile)
         signals = {'on_AppWindow_destroy': self.on_AppWindow_destroy,
                    'on_headers_button_press_event': self.on_headers_click,
@@ -46,28 +45,37 @@ class Main:
         create_headers(self.builder, self.cursor)
         self.builder.get_object("Headers").expand_all()
         self.builder.get_object('AppWindow').show()
-        #self.update = UpdateClass(self.db_file)
-        #self.update.setDaemon(True)
-        #self.update.start()
+        self.update = UpdateClass(self.db_file)
+        self.update.setDaemon(True)
+        self.update.start()
         Gtk.main()
 
     def on_AppWindow_destroy(self, widget):
         Gtk.main_quit()
 
     def on_headers_click(self, widget, event):
+        self.builder.get_object('Genre').clear()
         selection = self.builder.get_object("Headers").get_selection()
         t, l = selection.get_selected()
         fetch_selection = t[l][0]
+        print(fetch_selection)
         if fetch_selection == "Latest Movies":
-            week = datetime.now() - timedelta(days=7)
-            print("only show the latest")
+            self.cursor.execute("SELECT value from config where key='movie_duration'")
+            duration = self.cursor.fetchone()
+            week = datetime.now() - timedelta(days=int(duration[0]))
+            self.cursor.execute("SELECT title,path from movies join movie_images on movies.id=movie_id and movies.date_added BETWEEN ? and ? order by title",
+                                (week, datetime.now(),))
+            movies = self.cursor.fetchall()
+            for movie in movies:
+                self.image.set_from_file(movie[1])
+                pixbuf = self.image.get_pixbuf()
+                self.builder.get_object("Genre").append([pixbuf, movie[0]])
         elif fetch_selection == "Archive":
             self.builder.get_object("Genre").clear()
             self.cursor.execute("SELECT genre from genre")
             result = self.cursor.fetchall()
-            image = Gtk.Image()
-            image.set_from_file("ui/movies.png")
-            pixbuf = image.get_pixbuf()
+            self.image.set_from_file("ui/movies.png")
+            pixbuf = self.image.get_pixbuf()
             for genre in result:
                 self.builder.get_object("Genre").append([pixbuf, genre[0]])
         elif fetch_selection == "Latest Episodes":
@@ -90,11 +98,10 @@ class Main:
         self.cursor.execute("SELECT title,path from movies join movie_images on  movies.id=movie_images.movie_id and  movies.genre_id=?",(genre_key[0],))
         movie_info = self.cursor.fetchall()
         genre.clear()
-        image = Gtk.Image()
         for results in movie_info:
-            image.set_from_file(results[1])
-            poster = image.get_pixbuf()
-            genre.append([pic, results[0]])
+            self.image.set_from_file(results[1])
+            poster = self.image.get_pixbuf()
+            genre.append([poster, results[0]])
 
     def on_AddSeries_activate(self, widget):
         Add_Series('ui/add_series.glade', self.cursor, self.connect)
@@ -279,7 +286,7 @@ def create_headers(builder, cursor):
 
 def Movie_header(builder, cursor, header):
     top_header = builder.get_object("HeaderList").append(None, [header])
-    movie_header_list = ['Lastest Movies', 'Archive']
+    movie_header_list = ['Latest Movies', 'Archive']
     for sub_header in movie_header_list:
         builder.get_object("HeaderList").append(top_header, [sub_header])
 

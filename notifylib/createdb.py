@@ -175,7 +175,7 @@ class Database:
         if database_version == '2.0':
             logging.info("***Upgrading Database to new version***")
             self.cursor.execute("INSERT INTO config(key,value)"+
-                                " VALUES('movie_duration,'7')")
+                                " VALUES('movie_duration','7')")
             self.cursor.execute("INSERT INTO config(key,value)"+
                                 " VALUES('series_duration','7')")
             self.connect.commit()
