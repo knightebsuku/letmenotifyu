@@ -21,8 +21,8 @@ class Main:
         self.image = Gtk.Image()
         self.builder.add_from_file(gladefile)
         signals = {'on_AppWindow_destroy': self.on_AppWindow_destroy,
-                   'on_headers_select_page': self.on_headers_select_page,
-                   'on_GenreIcon_activated': self.on_GenreIcon_activated,
+                   'on_headers_event': self.on_headers_event,
+                   'on_GenreIcon_item_activated': self.on_GenreIcon_activated,
                    'on_AddSeries_activate': self.on_AddSeries_activate,
                    'on_Quit_activate': self.on_Quit_activate,
                    'on_About_activate': self.on_About_activate,}
@@ -42,20 +42,19 @@ class Main:
         ##          'on_Current_Season_activate': self.on_Current_Season_activate}
 
         self.builder.connect_signals(signals)
-        create_headers(self.builder, self.cursor)
-        self.builder.get_object("Headers").expand_all()
         self.builder.get_object('AppWindow').show()
-        update = UpdateClass(self.db_file)
-        update.setDaemon(True)
-        update.start()
+        #update = UpdateClass(self.db_file)
+        #update.setDaemon(True)
+        #update.start()
         Gtk.main()
 
-    def on_headers_select_page(self, widget, event):
+    def on_headers_event(self, widget, event):
+        print("hello")
         headers = self.builder.get_object("headers")
         movie_model = self.builder.get_object("Movies")
         genre_model = self.builder.get_object("Genre")
-        if self.headers.get_current_page == 0:
-            logging.debug("Latest M page")
+        if headers.get_current_page == 0:
+            logging.debug("latest movie page")
             movie_model.clear()
             self.cursor.execute("SELECT value from config where key='movie_duration'")
             duration = self.cursor.fetchone()
@@ -68,7 +67,7 @@ class Main:
                 pixbuf = self.image.get_pixbuf()
                 movie_model.append([pixbuf, movie[0]])
         elif self.headers.get_current_page == 1:
-            logging.debug("Movie Archive Page")
+            logging.debug("movie archive page")
             genre_model.clear()
             self.cursor.execute("SELECT genre from genre")
             result = self.cursor.fetchall()
@@ -84,7 +83,7 @@ class Main:
         genre_selection = selection[0][1]
         self.cursor.execute("SELECT id from genre where genre=?",
                             (genre_selection,))
-        genre_key= self.cursor.fetchone()
+        genre_key = self.cursor.fetchone()
         self.cursor.execute("SELECT title,path from movies join movie_images on  movies.id=movie_images.movie_id and  movies.genre_id=?",(genre_key[0],))
         movie_info = self.cursor.fetchall()
         genre.clear()

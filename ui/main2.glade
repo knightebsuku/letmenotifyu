@@ -121,10 +121,10 @@
           <object class="GtkNotebook" id="headers">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
+            <property name="has_focus">True</property>
             <property name="tab_pos">left</property>
             <property name="show_border">False</property>
-            <property name="scrollable">True</property>
-            <signal name="select-page" handler="on_headers_select_page" swapped="no"/>
+            <signal name="button-press-event" handler="on_headers_event" swapped="no"/>
             <child>
               <object class="GtkScrolledWindow" id="scrolledwindow1">
                 <property name="visible">True</property>
@@ -136,6 +136,7 @@
                     <property name="can_focus">True</property>
                     <property name="margin">6</property>
                     <property name="model">Movies</property>
+                    <signal name="item-activated" handler="on_LatestMovieIcon_item_activated" swapped="no"/>
                   </object>
                 </child>
               </object>
