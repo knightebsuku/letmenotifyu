@@ -22,7 +22,8 @@ class Main:
         self.builder.add_from_file(gladefile)
         signals = {'on_AppWindow_destroy': self.on_AppWindow_destroy,
                    'on_headers_event': self.on_headers_event,
-                   'on_GenreIcon_item_activated': self.on_GenreIcon_activated,
+                   'on_GenreIcon_activated': self.on_GenreIcon_activated,
+                   'on_LatestMovie_activated': self.on_LatestMovie_activated,
                    'on_AddSeries_activate': self.on_AddSeries_activate,
                    'on_Quit_activate': self.on_Quit_activate,
                    'on_About_activate': self.on_About_activate,}
@@ -49,11 +50,10 @@ class Main:
         Gtk.main()
 
     def on_headers_event(self, widget, event):
-        print("hello")
         headers = self.builder.get_object("headers")
         movie_model = self.builder.get_object("Movies")
         genre_model = self.builder.get_object("Genre")
-        if headers.get_current_page == 0:
+        if headers.get_current_page() == 0:
             logging.debug("latest movie page")
             movie_model.clear()
             self.cursor.execute("SELECT value from config where key='movie_duration'")
@@ -66,7 +66,7 @@ class Main:
                 self.image.set_from_file(movie[1])
                 pixbuf = self.image.get_pixbuf()
                 movie_model.append([pixbuf, movie[0]])
-        elif self.headers.get_current_page == 1:
+        elif headers.get_current_page() == 1:
             logging.debug("movie archive page")
             genre_model.clear()
             self.cursor.execute("SELECT genre from genre")
@@ -76,21 +76,27 @@ class Main:
             for genre in result:
                 genre_model.append([pixbuf, genre[0]])
 
-    def on_GenreIcon_activated(self, widget):
+    def on_GenreIcon_activated(self, widget, event):
         genre_icon_view = self.builder.get_object("GenreIcon")
         genre = self.builder.get_object("Genre")
         selection = genre_icon_view.get_model()
         genre_selection = selection[0][1]
+        print(genre_selection)
         self.cursor.execute("SELECT id from genre where genre=?",
                             (genre_selection,))
         genre_key = self.cursor.fetchone()
         self.cursor.execute("SELECT title,path from movies join movie_images on  movies.id=movie_images.movie_id and  movies.genre_id=?",(genre_key[0],))
         movie_info = self.cursor.fetchall()
         genre.clear()
+        movie_archive = self.builder.get_object("MovieArchive")
+        genre_icon_view.set_model(movie_archive)
         for results in movie_info:
             self.image.set_from_file(results[1])
             poster = self.image.get_pixbuf()
-            genre.append([poster, results[0]])
+            movie_archive.append([poster, results[0]])
+
+    def on_LatestMovie_activated(self):
+        logging.debug("Lastest Movie View")
 
         
 
@@ -281,28 +287,3 @@ class Main:
             create_parent(self.cursor, self.store_series_archive, query)
         else:
             pass
-
-
-def create_headers(builder, cursor):
-    "Crete the side bar headers"
-    header_list = ['Movies',  'Series']
-    for header in header_list:
-        if header == 'Movies':
-            Movie_header(builder, cursor, header)
-        else:
-            Series_Header(builder, cursor, header)
-
-
-def Movie_header(builder, cursor, header):
-    top_header = builder.get_object("HeaderList").append(None, [header])
-    movie_header_list = ['Latest Movies', 'Archive']
-    for sub_header in movie_header_list:
-        builder.get_object("HeaderList").append(top_header, [sub_header])
-
-
-def Series_Header(builder, cursor, header):
-    top_header = builder.get_object("HeaderList").append(None, [header])
-    series_header_list = ["Latest Episodes", "Active Series", "Archive"]
-    for sub_header in series_header_list:
-        builder.get_object("HeaderList").append(top_header, [sub_header])
-

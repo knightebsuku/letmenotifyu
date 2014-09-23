@@ -16,6 +16,14 @@
       <column type="gchararray"/>
     </columns>
   </object>
+  <object class="GtkListStore" id="MovieArchive">
+    <columns>
+      <!-- column-name GdkPixbuf1 -->
+      <column type="GdkPixbuf"/>
+      <!-- column-name gchararray1 -->
+      <column type="gchararray"/>
+    </columns>
+  </object>
   <object class="GtkListStore" id="Movies">
     <columns>
       <!-- column-name GdkPixbuf1 -->
@@ -32,8 +40,8 @@
   <object class="GtkApplicationWindow" id="AppWindow">
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">Letmenotifyu</property>
-    <property name="default_width">400</property>
-    <property name="default_height">400</property>
+    <property name="default_width">600</property>
+    <property name="default_height">600</property>
     <property name="destroy_with_parent">True</property>
     <property name="icon">letmenotifyu.png</property>
     <signal name="destroy" handler="on_AppWindow_destroy" swapped="no"/>
@@ -121,9 +129,7 @@
           <object class="GtkNotebook" id="headers">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
-            <property name="has_focus">True</property>
             <property name="tab_pos">left</property>
-            <property name="show_border">False</property>
             <signal name="button-press-event" handler="on_headers_event" swapped="no"/>
             <child>
               <object class="GtkScrolledWindow" id="scrolledwindow1">
@@ -131,12 +137,25 @@
                 <property name="can_focus">True</property>
                 <property name="shadow_type">in</property>
                 <child>
-                  <object class="GtkIconView" id="LatestMovieIcon">
+                  <object class="GtkIconView" id="LatestMovie">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="margin">6</property>
                     <property name="model">Movies</property>
-                    <signal name="item-activated" handler="on_LatestMovieIcon_item_activated" swapped="no"/>
+                    <property name="activate_on_single_click">True</property>
+                    <signal name="item-activated" handler="on_LatestMovie_activated" swapped="no"/>
+                    <child>
+                      <object class="GtkCellRendererPixbuf" id="cellrenderertext1"/>
+                      <attributes>
+                        <attribute name="pixbuf">0</attribute>
+                      </attributes>
+                    </child>
+                    <child>
+                      <object class="GtkCellRendererText" id="cellrenderertext2"/>
+                      <attributes>
+                        <attribute name="text">1</attribute>
+                      </attributes>
+                    </child>
                   </object>
                 </child>
               </object>
@@ -162,7 +181,20 @@
                     <property name="can_focus">True</property>
                     <property name="margin">6</property>
                     <property name="model">Genre</property>
-                    <signal name="item-activated" handler="on_GenreIcon_item_activated" swapped="no"/>
+                    <property name="activate_on_single_click">True</property>
+                    <signal name="item-activated" handler="on_GenreIcon_activated" swapped="no"/>
+                    <child>
+                      <object class="GtkCellRendererPixbuf" id="cellrenderertext3"/>
+                      <attributes>
+                        <attribute name="pixbuf">0</attribute>
+                      </attributes>
+                    </child>
+                    <child>
+                      <object class="GtkCellRendererText" id="cellrenderertext4"/>
+                      <attributes>
+                        <attribute name="text">1</attribute>
+                      </attributes>
+                    </child>
                   </object>
                 </child>
               </object>
