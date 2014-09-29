@@ -51,11 +51,12 @@ class Main:
 
     def on_headers_event(self, widget, event):
         headers = self.builder.get_object("headers")
-        movie_model = self.builder.get_object("Movies")
-        genre_model = self.builder.get_object("Genre")
+        lastest_movie_model = self.builder.get_object("Movies")
+        self.genre_model = self.builder.get_object("Genre")
+        self.genre_icon_view = self.builder.get_object("GenreIcon")
+        self.movie_archive = self.builder.get_object("MovieArchive")
         if headers.get_current_page() == 0:
-            logging.debug("latest movie page")
-            movie_model.clear()
+            lastest_movie_model.clear()
             self.cursor.execute("SELECT value from config where key='movie_duration'")
             duration = self.cursor.fetchone()
             week = datetime.now() - timedelta(days=int(duration[0]))
@@ -65,38 +66,46 @@ class Main:
             for movie in movies:
                 self.image.set_from_file(movie[1])
                 pixbuf = self.image.get_pixbuf()
-                movie_model.append([pixbuf, movie[0]])
+                lastest_movie_model.append([pixbuf, movie[0]])
         elif headers.get_current_page() == 1:
-            logging.debug("movie archive page")
-            genre_model.clear()
+            self.genre_icon_view.set_model(self.genre_model)
+            self.genre_model.clear()
             self.cursor.execute("SELECT genre from genre")
             result = self.cursor.fetchall()
             self.image.set_from_file("ui/movies.png")
             pixbuf = self.image.get_pixbuf()
             for genre in result:
-                genre_model.append([pixbuf, genre[0]])
+                self.genre_model.append([pixbuf, genre[0]])
 
     def on_GenreIcon_activated(self, widget, event):
-        genre_icon_view = self.builder.get_object("GenreIcon")
-        genre = self.builder.get_object("Genre")
-        selection = genre_icon_view.get_model()
-        genre_selection = selection[0][1]
-        print(genre_selection)
+        selection_tree_path = self.genre_icon_view.get_selected_items()
+        selection_iter = self.genre_model.get_iter(selection_tree_path)
+        model = self.genre_icon_view.get_model()
+        genre = model.get_value(selection_iter, 1)
+        if re.search(r'\d+$', choice)
         self.cursor.execute("SELECT id from genre where genre=?",
-                            (genre_selection,))
+                            (genre,))
         genre_key = self.cursor.fetchone()
         self.cursor.execute("SELECT title,path from movies join movie_images on  movies.id=movie_images.movie_id and  movies.genre_id=?",(genre_key[0],))
         movie_info = self.cursor.fetchall()
-        genre.clear()
-        movie_archive = self.builder.get_object("MovieArchive")
-        genre_icon_view.set_model(movie_archive)
+        self.genre_icon_view.set_model(self.movie_archive)
+        self.movie_archive.clear()
         for results in movie_info:
             self.image.set_from_file(results[1])
             poster = self.image.get_pixbuf()
-            movie_archive.append([poster, results[0]])
+            self.movie_archive.append([poster, results[0]])
 
-    def on_LatestMovie_activated(self):
-        logging.debug("Lastest Movie View")
+    def on_LatestMovie_activated(self, widget, event):
+        latest_movie_view = self.builder.get_object("LatestMovie")
+        latest_tree_path = latest_movie_view.get_selected_items()
+        latest_iter = self.movie_archive.get_iter(latest_tree_path)
+        model = latest_movie_view.get_model()
+        latest_movie = model.get_value(latest_iter, 1) 
+        self.cursor.execute("SELECT link FROM movies WHERE title=?",
+                                (latest_movie,))
+        link = self.cursor.fetchone()
+        webbrowser.open_new("http://www.primewire.ag"+link[0])
+        logging.info("Opening Link:"+link[0])
 
         
 
@@ -107,16 +116,6 @@ class Main:
 
     def on_AppWindow_destroy(self, widget):
         Gtk.main_quit()
-
-    
-    def on_item_activated(self, widget, event):
-        icon_view = self.builder.get_object("Icons")
-        current_model = icon_view.get_model()
-        print(current_model[0][1])
-        genre_tree_path = icon_view.get_selected_items()
-        genre_iter = genre.get_iter(genre_tree_path)
-        model = icon_view.get_model()
-        selected_genre = model.get_value(genre_iter, 1)
         
     def on_AddSeries_activate(self, widget):
         Add_Series('ui/add_series.glade', self.cursor, self.connect)
@@ -127,25 +126,7 @@ class Main:
     def on_About_activate(self, widget):
         About('ui/about.glade')
 
-    def on_ViewMovies(self, widget, event):
-        if event.button == 1:
-            try:
-                get_title = self.builder.get_object("ViewMovies").get_selection()
-                movie, name = get_title.get_selected()
-                fetch_title = movie[name][0]
-                self.cursor.execute("SELECT link FROM movies WHERE title=?",
-                                (fetch_title,))
-                link = self.cursor.fetchone()
-                webbrowser.open_new("http://www.primewire.ag"+link[0])
-                logging.info("Opening Link:"+link[0])
-            except TypeError:
-                pass
-
     def on_ViewLatestSeries(self, widget, event):
-        if event.button == 3:
-            get_latest_series = self.builder.get_object("ViewLatestSeries").get_selection()
-            latest, name = get_latest_series.get_selected()
-            self.get_episode = latest[name][0]
             self.torrent = Torrent(self.get_episode, self.cursor)
             self.builder.get_object("torrents").popup(None, None, None, None,
                                                        event.button, event.time)
