@@ -1,5 +1,4 @@
 import sqlite3
-import webbrowser
 import re
 import logging
 
@@ -7,6 +6,7 @@ from datetime import datetime, timedelta
 from gi.repository import Gtk, GObject
 from notifylib.gui import Add_Series, About, Confirm, Statistics, Preferences, Current_Season
 from notifylib.torrent import Torrent
+from notifylib import util
 from notifylib.check_updates import UpdateClass
 
 GObject.threads_init()
@@ -43,20 +43,20 @@ class Main:
         ##          'on_Current_Season_activate': self.on_Current_Season_activate}
 
         self.builder.connect_signals(signals)
+        self.genre_model = self.builder.get_object("Genre")
+        self.genre_icon_view = self.builder.get_object("GenreIcon")
+        self.lastest_movie_model = self.builder.get_object("Movies")
+        #self.movie_archive = self.builder.get_object("MovieArchive")
         self.builder.get_object('AppWindow').show()
-        #update = UpdateClass(self.db_file)
-        #update.setDaemon(True)
-        #update.start()
+        update = UpdateClass(self.db_file)
+        update.setDaemon(True)
+        update.start()
         Gtk.main()
 
     def on_headers_event(self, widget, event):
         headers = self.builder.get_object("headers")
-        lastest_movie_model = self.builder.get_object("Movies")
-        self.genre_model = self.builder.get_object("Genre")
-        self.genre_icon_view = self.builder.get_object("GenreIcon")
-        self.movie_archive = self.builder.get_object("MovieArchive")
         if headers.get_current_page() == 0:
-            lastest_movie_model.clear()
+            self.lastest_movie_model.clear()
             self.cursor.execute("SELECT value from config where key='movie_duration'")
             duration = self.cursor.fetchone()
             week = datetime.now() - timedelta(days=int(duration[0]))
@@ -66,7 +66,7 @@ class Main:
             for movie in movies:
                 self.image.set_from_file(movie[1])
                 pixbuf = self.image.get_pixbuf()
-                lastest_movie_model.append([pixbuf, movie[0]])
+                self.lastest_movie_model.append([pixbuf, movie[0]])
         elif headers.get_current_page() == 1:
             self.genre_icon_view.set_model(self.genre_model)
             self.genre_model.clear()
@@ -81,31 +81,29 @@ class Main:
         selection_tree_path = self.genre_icon_view.get_selected_items()
         selection_iter = self.genre_model.get_iter(selection_tree_path)
         model = self.genre_icon_view.get_model()
-        genre = model.get_value(selection_iter, 1)
-        if re.search(r'\d+$', choice)
-        self.cursor.execute("SELECT id from genre where genre=?",
-                            (genre,))
-        genre_key = self.cursor.fetchone()
-        self.cursor.execute("SELECT title,path from movies join movie_images on  movies.id=movie_images.movie_id and  movies.genre_id=?",(genre_key[0],))
-        movie_info = self.cursor.fetchall()
-        self.genre_icon_view.set_model(self.movie_archive)
-        self.movie_archive.clear()
-        for results in movie_info:
-            self.image.set_from_file(results[1])
-            poster = self.image.get_pixbuf()
-            self.movie_archive.append([poster, results[0]])
+        choice = model.get_value(selection_iter, 1)
+        if re.search(r'\(\d+\)$', choice):
+            util.open_page(self.cursor, choice)
+        else:
+            self.cursor.execute("SELECT id from genre where genre=?",
+                                (choice,))
+            genre_key = self.cursor.fetchone()
+            self.cursor.execute("SELECT title,path from movies join movie_images on  movies.id=movie_images.movie_id and  movies.genre_id=?",(genre_key[0],))
+            movie_info = self.cursor.fetchall()
+            self.genre_model.clear()
+            for results in movie_info:
+                self.image.set_from_file(results[1])
+                poster = self.image.get_pixbuf()
+                self.genre_model.append([poster, results[0]])
+        
 
     def on_LatestMovie_activated(self, widget, event):
         latest_movie_view = self.builder.get_object("LatestMovie")
         latest_tree_path = latest_movie_view.get_selected_items()
-        latest_iter = self.movie_archive.get_iter(latest_tree_path)
+        latest_iter = self.lastest_movie_model.get_iter(latest_tree_path)
         model = latest_movie_view.get_model()
-        latest_movie = model.get_value(latest_iter, 1) 
-        self.cursor.execute("SELECT link FROM movies WHERE title=?",
-                                (latest_movie,))
-        link = self.cursor.fetchone()
-        webbrowser.open_new("http://www.primewire.ag"+link[0])
-        logging.info("Opening Link:"+link[0])
+        latest_movie = model.get_value(latest_iter, 1)
+        util.open_page(self.cursor, latest_movie)
 
         
 
@@ -268,3 +266,5 @@ class Main:
             create_parent(self.cursor, self.store_series_archive, query)
         else:
             pass
+
+

@@ -71,7 +71,7 @@ def get_movie_poster(jpg_links, movie_title, movie_link, cursor, connect):
     number = re.search(r'\d{4,}', movie_link)
     for url_link in jpg_links:
         if re.search(number.group(0), url_link):
-            with open("%s" %(settings.IMAGE_PATH+movie_title),'wb') as image_file:
+            with open("%s" %(settings.IMAGE_PATH+movie_title+".jpg"),'wb') as image_file:
                 image_request = Request(url_link,
                                         headers={'User-Agent': 'Mozilla/5.0'})
                 image_file.write(urlopen(image_request).read())
