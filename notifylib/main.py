@@ -45,10 +45,11 @@ class Main:
         self.builder.connect_signals(signals)
         self.general_model = self.builder.get_object("General")
         self.genre_icon_view = self.builder.get_object("GenreIcon")
+        self.latest_series_view = self.builder.get_object("LatestSeriesIcon")
         self.builder.get_object('AppWindow').show()
-        update = UpdateClass(self.db_file)
-        update.setDaemon(True)
-        update.start()
+        #update = UpdateClass(self.db_file)
+        #update.setDaemon(True)
+        #update.start()
         Gtk.main()
 
     def on_headers_event(self, widget, event):
@@ -74,12 +75,17 @@ class Main:
             pixbuf = self.image.get_pixbuf()
             for genre in result:
                 self.general_model.append([pixbuf, genre[0]])
-        elif headers.get_current_page() ==2:
+        elif headers.get_current_page() == 2:
             self.general_model.clear()
+            #self.latest_series_view.set_model(self.general_model)
             self.cursor.execute("SELECT value from config where key='series_duration'")
             duration = self.cursor.fetchone()
             week = datetime.now() - timedelta(days=int(duration[0]))
             self.cursor.execute("SELECT episode_name,episode_link,path from episodes join series_images on episodes.series_id=series_images.series_id and episodes.Date BETWEEN ? AND ?",(week,datetime.now(),))
+            for episode in self.cursor.fetchall():
+                self.image.set_from_file(episode[2])
+                pixbuf = self.image.get_pixbuf()
+                self.general_model.append([pixbuf, episode[0]])
 
     def on_GenreIcon_activated(self, widget, event):
         selection_tree_path = self.genre_icon_view.get_selected_items()

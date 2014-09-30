@@ -21,7 +21,7 @@ class Series:
         try:
             for new_data in all_eps:
                 self.cursor.execute("INSERT INTO episodes(series_id,episode_link,episode_name,Date) VALUES(?,?,?,?)",(series_id, new_data[0], new_data[1], datetime.now(),))
-                announce("New Series Episode", title, "www.primewire.ag" + new_data[0])
+                #announce("New Series Episode", series_id, "www.primewire.ag" + new_data[0])
             self.cursor.execute("UPDATE series set number_of_episodes=?,number_of_seasons=?,last_update=?  where id=?",
                                 (new_ep_number, no_seasons, datetime.now(), series_id,))
             self.connect.commit()
