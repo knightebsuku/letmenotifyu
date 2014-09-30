@@ -20,12 +20,12 @@ class Main:
         self.builder = Gtk.Builder()
         self.image = Gtk.Image()
         self.builder.add_from_file(gladefile)
-        signals = {'on_AppWindow_destroy': self.on_AppWindow_destroy,
+        signals = {'on_AppWindow_destroy': Gtk.main_quit,
                    'on_headers_event': self.on_headers_event,
                    'on_GenreIcon_activated': self.on_GenreIcon_activated,
                    'on_LatestMovie_activated': self.on_LatestMovie_activated,
                    'on_AddSeries_activate': self.on_AddSeries_activate,
-                   'on_Quit_activate': self.on_Quit_activate,
+                   'on_Quit_activate': Gtk.main_quit,
                    'on_About_activate': self.on_About_activate,}
         ## signals = {'on_winlet_destroy': self.on_winlet_destroy,
         ##          'on_ViewMovies': self.on_ViewMovies,
@@ -43,10 +43,8 @@ class Main:
         ##          'on_Current_Season_activate': self.on_Current_Season_activate}
 
         self.builder.connect_signals(signals)
-        self.genre_model = self.builder.get_object("Genre")
+        self.general_model = self.builder.get_object("General")
         self.genre_icon_view = self.builder.get_object("GenreIcon")
-        self.lastest_movie_model = self.builder.get_object("Movies")
-        #self.movie_archive = self.builder.get_object("MovieArchive")
         self.builder.get_object('AppWindow').show()
         update = UpdateClass(self.db_file)
         update.setDaemon(True)
@@ -56,7 +54,7 @@ class Main:
     def on_headers_event(self, widget, event):
         headers = self.builder.get_object("headers")
         if headers.get_current_page() == 0:
-            self.lastest_movie_model.clear()
+            self.general_model.clear()
             self.cursor.execute("SELECT value from config where key='movie_duration'")
             duration = self.cursor.fetchone()
             week = datetime.now() - timedelta(days=int(duration[0]))
@@ -66,20 +64,26 @@ class Main:
             for movie in movies:
                 self.image.set_from_file(movie[1])
                 pixbuf = self.image.get_pixbuf()
-                self.lastest_movie_model.append([pixbuf, movie[0]])
+                self.general_model.append([pixbuf, movie[0]])
         elif headers.get_current_page() == 1:
-            self.genre_icon_view.set_model(self.genre_model)
-            self.genre_model.clear()
+            self.general_model.clear()
+            self.genre_icon_view.set_model(self.general_model)
             self.cursor.execute("SELECT genre from genre")
             result = self.cursor.fetchall()
             self.image.set_from_file("ui/movies.png")
             pixbuf = self.image.get_pixbuf()
             for genre in result:
-                self.genre_model.append([pixbuf, genre[0]])
+                self.general_model.append([pixbuf, genre[0]])
+        elif headers.get_current_page() ==2:
+            self.general_model.clear()
+            self.cursor.execute("SELECT value from config where key='series_duration'")
+            duration = self.cursor.fetchone()
+            week = datetime.now() - timedelta(days=int(duration[0]))
+            self.cursor.execute("SELECT episode_name,episode_link,path from episodes join series_images on episodes.series_id=series_images.series_id and episodes.Date BETWEEN ? AND ?",(week,datetime.now(),))
 
     def on_GenreIcon_activated(self, widget, event):
         selection_tree_path = self.genre_icon_view.get_selected_items()
-        selection_iter = self.genre_model.get_iter(selection_tree_path)
+        selection_iter = self.general_model.get_iter(selection_tree_path)
         model = self.genre_icon_view.get_model()
         choice = model.get_value(selection_iter, 1)
         if re.search(r'\(\d+\)$', choice):
@@ -90,36 +94,23 @@ class Main:
             genre_key = self.cursor.fetchone()
             self.cursor.execute("SELECT title,path from movies join movie_images on  movies.id=movie_images.movie_id and  movies.genre_id=?",(genre_key[0],))
             movie_info = self.cursor.fetchall()
-            self.genre_model.clear()
+            self.general_model.clear()
             for results in movie_info:
                 self.image.set_from_file(results[1])
                 poster = self.image.get_pixbuf()
-                self.genre_model.append([poster, results[0]])
+                self.general_model.append([poster, results[0]])
         
 
     def on_LatestMovie_activated(self, widget, event):
         latest_movie_view = self.builder.get_object("LatestMovie")
         latest_tree_path = latest_movie_view.get_selected_items()
-        latest_iter = self.lastest_movie_model.get_iter(latest_tree_path)
+        latest_iter = self.general_model.get_iter(latest_tree_path)
         model = latest_movie_view.get_model()
         latest_movie = model.get_value(latest_iter, 1)
         util.open_page(self.cursor, latest_movie)
 
-        
-
-            
-            
-            
-        
-
-    def on_AppWindow_destroy(self, widget):
-        Gtk.main_quit()
-        
     def on_AddSeries_activate(self, widget):
         Add_Series('ui/add_series.glade', self.cursor, self.connect)
-
-    def on_Quit_activate(self, widget):
-        Gtk.main_quit()
 
     def on_About_activate(self, widget):
         About('ui/about.glade')

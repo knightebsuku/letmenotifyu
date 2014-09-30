@@ -1,7 +1,8 @@
 import sqlite3
 import logging
 from notifylib.getmovies import Get_Movies
-from notifylib.getseries import Get_Series
+from notifylib.series import Series
+from notifylib import util
 
 
 class Update:
@@ -15,19 +16,21 @@ class Update:
         movie.insert_new_movies(new_movie_list, movie_page)
 
     def series(self):
-        series = Get_Series(self.cursor, self.connect)
-        all_series = series.fetch_series_data()
-        for data in all_series:
+        series = Series(self.cursor, self.connect)
+        active_series = series.fetch_series_data()
+        for series_info in active_series:
             try:
-                all_episodes, new_ep_number, title, current_ep_number, no_seasons = series.fetch_new_episdoes(data[0], data[1], data[2])
-                if current_ep_number == 0:
-                    series.new_series_episodes(all_episodes, new_ep_number, title, no_seasons)
-                elif len(all_episodes) == current_ep_number:
-                    logging.info("no new episodes for: %s", data[1])
+                all_episodes, new_ep_number, no_seasons = series.fetch_new_episdoes(series_info[1])
+                if series_info[2] == 0:
+                    series.new_series_episodes(all_episodes, new_ep_number,
+                                               series_info[0], no_seasons)
+                elif len(all_episodes) == series_info[2]:
+                    logging.info("no new episodes for: %s", series_info[1])
                 else:
-                    new_episodes = compare(self.cursor, all_episodes, title)
+                    new_episodes = util.series_compare(self.cursor, all_episodes,
+                                                       series_info[0])
                     series.insert_new_epsiodes(new_episodes, new_ep_number,
-                                                   title, no_seasons)
+                                                   series_info[0], no_seasons)
             except Exception as e:
                 logging.info(e)
                 continue
@@ -41,13 +44,3 @@ class Update:
         self.connect.close()
 
 
-def compare(cursor, new_list, title):
-    old_list = []
-    cursor.execute("SELECT episode_link,episode_name from episodes where title=?",
-                   (title,))
-    data = cursor.fetchall()
-    for old_episode in data:
-        old_list.append((old_episode[0],old_episode[1].replace("\n", "")))
-    list_difference = set(new_list).difference(old_list)
-    logging.info(list_difference)
-    return list_difference

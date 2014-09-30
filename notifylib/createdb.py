@@ -184,7 +184,21 @@ class Database:
             database_version = '2.1'
 
         if database_version == '2.1':
-            logging.info("Database is on latest version")
+            logging.info("**Updating to version 2.2****")
+            self.cursor.execute("DROP TABLE episodes")
+            self.cursor.execute('CREATE TABLE episodes(' +
+                            'id INTEGER PRIMARY KEY,' +
+                            'series_id INTEGER  NOT NULL,' +
+                            'episode_name VARCHAR(15) NOT NULL,' +
+                            'episode_link VARCHAR(40) NOT NULL,' +
+                            'Date TIMESTAMP,' +
+                            ' FOREIGN KEY (series_id) REFERENCES series(id) ON DELETE CASCADE)')
+            self.cursor.execute("UPDATE config set value='2.2' where key='version'")
+            self.connect.commit()
+            database_version = '2.2'
+
+        if database_version == '2.2':
+            logging.info("Database is up to date")
             self.connect.close()
 
 

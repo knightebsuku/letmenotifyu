@@ -80,7 +80,7 @@ def get_movie_poster(jpg_links, movie_title, movie_link, cursor, connect):
                                (movie_title,))
                 key = cursor.fetchone()
                 cursor.execute("INSERT INTO movie_images(movie_id,path) VALUES(?,?)",
-                               (key[0], settings.IMAGE_PATH+movie_title,))
+                               (key[0], settings.IMAGE_PATH+movie_title+".jpg",))
                 cursor.execute("UPDATE config set value=? where key='last_movie_id'",
                                (key[0],))
                 connect.commit()
