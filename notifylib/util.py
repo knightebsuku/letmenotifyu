@@ -6,13 +6,16 @@ from bs4 import BeautifulSoup
 from notifylib import settings
 import re
 
-def open_page(cursor, movie):
+def open_page(cursor, link, option=""):
     "open webbrowser page"
-    cursor.execute("SELECT link FROM movies where title=?", (movie,))
-    link = cursor.fetchone()
-    webbrowser.open_new("http://www.primewire.ag"+link[0])
-    logging.info("Opening link"+ link[0])
-    
+    if option == "movie":
+        cursor.execute("SELECT link FROM movies where title=?", (movie,))
+        link = cursor.fetchone()
+        webbrowser.open_new("http://www.primewire.ag"+link[0])
+        logging.info("Opening link"+ link[0])
+    else:
+        webbrowser.open_new("http://www.primewire.ag"+link)
+
 def primewire(episode_site):
     "process series page"
     try:
