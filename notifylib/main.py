@@ -25,7 +25,8 @@ class Main:
                    'on_GenreIcon_activated': self.on_GenreIcon_activated,
                    'on_LatestMovie_activated': self.on_LatestMovie_activated,
                    'on_LatestEpisodesIcon_activated': self.on_LatestEpisodes_activated,
-                   'on_ActiveSeries_activated': self.on_ActiveSeries_activated}
+                   'on_ActiveSeries_activated': self.on_ActiveSeries_activated,
+                   'on_SeriesArchive_activated': self.on_SeriesArchive_activated}
                    #'on_AddSeries_activate': self.on_AddSeries_activate,
                    #'on_Quit_activate': Gtk.main_quit,
                    #'on_About_activate': self.on_About_activate,}
@@ -106,10 +107,7 @@ class Main:
                 self.general_model.append([pixbuf, all_series[0]])
 
     def on_GenreIcon_activated(self, widget, event):
-        selection_tree_path = self.genre_icon_view.get_selected_items()
-        selection_iter = self.general_model.get_iter(selection_tree_path)
-        model = self.genre_icon_view.get_model()
-        choice = model.get_value(selection_iter, 1)
+        choice = util.get_selection(self.genre_icon_view, self.general_model)
         if re.search(r'\(\d+\)$', choice):
             util.open_page(self.cursor, choice,"movie")
         else:
@@ -127,26 +125,17 @@ class Main:
 
     def on_LatestMovie_activated(self, widget, event):
         latest_movie_view = self.builder.get_object("LatestMovie")
-        latest_tree_path = latest_movie_view.get_selected_items()
-        latest_iter = self.general_model.get_iter(latest_tree_path)
-        model = latest_movie_view.get_model()
-        latest_movie = model.get_value(latest_iter, 1)
+        latest_movie = util.get_selection(latest_movie_view, self.general_model)
         util.open_page(self.cursor, latest_movie, "movie")
 
     def on_LatestEpisodes_activated(self, *args):
-        latest_series_view = self.builder.get_object("LatestEpisodesIcon")
-        tree_path = latest_series_view.get_selected_items()
-        iters = self.general_model.get_iter(tree_path)
-        model = latest_series_view.get_model()
-        latest_series = model.get_value(iters, 1)
-        util.open_page(self.cursor, self.latest_dict[latest_series])
+        latest_episode_view = self.builder.get_object("LatestEpisodesIcon")
+        latest_episode = util.get_selection(latest_episode_view, self.general_model)
+        util.open_page(self.cursor, self.latest_dict[latest_episode])
 
     def on_ActiveSeries_activated(self,*args):
         active_series_view = self.builder.get_object("ActiveSeries")
-        tree_path = active_series_view.get_selected_items()
-        iters = self.general_model.get_iter(tree_path)
-        model = active_series_view.get_model()
-        active_series = model.get_value(iters, 1)
+        active_series = util.get_selection(active_series_view, self.general_model)
         if re.search(r'^Episode',active_series):
             util.open_page(self.cursor, self.active_series_dic[active_series])
         else:
@@ -166,7 +155,38 @@ class Main:
                 pixbuf = self.image.get_pixbuf()
                 self.general_model.append([pixbuf, current_season[0]])
                 self.active_series_dic[current_season[0]] = current_season[1]
-        
+
+    def on_SeriesArchive_activated(self,*args):
+        self.archive_series_dict = {}
+        series_archive_view = self.builder.get_object("SeriesArchive")
+        choice = util.get_selection(series_archive_view,self.general_model)
+        if re.search(r'^Season', choice):
+            logging.debug("Season selected")
+            no = choice.split("Season ")[1]
+            self.cursor.execute("SELECT episode_name,episode_link FROM episodes" +
+                                ' WHERE series_id=(SELECT id from series where title=?)' +
+                                ' and episode_link LIKE ?',
+                                (self.series_name, "%season-"+ no +"%",))
+            self.general_model.clear()
+            for current_season in self.cursor.fetchall():
+                self.image.set_from_file("ui/movies.png")
+                pixbuf = self.image.get_pixbuf()
+                self.general_model.append([pixbuf, current_season[0]])
+                self.archive_series_dict[current_season[0]] = current_season[1]
+        else:
+            self.series_name = choice
+            logging.debug("series selected %s" %choice)
+            self.cursor.execute("SELECT number_of_seasons from series where title=?",
+                                (choice,))
+            no_seasons = self.cursor.fetchone()
+            index = 1
+            self.general_model.clear()
+            while index <= int(no_seasons[0]):
+                self.image.set_from_file("ui/movies.png")
+                pixbuf = self.image.get_pixbuf()
+                self.general_model.append([pixbuf,"Season %s" % index])
+                index += 1
+
     def on_AddSeries_activate(self, widget):
         Add_Series('ui/add_series.glade', self.cursor, self.connect)
 

@@ -18,7 +18,7 @@ if __name__ == "__main__":
         db = Database(settings.DATABASE_PATH)
         db.upgrade_database()
     except sqlite3.OperationalError as e:
-        logging.exception(e)
+        logging.info("No database found, creating a new one")
         if os.path.isdir(settings.DIRECTORY_PATH):
             db = Database(settings.DATABASE_PATH)
             db.create_database()

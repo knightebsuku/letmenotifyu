@@ -1,15 +1,22 @@
 import webbrowser
 import logging
+import re
 
 from urllib.request import Request, urlopen
 from bs4 import BeautifulSoup
 from notifylib import settings
-import re
 
-def open_page(cursor, link, option=""):
+def get_selection(view,store_model):
+    tree_path = view.get_selected_items()
+    iters = store_model.get_iter(tree_path)
+    model = view.get_model()
+    selection = model.get_value(iters,1)
+    return selection
+
+def open_page(cursor, link, option=None):
     "open webbrowser page"
     if option == "movie":
-        cursor.execute("SELECT link FROM movies where title=?", (movie,))
+        cursor.execute("SELECT link FROM movies where title=?", (link,))
         link = cursor.fetchone()
         webbrowser.open_new("http://www.primewire.ag"+link[0])
         logging.info("Opening link"+ link[0])

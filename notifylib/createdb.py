@@ -22,7 +22,7 @@ class Database:
                             "genre VARCHAR(10) UNIQUE NOT NULL )")
         logging.info("****Creating movie table****")
         self.cursor.execute('CREATE TABLE movies(' +
-                            'Id INTEGER PRIMARY KEY, ' +
+                            'id INTEGER PRIMARY KEY, ' +
                             'genre_id INTEGER  NOT NULL,' +
                             ' title VARCHAR(20) UNIQUE NOT NULL,' +
                             ' link VARCHAR(20) NOT NULL,' +
@@ -51,20 +51,10 @@ class Database:
                             'id INTEGER PRIMARY KEY, ' +
                             'key VARCHAR(20) NOT NULL,' +
                              'value VARCHAR(20) NOT NULL)')
-        self.cursor.execute("INSERT INTO config(key,value) VALUES('update_interval','3600')")
-        self.connect.execute()
-        self.cursor.execute("INSERT INTO config(key,value) VALUES('last_movie_id, '0')")
-        self.cursor.execute("INSERT INTO config(key,value VALUES('last_series_id,'0')")
-        self.connect.commit()
         self.cursor.execute('CREATE TABLE torrents(' +
                             'Id INTEGER PRIMARY KEY,' +
                             'name VARCHAR(20) UNIQUE NOT NULL,' +
                             'link VARCHAR(20) NOT NULL)')
-        logging.info("****Inserting default records****")
-        self.cursor.execute("INSERT INTO torrents(name,link) VALUES('Kickass','http://kickass.to/usearch/')")
-        self.connect.commit()
-        self.cursor.execute("INSERT INTO torrents(name,link) VALUES('The Pirate Bay','http://thepiratebay.sx/search/')")
-        self.connect.commit()
         logging.info("****Creating Images table****")
         self.cursor.execute('CREATE table series_images(' +
                             'id INTEGER PRIMARY KEY,' +
@@ -78,7 +68,19 @@ class Database:
                             'path VARCHAR(20) UNIQUE NOT NULL,' +
                             'FOREIGN KEY(movie_id) REFERENCES movies(Id))')
         self.cursor.execute("INSERT INTO config(key,value) VALUES('version','2.0')")
-        logging.info("Database has been created")
+        self.cursor.execute("INSERT INTO config(key,value) VALUES('update_interval','3600')")
+        self.cursor.execute("INSERT INTO config(key,value) VALUES('last_movie_id', '0')")
+        self.cursor.execute("INSERT INTO config(key,value) VALUES('last_series_id','0')")
+        self.cursor.execute("INSERT INTO torrents(name,link) VALUES('Kickass','http://kickass.to/usearch/')")
+        self.cursor.execute("INSERT INTO torrents(name,link) VALUES('The Pirate Bay','http://thepiratebay.sx/search/')")
+        self.cursor.execute("INSERT INTO config(key,value)"+
+                                 " VALUES('movie_duration','7')")
+        self.cursor.execute("INSERT INTO config(key,value)"+
+                                 " VALUES('series_duration','7')")
+        self.connect.commit()
+        logging.info("***Creating Images Directory***")
+        os.mkdir(settings.IMAGE_PATH)
+        logging.info("***Database has been created***")
         self.connect.close()
 
     def upgrade_database(self):
@@ -172,34 +174,34 @@ class Database:
             os.mkdir(settings.IMAGE_PATH)
             database_version = '2.0'
 
-        if database_version == '2.0':
-            logging.info("***Upgrading Database to new version***")
-            self.cursor.execute("INSERT INTO config(key,value)"+
-                                " VALUES('movie_duration','7')")
-            self.cursor.execute("INSERT INTO config(key,value)"+
-                                " VALUES('series_duration','7')")
-            self.connect.commit()
-            self.cursor.execute("UPDATE config set  value='2.1' where key='version'")
-            self.connect.commit()
-            database_version = '2.1'
+        ## if database_version == '2.0':
+        ##     logging.info("***Upgrading Database to new version***")
+        ##     self.cursor.execute("INSERT INTO config(key,value)"+
+        ##                         " VALUES('movie_duration','7')")
+        ##     self.cursor.execute("INSERT INTO config(key,value)"+
+        ##                         " VALUES('series_duration','7')")
+        ##     self.connect.commit()
+        ##     self.cursor.execute("UPDATE config set  value='2.1' where key='version'")
+        ##     self.connect.commit()
+        ##     database_version = '2.1'
 
-        if database_version == '2.1':
-            logging.info("**Updating to version 2.2****")
-            self.cursor.execute("DROP TABLE episodes")
-            self.cursor.execute('CREATE TABLE episodes(' +
-                            'id INTEGER PRIMARY KEY,' +
-                            'series_id INTEGER  NOT NULL,' +
-                            'episode_name VARCHAR(15) NOT NULL,' +
-                            'episode_link VARCHAR(40) NOT NULL,' +
-                            'Date TIMESTAMP,' +
-                            ' FOREIGN KEY (series_id) REFERENCES series(id) ON DELETE CASCADE)')
-            self.cursor.execute("UPDATE config set value='2.2' where key='version'")
-            self.connect.commit()
-            database_version = '2.2'
+        ## if database_version == '2.1':
+        ##     logging.info("**Updating to version 2.2****")
+        ##     self.cursor.execute("DROP TABLE episodes")
+        ##     self.cursor.execute('CREATE TABLE episodes(' +
+        ##                     'id INTEGER PRIMARY KEY,' +
+        ##                     'series_id INTEGER  NOT NULL,' +
+        ##                     'episode_name VARCHAR(15) NOT NULL,' +
+        ##                     'episode_link VARCHAR(40) NOT NULL,' +
+        ##                     'Date TIMESTAMP,' +
+        ##                     ' FOREIGN KEY (series_id) REFERENCES series(id) ON DELETE CASCADE)')
+        ##     self.cursor.execute("UPDATE config set value='2.2' where key='version'")
+        ##     self.connect.commit()
+        ##     database_version = '2.2'
 
-        if database_version == '2.2':
-            logging.info("Database is up to date")
-            self.connect.close()
+        ## if database_version == '2.2':
+        ##     logging.info("***database up to date***")
+        ##     self.connect.close()
 
 
 

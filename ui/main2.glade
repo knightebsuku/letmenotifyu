@@ -367,6 +367,8 @@
                     <property name="can_focus">True</property>
                     <property name="margin">6</property>
                     <property name="model">General</property>
+                    <property name="activate_on_single_click">True</property>
+                    <signal name="item-activated" handler="on_SeriesArchive_activated" swapped="no"/>
                     <child>
                       <object class="GtkCellRendererPixbuf" id="cellrenderertext9"/>
                       <attributes>
