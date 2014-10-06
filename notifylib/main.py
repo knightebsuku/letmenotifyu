@@ -129,7 +129,7 @@ class Main:
         latest_episode = util.get_selection(latest_episode_view, self.general_model)
         util.open_page(self.cursor, self.latest_dict[latest_episode])
 
-    def on_ActiveSeries_activated(self, widget, event, active_series):
+    def on_ActiveSeries_activated(self, widget, active_series):
         if re.search(r'^Episode', active_series):
             util.open_page(self.cursor, self.active_series_dic[active_series])
         else:
@@ -158,8 +158,7 @@ class Main:
                     self.builder.get_object("Series").popup(None, None, None, None,
                                                             event.button, event.time)
                 elif event.button == 1:
-                    print("Left Click")
-                    self.on_AddSeries_activate(widget, event, series)
+                    self.on_ActiveSeries_activated(widget, series)
                     
     def on_SeriesArchive_activated(self, widget, event):
         self.archive_series_dict = {}
@@ -225,4 +224,4 @@ class Main:
                     self.update, self.db_file)
 
     def on_Current_Season_activate(self, widget):
-        Current_Season("set_season.glade", self.cursor, self.connect, self.striped_name)
+        Current_Season( self.cursor, self.connect, self.striped_name)
