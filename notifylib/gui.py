@@ -191,12 +191,12 @@ class Error:
 
 
 class Current_Season:
-    def __init__(self, gladefile, cursor, connection, series_title):
+    def __init__(self, cursor, connection, series_title):
         self.cursor = cursor
         self.connection = connection
         self.series_title = series_title
         self.current_season = Gtk.Builder()
-        self.current_season.add_from_file(gladefile)
+        self.current_season.add_from_file("ui/set_season.glade")
         signals = {'on_btnApply_clicked': self.on_btnApply_clicked,
                  'on_btnCancel_clicked': self.on_btnCancel_clicked}
         self.current_season.connect_signals(signals)

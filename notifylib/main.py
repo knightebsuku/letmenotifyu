@@ -28,7 +28,7 @@ class Main:
                    'on_LatestMovie_activated': self.on_LatestMovie_activated,
                    'on_LatestEpisodesIcon_activated': self.on_LatestEpisodes_activated,
                    'on_SeriesArchive_activated': self.on_SeriesArchive_activated,
-                   #'on_ActiveSeries_activated': self.on_ActiveSeries_activated,
+                   'on_ActiveSeries_activated': self.on_ActiveSeries_activated,
                    'on_ActiveSeries_button_event': self.on_ActiveSeries_event,
                    #'on_ActiveSeries_selection_changed': self.on_ActiveSeries_selection,
                    'on_AddSeries_activate': self.on_AddSeries_activate,
