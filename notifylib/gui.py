@@ -5,20 +5,20 @@ from notifylib.check_updates import UpdateClass
 from datetime import datetime
 
 class About:
-    def __init__(self, gladefile):
+    def __init__(self):
         about = Gtk.Builder()
-        about.add_from_file(gladefile)
+        about.add_from_file("ui/about.glade")
         window = about.get_object('abtdlg')
         window.run()
         window.destroy()
 
 
 class Add_Series:
-    def __init__(self, gladefile, cursor, connection):
+    def __init__(self, cursor, connection):
         self.cursor = cursor
         self.connection = connection
         self.dialog = Gtk.Builder()
-        self.dialog.add_from_file(gladefile)
+        self.dialog.add_from_file("ui/add_series.glade")
         connectors = {'on_btnCancel_clicked': self.on_btnCancel_clicked,
               'on_btnOk_clicked': self.on_btnOk_clicked}
         self.dialog.connect_signals(connectors)
@@ -61,13 +61,13 @@ def check_url(text, notice, dialog, cursor, connection, link_box):
 
 
 class Confirm:
-    def __init__(self, gladefile, title, instruction, connect, cursor):
+    def __init__(self,title, instruction, connect, cursor):
         self.connect = connect
         self.cursor = cursor
         self.title = title
         self.instruction = instruction
         self.confirm = Gtk.Builder()
-        self.confirm.add_from_file(gladefile)
+        self.confirm.add_from_file("ui/confirm.glade")
         signals = {'on_btnOk_clicked': self.on_btnOk_clicked,
                'on_btnCancel_clicked': self.on_btnCancel_clicked}
         self.confirm.connect_signals(signals)
@@ -101,9 +101,9 @@ def which_sql_message(Instruction):
 
 
 class Statistics:
-    def __init__(self, glade, title, connect, cursor):
+    def __init__(self, title, connect, cursor):
         self.builder = Gtk.Builder()
-        self.builder.add_from_file(glade)
+        self.builder.add_from_file("ui/stats.glade")
         signals = {'on_btnClose_clicked': self.on_btnClose_clicked}
         self.builder.connect_signals(signals)
         set_stats(title, connect, cursor, self.builder)
@@ -133,11 +133,11 @@ def set_stats(title, connect, cursor, builder):
 
 
 class Preferences:
-    def __init__(self, gladefile, cursor, connect, thread, db_file):
+    def __init__(self, cursor, connect, thread, db_file):
         self.cursor = cursor
         self.connect = connect
         self.pref = Gtk.Builder()
-        self.pref.add_from_file(gladefile)
+        self.pref.add_from_file("ui/prefrences.glade")
         self.thread = thread
         self.db_file = db_file
         signals = {'on_btnSave_clicked': self.on_btnSave_clicked,
@@ -179,9 +179,9 @@ class Preferences:
 
 
 class Error:
-    def __init__(self, gladefile):
+    def __init__(self):
         self.error = Gtk.Builder()
-        self.error.add_from_file(gladefile)
+        self.error.add_from_file("ui/error.glade")
         signals = {'on_btnOk_activate': self.on_btnOk_activate}
         self.error.connect_signals(signals)
         self.error.get_object('error').show()

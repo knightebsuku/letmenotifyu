@@ -1,16 +1,25 @@
 import webbrowser
 import logging
 import re
+import sqlite3
 
 from urllib.request import Request, urlopen
 from bs4 import BeautifulSoup
 from notifylib import settings
 
-def get_selection(view,store_model):
+
+def render_view(image, string, store_model, image_file="ui/movies.png"):
+    "Render GtkIconView"
+    image.set_from_file(image_file)
+    pixbuf = image.get_pixbuf()
+    store_model.append([pixbuf, string])
+
+def get_selection(view, store_model):
+    "Get selection of GtkIconView"
     tree_path = view.get_selected_items()
     iters = store_model.get_iter(tree_path)
     model = view.get_model()
-    selection = model.get_value(iters,1)
+    selection = model.get_value(iters, 1)
     return selection
 
 def open_page(cursor, link, option=None):
@@ -31,7 +40,7 @@ def primewire(episode_site):
         soup = BeautifulSoup(data)
         episode_page_data = soup
         all_series_info = []
-        div_class = episode_page_data.find_all('div',{'class':'tv_episode_item'})
+        div_class = episode_page_data.find_all('div', {'class':'tv_episode_item'})
         for links in div_class:
             for series_links in links.find_all('a'):
                 all_series_info.append((series_links.get('href'),
@@ -44,6 +53,7 @@ def primewire(episode_site):
         logging.exception(e)
 
 def series_compare(cursor, new_list, series_id):
+    "Compare db list with new series"
     old_list = []
     cursor.execute("SELECT episode_link,episode_name from episodes where id=?",
                    (series_id,))
@@ -54,24 +64,23 @@ def series_compare(cursor, new_list, series_id):
     logging.info(list_difference)
     return list_difference
 
-def series_poster(cursor, connect):
-    cursor.execute("SELECT id,title,series_link FROM series where id >"+
-               '(SELECT cast(value as INTEGER) from config where key="last_series_id")')
-    for series_info in cursor.fetchall():
-        correct_decode(series_info,cursor)
-        try:
-            cursor.execute("INSERT INTO series_images(series_id,path) VALUES(?,?)",
-                            (series_info[0], settings.IMAGE_PATH+series_info[1]+'.jpg',))
-            cursor.execute("UPDATE config set value=? where key='last_series_id'",
-                       (series_info[0],))
-            connect.commit()
-        except sqlite3.IntegrityError:
-            print("File already exists")
-            pass
+def series_poster(cursor, connect, series_id):
+    "fetch series JPEG"
+    cursor.execute("SELECT title,series_link from series where id=?", (series_id,))
+    series_link = cursor.fetchone()
+    correct_decode(series_link, cursor)
+    try:
+        cursor.execute("INSERT INTO series_images(series_id,path) VALUES(?,?)",
+                            (series_id, settings.IMAGE_PATH+series_link[0]+'.jpg',))
+        connect.commit()
+    except sqlite3.IntegrityError:
+        logging.warn("File already exists")
+        pass
 
 
 def correct_decode(info, cursor):
-    request = Request(info[2],
+    "fetch and decode images"
+    request = Request(info[1],
                       headers={'User-Agent': 'Mozilla/5.0'})
     try:
         soup = BeautifulSoup(urlopen(request).read().decode("UTF-8"))
@@ -80,7 +89,7 @@ def correct_decode(info, cursor):
     finally:
         meta = soup.find('meta', {'property': 'og:image'})
         print("fetching image", meta['content'])
-        with open("%s" % (settings.IMAGE_PATH+info[1]+".jpg"), 'wb') as image_file:
+        with open("%s" % (settings.IMAGE_PATH+info[0]+".jpg"), 'wb') as image_file:
             image_request = Request(meta['content'],
                           headers={'User-Agent': 'Mozilla/5.0'})
             image_file.write(urlopen(image_request).read())
