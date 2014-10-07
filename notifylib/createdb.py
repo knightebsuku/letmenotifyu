@@ -73,9 +73,9 @@ class Database:
         self.cursor.execute("INSERT INTO config(key,value) VALUES('last_series_id','0')")
         self.cursor.execute("INSERT INTO torrents(name,link) VALUES('Kickass','http://kickass.to/usearch/')")
         self.cursor.execute("INSERT INTO torrents(name,link) VALUES('The Pirate Bay','http://thepiratebay.sx/search/')")
-        self.cursor.execute("INSERT INTO config(key,value)"+
+        self.cursor.execute("INSERT INTO config(key,value)" +
                                  " VALUES('movie_duration','7')")
-        self.cursor.execute("INSERT INTO config(key,value)"+
+        self.cursor.execute("INSERT INTO config(key,value)" +
                                  " VALUES('series_duration','7')")
         self.connect.commit()
         logging.info("***Creating Images Directory***")
@@ -151,22 +151,21 @@ class Database:
                             'movie_id INTEGER NOT NULL,' +
                             'path VARCHAR(20) UNIQUE NOT NULL,' +
                             'FOREIGN KEY(movie_id) REFERENCES movies(id))')
-            logging.info("***Creating series torrent link table***")
-            self.cursor.execute('CREATE TABLE series_torrent_links(' +
-                                'id INTEGER PRIMARY KEY,' +
-                                'episode_id INTEGER UNIQUE NOT NULL,' +
-                                'link VARCHAR(20) NOT NULL,' +
-                                'FOREIGN KEY(episode_id) REFERENCES episodes(id))')
-            logging.info("***Creating movie torrent link table***")
-            self.cursor.execute('CREATE TABLE movie_torrent_links(' +
-                                'id INTEGER PRIMARY KEY,' +
-                                'movie_id INTEGER UNIQUE NOT NULL,' +
-                                'link VARCHAR(20) NOT NULL,' +
-                                'FOREIGN KEY(movie_id) REFERENCES movie(id))')
+            self.cursor.execute("DROP TABLE episodes")
+            self.cursor.execute('CREATE TABLE episodes(' +
+                            'id INTEGER PRIMARY KEY,' +
+                            'series_id INTEGER  NOT NULL,' +
+                            'episode_name VARCHAR(15) NOT NULL,' +
+                            'episode_link VARCHAR(40) UNIQUE NOT NULL,' +
+                            'Date TIMESTAMP,' +
+                            ' FOREIGN KEY (series_id) REFERENCES series(id) ON DELETE CASCADE)')
+            self.cursor.execute("UPDATE series set number_of_episodes=0")
             self.cursor.execute("INSERT INTO config(key,value) VALUES('last_movie_id', '0')")
-            self.connect.commit()
             self.cursor.execute("INSERT INTO config(key,value) VALUES('last_series_id','0')")
-            self.connect.commit()
+            self.cursor.execute("INSERT INTO config(key,value)" +
+                                 " VALUES('movie_duration','7')")
+            self.cursor.execute("INSERT INTO config(key,value)" +
+                                 " VALUES('series_duration','7')")
             self.cursor.execute("UPDATE config set value='2.0' where key='version'")
             self.connect.commit()
             logging.info("***Database has been upgraded***")
@@ -174,45 +173,5 @@ class Database:
             os.mkdir(settings.IMAGE_PATH)
             database_version = '2.0'
 
-        ## if database_version == '2.0':
-        ##     logging.info("***Upgrading Database to new version***")
-        ##     self.cursor.execute("INSERT INTO config(key,value)"+
-        ##                         " VALUES('movie_duration','7')")
-        ##     self.cursor.execute("INSERT INTO config(key,value)"+
-        ##                         " VALUES('series_duration','7')")
-        ##     self.connect.commit()
-        ##     self.cursor.execute("UPDATE config set  value='2.1' where key='version'")
-        ##     self.connect.commit()
-        ##     database_version = '2.1'
-
-        ## if database_version == '2.1':
-        ##     logging.info("**Updating to version 2.2****")
-        ##     self.cursor.execute("DROP TABLE episodes")
-        ##     self.cursor.execute('CREATE TABLE episodes(' +
-        ##                     'id INTEGER PRIMARY KEY,' +
-        ##                     'series_id INTEGER  NOT NULL,' +
-        ##                     'episode_name VARCHAR(15) NOT NULL,' +
-        ##                     'episode_link VARCHAR(40) NOT NULL,' +
-        ##                     'Date TIMESTAMP,' +
-        ##                     ' FOREIGN KEY (series_id) REFERENCES series(id) ON DELETE CASCADE)')
-        ##     self.cursor.execute("UPDATE config set value='2.2' where key='version'")
-        ##     self.connect.commit()
-        ##     database_version = '2.2'
-
-        ## if database_version == '2.2':
-        ##     logging.info("***database up to date***")
-        ##     self.connect.close()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        if database_version == '2.0':
+            logging.info("***Database upto date***")
