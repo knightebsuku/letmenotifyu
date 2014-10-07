@@ -4,6 +4,7 @@ import os
 import logging
 from notifylib.createdb import Database
 from notifylib.main import Main
+<<<<<<< HEAD
 from notifylib import settings
 import sqlite3
 
@@ -11,6 +12,19 @@ def log():
     logging.basicConfig(filename=settings.LOG_FILE_PATH,
                         format='%(asctime)s - %(message)s', filemode='w',
                         level=logging.DEBUG)
+=======
+
+directory_path = os.environ['HOME']+'/.local/share/letmenotifyu/'
+
+os.chdir("/usr/share/letmenotifyu")
+db_file = directory_path+'letmenotifyu.sqlite'
+
+
+def log():
+    logging.basicConfig(filename= directory_path+'letmenotifyu.log',
+                        format = '%(asctime)s - %(message)s', filemode = 'w',
+                        level = logging.DEBUG)
+>>>>>>> 0a5c928427add481d1fa833ac9533777923d4620
 
 if __name__ == "__main__":
     log()
