@@ -54,9 +54,9 @@ class Main:
         self.genre_icon_view = self.builder.get_object("GenreIcon")
         self.latest_episodes_view = self.builder.get_object("LatestEpisodesIcon")
         self.builder.get_object('AppWindow').show()
-        update = UpdateClass(self.db_file)
-        update.setDaemon(True)
-        update.start()
+        #update = UpdateClass(self.db_file)
+        #update.setDaemon(True)
+        #update.start()
         Gtk.main()
 
     def on_headers_event(self, widget, event):
