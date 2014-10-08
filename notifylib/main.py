@@ -7,19 +7,20 @@ from gi.repository import Gtk, GObject, Gdk
 from notifylib.gui import Add_Series, About, Confirm, Statistics, Preferences, Current_Season
 from notifylib.torrent import Torrent
 from notifylib import util
-from notifylib.check_updates import UpdateClass
+from notifylib.check_updates import RunUpdate,FetchPosters
+from notifylib import settings
 
 GObject.threads_init()
 
-
-class Main:
-    def __init__(self, gladefile, db):
+class Main(object):
+    "Main application"
+    def __init__(self, db):
         self.connect = sqlite3.connect(db)
         self.cursor = self.connect.cursor()
         self.db_file = db
         self.builder = Gtk.Builder()
         self.image = Gtk.Image()
-        self.builder.add_from_file(gladefile)
+        self.builder.add_from_file("ui/main2.glade")
         self.active_series_view = self.builder.get_object("ActiveSeries")
         self.active_series_view.add_events(Gdk.EventMask.BUTTON_PRESS_MASK)
         signals = {'on_AppWindow_destroy': Gtk.main_quit,
@@ -30,33 +31,30 @@ class Main:
                    'on_SeriesArchive_activated': self.on_SeriesArchive_activated,
                    'on_ActiveSeries_activated': self.on_ActiveSeries_activated,
                    'on_ActiveSeries_button_event': self.on_ActiveSeries_event,
-                   #'on_ActiveSeries_selection_changed': self.on_ActiveSeries_selection,
                    'on_AddSeries_activate': self.on_AddSeries_activate,
                    'on_Stop_Update_activate': self.on_Stop_Update_activate,
                    'on_Start_Update_activate': self.on_Start_Update_activate,
                    'on_Delete_Series_activate': self.on_Delete_Series_activate,
                    'on_Properties_activate': self.on_Properties_activate,
                    'on_Current_Season_activate': self.on_Current_Season_activate,
+                   'on_preferences_activate': self.on_pref_activate,
+                   'on_update_activate': self.on_update_activate,
+                   'on_poster_update_activate': self.on_poster_update_activate,
                    'on_Quit_activate': Gtk.main_quit,
                    'on_About_activate': self.on_About_activate}
-        ## signals = {'on_winlet_destroy': self.on_winlet_destroy,
-        ##          'on_ViewMovies': self.on_ViewMovies,
-        ##          'on_ViewCurrentSeries': self.on_ViewCurrentSeries,
-        ##          'on_ViewLatestSeries': self.on_ViewLatestSeries,
-        ##          'on_ViewSeriesArchive': self.on_ViewSeriesArchive,
         ##          'on_Kickass_activate': self.on_Kickass_activate,
         ##          'on_Piratebay_activate': self.on_Piratebay_activate,
         ##          'on_online_video_activate': self.on_online_video_activate,
-        ##          'on_pref_activate': self.on_pref_activate,
+        ##          
 
         self.builder.connect_signals(signals)
         self.general_model = self.builder.get_object("General")
         self.genre_icon_view = self.builder.get_object("GenreIcon")
         self.latest_episodes_view = self.builder.get_object("LatestEpisodesIcon")
         self.builder.get_object('AppWindow').show()
-        #update = UpdateClass(self.db_file)
-        #update.setDaemon(True)
-        #update.start()
+        self.update = RunUpdate(self.db_file)
+        self.update.setDaemon(True)
+        self.update.start()
         Gtk.main()
 
     def on_headers_event(self, widget, event):
@@ -217,11 +215,26 @@ class Main:
         Confirm(self.striped_name, "delete", self.connect, self.cursor)
 
     def on_Properties_activate(self, widget):
-        Statistics('stats.glade', self.striped_name, self.connect, self.cursor)
+        Statistics(self.striped_name, self.connect, self.cursor)
 
     def on_pref_activate(self, widget):
-        Preferences(self.cursor, self.connect,
-                    self.update, self.db_file)
+        Preferences(self.cursor, self.connect)
 
     def on_Current_Season_activate(self, widget):
-        Current_Season( self.cursor, self.connect, self.striped_name)
+        Current_Season(self.cursor, self.connect, self.striped_name)
+
+    def on_update_activate(self, widget):
+        "Stop current updating thread and start new one"
+        self.update.stop()
+        logging.info("Stopping current thead")
+        new_thread = RunUpdate(self.db_file)
+        new_thread.setDaemon(True)
+        new_thread.start()
+        logging.info("Starting new thread")
+
+    def on_poster_update_activate(self, widget):
+        "New thread to fetch  Images"
+        self.fetch = FetchPosters(self.db_file)
+        self.fetch.setDaemon(True)
+        self.fetch.start()
+        #fetch.stop()

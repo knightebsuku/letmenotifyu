@@ -53,7 +53,6 @@ class Movies:
                 announce('New Movie', movie_data[1],"http://www.primewire.ag"+movie_data[2])
                 util.movie_poster(poster_links,movie_data[1], movie_data[2],
                                   self.cursor,self.connect)
-        except sqlite3.IntegrityError as e:
-            logging.error("Unable to insert movie")
-            logging.exception(e)
+        except sqlite3.IntegrityError:
+            logging.error("Movie Already exsists")
             self.connect.rollback()

@@ -1,6 +1,6 @@
 import sqlite3
 import logging
-from notifylib.getmovies import Get_Movies
+from notifylib.movies import Movies
 from notifylib.series import Series
 from notifylib import util
 
@@ -11,7 +11,7 @@ class Update:
         self.cursor = self.connect.cursor()
 
     def movie(self):
-        movie = Get_Movies(self.cursor, self.connect)
+        movie = Movies(self.cursor, self.connect)
         new_movie_list, movie_page = movie.fetch_new_movies()
         movie.insert_new_movies(new_movie_list, movie_page)
 
@@ -22,6 +22,7 @@ class Update:
             try:
                 all_episodes, new_ep_number, no_seasons = series.fetch_new_episdoes(series_info[1])
                 if series_info[2] == 0:
+                    logging.info("Brand new Series to be added")
                     series.new_series_episodes(all_episodes, new_ep_number,
                                                series_info[0], no_seasons)
                 elif len(all_episodes) == series_info[2]:

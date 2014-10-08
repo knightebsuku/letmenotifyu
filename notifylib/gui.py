@@ -1,10 +1,9 @@
-import re
 import logging
 from gi.repository import Gtk
-from notifylib.check_updates import UpdateClass
-from datetime import datetime
+from notifylib import util
 
-class About:
+class About(object):
+    "Show about menu"
     def __init__(self):
         about = Gtk.Builder()
         about.add_from_file("ui/about.glade")
@@ -13,7 +12,8 @@ class About:
         window.destroy()
 
 
-class Add_Series:
+class Add_Series(object):
+    "Addition of new series"
     def __init__(self, cursor, connection):
         self.cursor = cursor
         self.connection = connection
@@ -30,37 +30,13 @@ class Add_Series:
 
     def on_btnOk_clicked(self, widget):
         link_box = self.dialog.get_object('entlink')
-        check_url(link_box.get_text(), self.notice, self.dialog,
+        util.check_url(link_box.get_text(), self.notice, self.dialog,
                   self.cursor, self.connection, link_box)
         link_box.set_text('')
 
 
-def check_url(text, notice, dialog, cursor, connection, link_box):
-    if re.search(r'http://www.primewire.ag/(.*)-\d+\-(.*)',text):
-        title = re.search(r"http://www.primewire.ag/(.*)-\d+\-(.*)",text)
-        change_string = title.group(2)
-        show_title = change_string.replace("-", " ")
-        logging.info("Inserting new series %s" % show_title)
-        cursor.execute('INSERT INTO series(title,' +
-                           'series_link,' +
-                           'number_of_episodes,' +
-                           'number_of_seasons,' +
-                           'status,' +
-                           'current_season,' +
-                           'last_update)' +
-                           ' VALUES(?,?,0,0,1,0,?)', (show_title.title(), text, datetime.now(),))
-        connection.commit()
-        logging.debug("Series Added: "+show_title)
-        link_box.set_text('')
-        dialog.get_object('linkdialog').destroy()
-    else:
-        notice.set_text("Not a valid link or link already exists")
-        notice.set_visible(True)
-        dialog.get_object('imcheck').set_visible(True)
-        logging.warn("Invalid link:"+text)
-
-
-class Confirm:
+class Confirm(object):
+    "Confirm menu"
     def __init__(self,title, instruction, connect, cursor):
         self.connect = connect
         self.cursor = cursor
@@ -71,7 +47,7 @@ class Confirm:
         signals = {'on_btnOk_clicked': self.on_btnOk_clicked,
                'on_btnCancel_clicked': self.on_btnCancel_clicked}
         self.confirm.connect_signals(signals)
-        self.message, self.sql = which_sql_message(self.instruction)
+        self.message, self.sql = util.which_sql_message(self.instruction)
         self.confirm.get_object('msgdlg').format_secondary_text(self.message+" " +
                                                                 self.title+"?")
         self.confirm.get_object('msgdlg').show()
@@ -87,110 +63,74 @@ class Confirm:
         self.confirm.get_object('msgdlg').destroy()
 
 
-def which_sql_message(Instruction):
-    if Instruction == "start":
-        use_sql = "UPDATE series SET status=1 where title=?"
-        message = "Are you sure you want to start updating"
-    elif Instruction == "stop":
-        use_sql = "UPDATE series SET status=0 where title=?"
-        message = "Are you sure you want to stop updating"
-    elif Instruction == "delete":
-            use_sql = "DELETE FROM series WHERE title=?"
-            message = "Are you sure you want to delete"
-    return message, use_sql
-
-
-class Statistics:
+class Statistics(object):
+    "Show stats of series"
     def __init__(self, title, connect, cursor):
         self.builder = Gtk.Builder()
         self.builder.add_from_file("ui/stats.glade")
         signals = {'on_btnClose_clicked': self.on_btnClose_clicked}
         self.builder.connect_signals(signals)
-        set_stats(title, connect, cursor, self.builder)
+        util.set_stats(title, connect, cursor, self.builder)
         self.builder.get_object('win_stats').show()
 
     def on_btnClose_clicked(self, widget):
         self.builder.get_object("win_stats").destroy()
 
-
-def set_stats(title, connect, cursor, builder):
-    cursor.execute("Select series_link,number_of_episodes,number_of_seasons,last_update,status FROM series WHERE title=?",(title,))
-    for data in cursor.fetchall():
-        link = data[0]
-        episodes = str(data[1])
-        seasons = str(data[2])
-        update = str(data[3])
-        status = str(data[4])
-    builder.get_object("title").set_text(title)
-    builder.get_object('url').set_text(link)
-    builder.get_object('episodes').set_text(episodes)
-    builder.get_object('seasons').set_text(seasons)
-    builder.get_object('update').set_text(update[:10])
-    if status == '0':
-        builder.get_object('status').set_text("Not Updating")
-    else:
-        builder.get_object('status').set_text("Updating")
-
-
-class Preferences:
-    def __init__(self, cursor, connect, thread, db_file):
+class Preferences(object):
+    "preference menu"
+    def __init__(self, cursor, connect):
         self.cursor = cursor
         self.connect = connect
         self.pref = Gtk.Builder()
-        self.pref.add_from_file("ui/prefrences.glade")
-        self.thread = thread
-        self.db_file = db_file
+        self.pref.add_from_file("ui/preferences.glade")
         signals = {'on_btnSave_clicked': self.on_btnSave_clicked,
                  'on_btnCancel_clicked': self.on_btnCancel_clicked}
         self.pref.connect_signals(signals)
-        self.interval = self.pref.get_object('txtInterval')
-        self.get_interval()
+        self.interval = self.pref.get_object('txtupdate')
+        self.movie_update = self.pref.get_object('txtmovies')
+        self.series_update = self.pref.get_object('txtseries')
+        util.get_intervals(self.cursor, self.interval, self.movie_update, self.series_update)
         self.pref.get_object('pref').show()
-
-    def get_interval(self):
-        self.cursor.execute("SELECT value FROM config WHERE key='update_interval'")
-        key = self.cursor.fetchone()
-        value = int(key[0])/3600
-        self.interval.set_text(str(value))
 
     def on_btnSave_clicked(self, widget):
         try:
-            value = str(int(self.interval.get_text()) * 3600)
+            update  = str(float(self.interval.get_text())*3600)
+            series_duration = str(int(self.series_update.get_text()))
+            movie_duration = str(int(self.movie_update.get_text()))
             self.cursor.execute("UPDATE config set value=? where key='update_interval'",
-                                (value,))
+                                (update,))
+            self.cursor.execute("UPDATE config set value=? where key='series_duration'",
+                                (series_duration,))
+            self.cursor.execute("UPDATE config set value=? where key='movie_duration'",
+                                (movie_duration,))
             self.connect.commit()
-            logging.warn("Stoping old thread and starting new thread")
-            self.thread.stop()
-            self.thread.join()
-            new_thread = UpdateClass(self.db_file)
-            new_thread.setDaemon(True)
-            new_thread.start()
-            logging.info("Interval updated to "+value + "seconds")
-            logging.warn("New Thread started")
             self.pref.get_object('pref').destroy()
 
-        except Exception as e:
-            logging.info("unable to add value")
+        except ValueError as e:
+            logging.info("Malformed value")
             logging.exception(e)
-            Error('error.glade')
+            self.connect.rollback()
+            Error()
 
     def on_btnCancel_clicked(self, widget):
         self.pref.get_object('pref').destroy()
 
 
-class Error:
+class Error(object):
+    "Error notification"
     def __init__(self):
         self.error = Gtk.Builder()
         self.error.add_from_file("ui/error.glade")
-        signals = {'on_btnOk_activate': self.on_btnOk_activate}
+        signals = {'on_btnOk_clicked': self.on_btnOk_clicked}
         self.error.connect_signals(signals)
         self.error.get_object('error').show()
 
-    def on_btnOk_activate(self, widget):
+    def on_btnOk_clicked(self, widget):
         self.error.get_object('error').destroy()
 
 
-class Current_Season:
+class Current_Season(object):
+    "Current season popup"
     def __init__(self, cursor, connection, series_title):
         self.cursor = cursor
         self.connection = connection
@@ -200,7 +140,7 @@ class Current_Season:
         signals = {'on_btnApply_clicked': self.on_btnApply_clicked,
                  'on_btnCancel_clicked': self.on_btnCancel_clicked}
         self.current_season.connect_signals(signals)
-        cur_sea = fetch_current_season(cursor, connection, series_title)
+        cur_sea = util.fetch_current_season(cursor, connection, series_title)
         self.current_season.get_object('txtCurrent').set_text(cur_sea)
         self.current_season.get_object("CurrentSeason").show()
 
@@ -217,9 +157,3 @@ class Current_Season:
         except Exception as e:
             logging.warn("Unable to set current season")
             logging.exception(e)
-
-
-def fetch_current_season(cursor, connection, series_title):
-    cursor.execute('SELECT current_season from series where title=?', (series_title,))
-    no_season = cursor.fetchone()
-    return str(no_season[0])
