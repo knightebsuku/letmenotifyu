@@ -7,7 +7,7 @@ from gi.repository import Gtk, GObject, Gdk
 from notifylib import gui
 from notifylib.torrent import Torrent
 from notifylib import util
-from notifylib.check_updates import RunUpdate, FetchPosters
+from notifylib.threads import RunUpdate, FetchPosters
 
 GObject.threads_init()
 
@@ -51,9 +51,9 @@ class Main(object):
         self.genre_icon_view = self.builder.get_object("GenreIcon")
         self.latest_episodes_view = self.builder.get_object("LatestEpisodesIcon")
         self.builder.get_object('AppWindow').show()
-        #self.update = RunUpdate(self.db_file)
-        #self.update.setDaemon(True)
-        #self.update.start()
+        self.update = RunUpdate(self.db_file)
+        self.update.setDaemon(True)
+        self.update.start()
         Gtk.main()
 
     def on_headers_event(self, widget, event):
