@@ -4,11 +4,10 @@ import logging
 
 from datetime import datetime, timedelta
 from gi.repository import Gtk, GObject, Gdk
-from notifylib.gui import Add_Series, About, Confirm, Statistics, Preferences, Current_Season
+from notifylib import gui
 from notifylib.torrent import Torrent
 from notifylib import util
-from notifylib.check_updates import RunUpdate,FetchPosters
-from notifylib import settings
+from notifylib.check_updates import RunUpdate, FetchPosters
 
 GObject.threads_init()
 
@@ -20,7 +19,8 @@ class Main(object):
         self.db_file = db
         self.builder = Gtk.Builder()
         self.image = Gtk.Image()
-        self.builder.add_from_file("ui/main2.glade")
+        self.torrent = Torrent(self.cursor)
+        self.builder.add_from_file("ui/main.glade")
         self.active_series_view = self.builder.get_object("ActiveSeries")
         self.active_series_view.add_events(Gdk.EventMask.BUTTON_PRESS_MASK)
         signals = {'on_AppWindow_destroy': Gtk.main_quit,
@@ -28,6 +28,7 @@ class Main(object):
                    'on_GenreIcon_activated': self.on_GenreIcon_activated,
                    'on_LatestMovie_activated': self.on_LatestMovie_activated,
                    'on_LatestEpisodesIcon_activated': self.on_LatestEpisodes_activated,
+                   'on_LatestEpisodesIcon_event': self.on_LatestEpisodes_event,
                    'on_SeriesArchive_activated': self.on_SeriesArchive_activated,
                    'on_ActiveSeries_activated': self.on_ActiveSeries_activated,
                    'on_ActiveSeries_button_event': self.on_ActiveSeries_event,
@@ -41,20 +42,18 @@ class Main(object):
                    'on_update_activate': self.on_update_activate,
                    'on_poster_update_activate': self.on_poster_update_activate,
                    'on_Quit_activate': Gtk.main_quit,
-                   'on_About_activate': self.on_About_activate}
-        ##          'on_Kickass_activate': self.on_Kickass_activate,
-        ##          'on_Piratebay_activate': self.on_Piratebay_activate,
-        ##          'on_online_video_activate': self.on_online_video_activate,
-        ##          
+                   'on_About_activate': self.on_About_activate,
+                   'on_Kickass_activate': self.on_Kickass_activate,
+                   'on_Piratebay_activate': self.on_Piratebay_activate}
 
         self.builder.connect_signals(signals)
         self.general_model = self.builder.get_object("General")
         self.genre_icon_view = self.builder.get_object("GenreIcon")
         self.latest_episodes_view = self.builder.get_object("LatestEpisodesIcon")
         self.builder.get_object('AppWindow').show()
-        self.update = RunUpdate(self.db_file)
-        self.update.setDaemon(True)
-        self.update.start()
+        #self.update = RunUpdate(self.db_file)
+        #self.update.setDaemon(True)
+        #self.update.start()
         Gtk.main()
 
     def on_headers_event(self, widget, event):
@@ -89,7 +88,6 @@ class Main(object):
                 util.render_view(self.image,episode[0], self.general_model, episode[2])
                 self.latest_dict[episode[0]] = episode[1]
         elif headers.get_current_page() == 3:
-            logging.debug("Active Series Clicked")
             self.general_model.clear()
             self.cursor.execute("SELECT title,current_season,path  from series join series_images on series.id=series_images.series_id and series.status=1 order by title")
             for series in self.cursor.fetchall():
@@ -122,10 +120,22 @@ class Main(object):
         latest_movie = util.get_selection(latest_movie_view, self.general_model)
         util.open_page(self.cursor, latest_movie, "movie")
 
-    def on_LatestEpisodes_activated(self, widget, event):
-        latest_episode_view = self.builder.get_object("LatestEpisodesIcon")
-        latest_episode = util.get_selection(latest_episode_view, self.general_model)
-        util.open_page(self.cursor, self.latest_dict[latest_episode])
+    def on_LatestEpisodes_event(self, widget, event):
+        if event.type == Gdk.EventType.BUTTON_PRESS:
+            path = self.latest_episodes_view.get_path_at_pos(event.x, event.y)
+            if path != None:
+                self.latest_episodes_view.select_path(path)
+                episode = util.get_selection(self.latest_episodes_view,
+                                             self.general_model)
+                if event.button == 3:
+                    self.torrent.query(episode)
+                    self.builder.get_object("torrents").popup(None, None, None, None,
+                                                       event.button, event.time)
+                elif event.button == 1:
+                    self.on_LatestEpisodes_activated(widget, episode)
+
+    def on_LatestEpisodes_activated(self, widget, episode):
+        util.open_page(self.cursor, self.latest_dict[episode])
 
     def on_ActiveSeries_activated(self, widget, active_series):
         if re.search(r'^Episode', active_series):
@@ -157,12 +167,12 @@ class Main(object):
                                                             event.button, event.time)
                 elif event.button == 1:
                     self.on_ActiveSeries_activated(widget, series)
-                    
+
     def on_SeriesArchive_activated(self, widget, event):
-        self.archive_series_dict = {}
         series_archive_view = self.builder.get_object("SeriesArchive")
         choice = util.get_selection(series_archive_view,self.general_model)
         if re.search(r'^Season', choice):
+            self.archive_series_dict = {}
             logging.debug("Season selected")
             no = choice.split("Season ")[1]
             self.cursor.execute("SELECT episode_name,episode_link FROM episodes" +
@@ -173,6 +183,8 @@ class Main(object):
             for current_season in self.cursor.fetchall():
                 util.render_view(self.image, current_season[0], self.general_model)
                 self.archive_series_dict[current_season[0]] = current_season[1]
+        elif re.search(r'^Episode', choice):
+            util.open_page(self.cursor, self.archive_series_dict[choice])
         else:
             self.series_name = choice
             logging.debug("series selected %s" %choice)
@@ -186,42 +198,34 @@ class Main(object):
                 index += 1
 
     def on_AddSeries_activate(self, widget):
-        Add_Series(self.cursor, self.connect)
+        gui.Add_Series(self.cursor, self.connect)
 
     def on_About_activate(self, widget):
-        About()
-
-    def on_ViewLatestSeries(self, widget, event):
-            self.torrent = Torrent(self.get_episode, self.cursor)
-            self.builder.get_object("torrents").popup(None, None, None, None,
-                                                       event.button, event.time)
+       gui.About()
 
     def on_Piratebay_activate(self, widget):
         self.torrent.piratebay()
 
     def on_Kickass_activate(self, widget):
         self.torrent.kickass()
-
-    def on_online_video_activate(self, widget):
-        self.torrent.online(self.latest_dict)
    
     def on_Stop_Update_activate(self, widget):
-        Confirm(self.striped_name, "stop", self.connect, self.cursor)
+        gui.Confirm(self.striped_name, "stop", self.connect, self.cursor)
 
     def on_Start_Update_activate(self, widget):
-        Confirm(self.striped_name, "start", self.connect, self.cursor)
+        gui.Confirm(self.striped_name, "start", self.connect, self.cursor)
 
     def on_Delete_Series_activate(self, widget):
-        Confirm(self.striped_name, "delete", self.connect, self.cursor)
+        gui.Confirm(self.striped_name, "delete", self.connect, self.cursor)
 
     def on_Properties_activate(self, widget):
-        Statistics(self.striped_name, self.connect, self.cursor)
+       gui.Statistics(self.striped_name, self.connect, self.cursor)
 
     def on_pref_activate(self, widget):
-        Preferences(self.cursor, self.connect)
+        gui.Preferences(self.cursor, self.connect)
 
     def on_Current_Season_activate(self, widget):
-        Current_Season(self.cursor, self.connect, self.striped_name)
+        gui.Current_Season(self.cursor, self.connect, self.striped_name)
 
     def on_update_activate(self, widget):
         "Stop current updating thread and start new one"
@@ -237,4 +241,4 @@ class Main(object):
         self.fetch = FetchPosters(self.db_file)
         self.fetch.setDaemon(True)
         self.fetch.start()
-        #fetch.stop()
+

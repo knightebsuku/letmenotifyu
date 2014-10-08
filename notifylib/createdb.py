@@ -72,7 +72,7 @@ class Database:
         self.cursor.execute("INSERT INTO config(key,value) VALUES('last_movie_id', '0')")
         self.cursor.execute("INSERT INTO config(key,value) VALUES('last_series_id','0')")
         self.cursor.execute("INSERT INTO torrents(name,link) VALUES('Kickass','http://kickass.to/usearch/')")
-        self.cursor.execute("INSERT INTO torrents(name,link) VALUES('The Pirate Bay','http://thepiratebay.sx/search/')")
+        self.cursor.execute("INSERT INTO torrents(name,link) VALUES('The Pirate Bay','http://thepiratebay.se/search/')")
         self.cursor.execute("INSERT INTO config(key,value)" +
                                  " VALUES('movie_duration','7')")
         self.cursor.execute("INSERT INTO config(key,value)" +
@@ -159,7 +159,8 @@ class Database:
                             'episode_link VARCHAR(40) UNIQUE NOT NULL,' +
                             'Date TIMESTAMP,' +
                             ' FOREIGN KEY (series_id) REFERENCES series(id) ON DELETE CASCADE)')
-            self.cursor.execute("UPDATE series set number_of_episodes=0")
+            self.cursor.execute("UPDATE series SET number_of_episodes=0")
+            self.cursor.execute("DELETE FROM episodes")
             self.cursor.execute("INSERT INTO config(key,value) VALUES('last_movie_id', '0')")
             self.cursor.execute("INSERT INTO config(key,value) VALUES('last_series_id','0')")
             self.cursor.execute("INSERT INTO config(key,value)" +
@@ -171,7 +172,6 @@ class Database:
             logging.info("***Database has been upgraded***")
             logging.info("***Creating Images Directory***")
             os.mkdir(settings.IMAGE_PATH)
-            logging.info("fetching images......")
             database_version = '2.0'
 
         if database_version == '2.0':

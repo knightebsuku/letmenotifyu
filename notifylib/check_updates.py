@@ -6,6 +6,7 @@ from notifylib import util
 
 
 class RunUpdate(threading.Thread):
+    "Look for new movie or series updates"
     def __init__(self, db_file):
         self.db_file = db_file
         threading.Thread.__init__(self)
@@ -25,16 +26,14 @@ class RunUpdate(threading.Thread):
 
 
 class FetchPosters(threading.Thread):
+    "Fetch movie posters, mainly for upgrades"
     def __init__(self, db):
         self.db = db
         threading.Thread.__init__(self)
         self.event = threading.Event()
-        
+
     def run(self):
         logging.info("Starting thread to fetch movie posters")
         connect = sqlite3.connect(self.db)
         cursor = connect.cursor()
         util.fetch_movies(cursor, connect)
-
-    def stop(self):
-        self.event.set()

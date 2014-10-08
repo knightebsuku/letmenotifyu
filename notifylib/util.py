@@ -2,6 +2,7 @@ import webbrowser
 import logging
 import re
 import sqlite3
+import urllib
 
 from urllib.request import Request, urlopen
 from bs4 import BeautifulSoup
@@ -62,9 +63,6 @@ def series_compare(cursor, new_list, series_id):
     for old_episode in data:
         old_list.append((old_episode[0],old_episode[1].replace("\n", "")))
     list_difference = set(new_list).difference(old_list)
-    logging.info(new_list)
-    logging.info(old_list)
-    #logging.info(list_difference)
     return list_difference
 
 def series_poster(cursor, connect, series_id):
@@ -83,7 +81,7 @@ def series_poster(cursor, connect, series_id):
 
 def correct_decode(info, cursor):
     "fetch and decode images"
-    if re.search(r'^http//', info[1]):
+    if re.search(r'^http', info[1]):
         request = Request(info[1],
                       headers={'User-Agent': 'Mozilla/5.0'})
     else:
@@ -91,9 +89,6 @@ def correct_decode(info, cursor):
                       headers={'User-Agent': 'Mozilla/5.0'})
     try:
         soup = BeautifulSoup(urlopen(request).read().decode("UTF-8"))
-    except UnicodeDecodeError:
-        soup = BeautifulSoup(urlopen(request).read().decode("latin1"))
-    finally:
         meta = soup.find('meta', {'property': 'og:image'})
         logging.info("fetching image "+info[0])
         with open("%s" % (settings.IMAGE_PATH+info[0]+".jpg"), 'wb') as image_file:
@@ -101,6 +96,17 @@ def correct_decode(info, cursor):
                           headers={'User-Agent': 'Mozilla/5.0'})
             image_file.write(urlopen(image_request).read())
             logging.info("Imaged fetched")
+    except UnicodeDecodeError:
+        soup = BeautifulSoup(urlopen(request).read().decode("latin1"))
+        meta = soup.find('meta', {'property': 'og:image'})
+        logging.info("fetching image "+info[0])
+        with open("%s" % (settings.IMAGE_PATH+info[0]+".jpg"), 'wb') as image_file:
+            image_request = Request(meta['content'],
+                          headers={'User-Agent': 'Mozilla/5.0'})
+            image_file.write(urlopen(image_request).read())
+            logging.info("Imaged fetched")
+    except urllib.error.URLError as e:
+        logging.exception(e)
 
 def movie_poster(poster_links, movie_title, movie_link,cursor, connect):
     "Fetch movie poster"
