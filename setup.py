@@ -10,7 +10,8 @@ if __name__=='__main__':
           scripts=['letmenotifyu'],
           packages=['notifylib'],
           data_files=[('share/applications',['ui/letmenotifyu.desktop']),
-                      ('share/letmenotifyu/ui',['ui/about.glade','ui/confirm.glade','ui/main.glade','ui/stats.glade','ui/error.glade','ui/preferences.glade','ui/set_season.glade','ui/add_series.glade']), ('share/letmenotifyu/ui',['ui/letmenotifyu.png','ui/letmenotifyu.xpm','ui/movies.png'])]
+                      ('share/letmenotifyu/ui',['ui/about.glade','ui/confirm.glade','ui/main.glade','ui/stats.glade','ui/error.glade','ui/preferences.glade','ui/set_season.glade','ui/add_series.glade']),
+                      ('share/letmenotifyu/ui',['ui/letmenotifyu.png','ui/letmenotifyu.xpm','ui/movies.png'])]
                       
           )
             
