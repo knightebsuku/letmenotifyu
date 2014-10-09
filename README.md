@@ -33,10 +33,10 @@ Program Features
 Dependencies
 ----------------
 
-python3 >= 3.2
-sqlite3 >= 3.6
-python3-notify2 >= 0.2
-python3-bs4 >= 0.4
+*python3 >= 3.2
+*sqlite3 >= 3.6
+*python3-notify2 >= 0.2
+*python3-bs4 >= 0.4
 
 
 Installation
