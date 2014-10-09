@@ -1,6 +1,5 @@
 #!/usr/bin/python3
 
-import os
 import logging
 from notifylib.createdb import Database
 from notifylib.main import Main
@@ -9,18 +8,13 @@ from notifylib import util
 import sqlite3
 
 if __name__ == "__main__":
-    util.log()
+    util.star_logging()
     try:
         db = Database(settings.DATABASE_PATH)
         db.upgrade_database()
     except sqlite3.OperationalError as e:
         logging.info("No database found, creating a new one")
-        if os.path.isdir(settings.DIRECTORY_PATH):
-            db = Database(settings.DATABASE_PATH)
-            db.create_database()
-        else:
-            os.makedirs(settings.DIRECTORY_PATH)
-            db = Database(settings.DATABASE_PATH)
-            db.create_database()
+        db = Database(settings.DATABASE_PATH)
+        db.create_database()
     finally:
         Main(settings.DATABASE_PATH)

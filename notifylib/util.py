@@ -3,6 +3,7 @@ import logging
 import re
 import sqlite3
 import urllib
+import os
 
 from urllib.request import Request, urlopen
 from bs4 import BeautifulSoup
@@ -221,10 +222,15 @@ def fetch_current_season(cursor, connection, series_title):
     no_season = cursor.fetchone()
     return str(no_season[0])
 
-def log():
-    logging.basicConfig(filename=settings.LOG_FILE_PATH,
-                        format='%(asctime)s - %(message)s', filemode='w',
-                        level=logging.DEBUG)
+
+def star_logging():
+    "Start logging"
+    if os.path.isdir(settings.DIRECTORY_PATH):
+        logging.basicConfig(filename=settings.LOG_FILE_PATH,
+                            format='%(asctime)s - %(message)s', filemode='w',
+                            level=logging.DEBUG)
+    else:
+        os.makedirs(settings.DIRECTORY_PATH)
 
 def fetch_movies(cursor, connect):
     cursor.execute("SELECT title,link,id from movies where id >"+

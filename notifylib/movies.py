@@ -2,11 +2,11 @@ from urllib.request import Request, urlopen
 from bs4 import BeautifulSoup
 from notifylib.notify import announce
 from datetime import datetime
-from notifylib import settings
 from notifylib import util
 import logging
 import re
 import sqlite3
+import urllib
 
 
 class Movies:
@@ -18,7 +18,12 @@ class Movies:
         "Get all movies from page"
         request = Request("http://www.primewire.ag/index.php?sort=featured",
                   headers={'User-Agent': 'Mozilla/5.0'})
-        featured_movies = urlopen(request).read().decode('UTF-8')
+        try:
+            featured_movies = urlopen(request).read().decode('UTF-8')
+        except UnicodeDecodeError:
+            featured_movies = urlopen(request).read().decode('latin1')
+        except urllib.error.URLError:
+            return
         soup = BeautifulSoup(featured_movies)
         div_class = soup.find_all('div', {'class': 'index_item index_item_ie'})
         new_data = []
@@ -49,10 +54,10 @@ class Movies:
             for movie_data in diff_movie:
                 self.cursor.execute("INSERT INTO movies(genre_id,title,link,date_added) VALUES(?,?,?,?)",
                                      (movie_data[0], movie_data[1], movie_data[2],datetime.now(),))
+                util.movie_poster(poster_links, movie_data[1], movie_data[2],
+                                  self.cursor, self.connect)
                 self.connect.commit()
                 announce('New Movie', movie_data[1],"http://www.primewire.ag"+movie_data[2])
-                util.movie_poster(poster_links,movie_data[1], movie_data[2],
-                                  self.cursor,self.connect)
         except sqlite3.IntegrityError:
             logging.error("Movie Already exsists")
             self.connect.rollback()
