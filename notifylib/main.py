@@ -67,7 +67,7 @@ class Main(object):
                                 (week, datetime.now(),))
             movies = self.cursor.fetchall()
             for movie in movies:
-                util.render_view(self.image,movie[0], self.general_model,movie[1])
+                util.render_view(self.image, movie[0], self.general_model,movie[1])
         elif headers.get_current_page() == 1:
             self.general_model.clear()
             self.genre_icon_view.set_model(self.general_model)
@@ -83,16 +83,16 @@ class Main(object):
             self.cursor.execute("SELECT value from config where key='series_duration'")
             duration = self.cursor.fetchone()
             week = datetime.now() - timedelta(days=int(duration[0]))
-            self.cursor.execute("SELECT episode_name,episode_link,path from episodes join series_images on episodes.series_id=series_images.series_id and episodes.Date BETWEEN ? AND ?",(week,datetime.now(),))
+            self.cursor.execute("SELECT episode_name,episode_link,path from episodes join series_images on episodes.series_id=series_images.series_id and episodes.Date BETWEEN ? AND ?",(week, datetime.now(),))
             for episode in self.cursor.fetchall():
-                util.render_view(self.image,episode[0], self.general_model, episode[2])
+                util.render_view(self.image, episode[0], self.general_model, episode[2])
                 self.latest_dict[episode[0]] = episode[1]
         elif headers.get_current_page() == 3:
             self.general_model.clear()
             self.cursor.execute("SELECT title,current_season,path  from series join series_images on series.id=series_images.series_id and series.status=1 order by title")
             for series in self.cursor.fetchall():
                 util.render_view(self.image, series[0]+" "+"Season"+" "+str(series[1]),
-                                  self.general_model,series[2])
+                                  self.general_model, series[2])
         elif headers.get_current_page() == 4:
             self.general_model.clear()
             self.cursor.execute("SELECT title,path  from series join series_images on series.id=series_images.series_id order by title")
@@ -103,7 +103,7 @@ class Main(object):
     def on_GenreIcon_activated(self, widget, event):
         choice = util.get_selection(self.genre_icon_view, self.general_model)
         if re.search(r'\(\d+\)$', choice):
-            util.open_page(self.cursor, choice,"movie")
+            util.open_page(self.cursor, choice, "movie")
         else:
             self.cursor.execute("SELECT id from genre where genre=?",
                                 (choice,))
@@ -146,8 +146,8 @@ class Main(object):
             logging.debug(series_name)
             series_number = active_series.split("Season ")[1]
             logging.debug(series_number)
-            self.cursor.execute("SELECT episode_name,episode_link FROM episodes WHERE"+
-                        ' series_id=(SELECT id from series where title=?)'+
+            self.cursor.execute("SELECT episode_name,episode_link FROM episodes WHERE" +
+                        ' series_id=(SELECT id from series where title=?)' +
                         ' and episode_link LIKE ?',
                         (series_name, "%season-"+series_number+"%",))
             self.general_model.clear()
@@ -170,7 +170,7 @@ class Main(object):
 
     def on_SeriesArchive_activated(self, widget, event):
         series_archive_view = self.builder.get_object("SeriesArchive")
-        choice = util.get_selection(series_archive_view,self.general_model)
+        choice = util.get_selection(series_archive_view, self.general_model)
         if re.search(r'^Season', choice):
             self.archive_series_dict = {}
             logging.debug("Season selected")
@@ -178,7 +178,7 @@ class Main(object):
             self.cursor.execute("SELECT episode_name,episode_link FROM episodes" +
                                 ' WHERE series_id=(SELECT id from series where title=?)' +
                                 ' and episode_link LIKE ?',
-                                (self.series_name, "%season-"+ no +"%",))
+                                (self.series_name, "%season-" + no + "%",))
             self.general_model.clear()
             for current_season in self.cursor.fetchall():
                 util.render_view(self.image, current_season[0], self.general_model)
@@ -187,7 +187,7 @@ class Main(object):
             util.open_page(self.cursor, self.archive_series_dict[choice])
         else:
             self.series_name = choice
-            logging.debug("series selected %s" %choice)
+            logging.debug("series selected %s" % choice)
             self.cursor.execute("SELECT number_of_seasons from series where title=?",
                                 (choice,))
             no_seasons = self.cursor.fetchone()
@@ -201,14 +201,14 @@ class Main(object):
         gui.Add_Series(self.cursor, self.connect)
 
     def on_About_activate(self, widget):
-       gui.About()
+        gui.About()
 
     def on_Piratebay_activate(self, widget):
         self.torrent.piratebay()
 
     def on_Kickass_activate(self, widget):
         self.torrent.kickass()
-   
+
     def on_Stop_Update_activate(self, widget):
         gui.Confirm(self.striped_name, "stop", self.connect, self.cursor)
 
@@ -219,7 +219,7 @@ class Main(object):
         gui.Confirm(self.striped_name, "delete", self.connect, self.cursor)
 
     def on_Properties_activate(self, widget):
-       gui.Statistics(self.striped_name, self.connect, self.cursor)
+        gui.Statistics(self.striped_name, self.connect, self.cursor)
 
     def on_pref_activate(self, widget):
         gui.Preferences(self.cursor, self.connect)
@@ -241,4 +241,3 @@ class Main(object):
         self.fetch = FetchPosters(self.db_file)
         self.fetch.setDaemon(True)
         self.fetch.start()
-
