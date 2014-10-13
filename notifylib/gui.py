@@ -53,7 +53,7 @@ class Confirm(object):
         self.confirm.get_object('msgdlg').show()
 
     def on_btnOk_clicked(self, widget):
-        self.cursor.execute("PRAGMA foreign_keys = ON")
+        #self.cursor.execute("PRAGMA foreign_keys = ON")
         self.cursor.execute(self.sql, (self.title,))
         self.connect.commit()
         self.confirm.get_object('msgdlg').destroy()
