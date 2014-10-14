@@ -53,7 +53,6 @@ class Confirm(object):
         self.confirm.get_object('msgdlg').show()
 
     def on_btnOk_clicked(self, widget):
-        self.cursor.execute("PRAGMA foreign_keys = ON")
         self.cursor.execute(self.sql, (self.title,))
         self.connect.commit()
         self.confirm.get_object('msgdlg').destroy()
@@ -107,7 +106,7 @@ class Preferences(object):
             self.pref.get_object('pref').destroy()
 
         except ValueError as e:
-            logging.info("Malformed value")
+            logging.info("Not a valid number")
             logging.exception(e)
             self.connect.rollback()
             Error()

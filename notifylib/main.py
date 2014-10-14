@@ -30,6 +30,7 @@ class Main(object):
                    'on_LatestEpisodesIcon_activated': self.on_LatestEpisodes_activated,
                    'on_LatestEpisodesIcon_event': self.on_LatestEpisodes_event,
                    'on_SeriesArchive_activated': self.on_SeriesArchive_activated,
+                   'on_SeriesArchive_event': self.on_SeriesArchive_event,
                    'on_ActiveSeries_activated': self.on_ActiveSeries_activated,
                    'on_ActiveSeries_button_event': self.on_ActiveSeries_event,
                    'on_AddSeries_activate': self.on_AddSeries_activate,
@@ -50,6 +51,7 @@ class Main(object):
         self.general_model = self.builder.get_object("General")
         self.genre_icon_view = self.builder.get_object("GenreIcon")
         self.latest_episodes_view = self.builder.get_object("LatestEpisodesIcon")
+        self.series_archive_view = self.builder.get_object("SeriesArchive")
         self.builder.get_object('AppWindow').show()
         self.update = RunUpdate(self.db_file)
         self.update.setDaemon(True)
@@ -160,7 +162,7 @@ class Main(object):
             path = self.active_series_view.get_path_at_pos(event.x, event.y)
             if path != None:
                 self.active_series_view.select_path(path)
-                series = util.get_selection(self.active_series_view,self.general_model)
+                series = util.get_selection(self.active_series_view, self.general_model)
                 self.striped_name = series.split(" Season")[0]
                 if event.button == 3:
                     self.builder.get_object("Series").popup(None, None, None, None,
@@ -168,13 +170,25 @@ class Main(object):
                 elif event.button == 1:
                     self.on_ActiveSeries_activated(widget, series)
 
-    def on_SeriesArchive_activated(self, widget, event):
-        series_archive_view = self.builder.get_object("SeriesArchive")
-        choice = util.get_selection(series_archive_view, self.general_model)
-        if re.search(r'^Season', choice):
+    def on_SeriesArchive_event(self, widget, event):
+        if event.type == Gdk.EventType.BUTTON_PRESS:
+            path = self.series_archive_view.get_path_at_pos(event.x, event.y)
+            if path != None:
+                self.series_archive_view.select_path(path)
+                series = util.get_selection(self.series_archive_view, self.general_model)
+                self.striped_name = series.split(" Season")[0]
+                if event.button == 3:
+                    self.builder.get_object("Series").popup(None, None, None, None,
+                                                            event.button, event.time)
+                elif event.button == 1:
+                    self.on_SeriesArchive_activated(widget, series)
+
+
+    def on_SeriesArchive_activated(self, widget, series):
+        if re.search(r'^Season', series):
             self.archive_series_dict = {}
             logging.debug("Season selected")
-            no = choice.split("Season ")[1]
+            no = series.split("Season ")[1]
             self.cursor.execute("SELECT episode_name,episode_link FROM episodes" +
                                 ' WHERE series_id=(SELECT id from series where title=?)' +
                                 ' and episode_link LIKE ?',
@@ -183,13 +197,13 @@ class Main(object):
             for current_season in self.cursor.fetchall():
                 util.render_view(self.image, current_season[0], self.general_model)
                 self.archive_series_dict[current_season[0]] = current_season[1]
-        elif re.search(r'^Episode', choice):
-            util.open_page(self.cursor, self.archive_series_dict[choice])
+        elif re.search(r'^Episode', series):
+            util.open_page(self.cursor, self.archive_series_dict[series])
         else:
-            self.series_name = choice
-            logging.debug("series selected %s" % choice)
+            self.series_name = series
+            logging.debug("series selected %s" % series)
             self.cursor.execute("SELECT number_of_seasons from series where title=?",
-                                (choice,))
+                                (series,))
             no_seasons = self.cursor.fetchone()
             index = 1
             self.general_model.clear()
