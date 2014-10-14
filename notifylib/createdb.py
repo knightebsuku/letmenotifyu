@@ -176,3 +176,4 @@ class Database:
 
         if database_version == '2.0':
             logging.info("***Database upto date***")
+            self.connect.close()
