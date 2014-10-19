@@ -238,7 +238,6 @@ def fetch_movies(cursor, connect):
     cursor.execute("SELECT title,link,id from movies where id >"+
                        '(SELECT cast(value as INTEGER) from config where key="last_movie_id")')
     for movie in cursor.fetchall():
-        print(movie)
         correct_decode(movie, cursor)
         cursor.execute("INSERT INTO movie_images(movie_id, path) " +
                        'VALUES(?,?)', (movie[2],settings.IMAGE_PATH+movie[0]+'.jpg'))
