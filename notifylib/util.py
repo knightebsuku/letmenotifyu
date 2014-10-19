@@ -91,23 +91,25 @@ def correct_decode(info, cursor):
     try:
         soup = BeautifulSoup(urlopen(request).read().decode("UTF-8"))
         meta = soup.find('meta', {'property': 'og:image'})
-        logging.info("fetching image "+info[0])
-        with open("%s" % (settings.IMAGE_PATH+info[0]+".jpg"), 'wb') as image_file:
-            image_request = Request(meta['content'],
-                          headers={'User-Agent': 'Mozilla/5.0'})
-            image_file.write(urlopen(image_request).read())
-            logging.info("Imaged fetched")
+        save_image(info[0], meta)
     except UnicodeDecodeError:
         soup = BeautifulSoup(urlopen(request).read().decode("latin1"))
         meta = soup.find('meta', {'property': 'og:image'})
-        logging.info("fetching image "+info[0])
-        with open("%s" % (settings.IMAGE_PATH+info[0]+".jpg"), 'wb') as image_file:
-            image_request = Request(meta['content'],
-                          headers={'User-Agent': 'Mozilla/5.0'})
-            image_file.write(urlopen(image_request).read())
-            logging.info("Imaged fetched")
+        save_image(info[0], meta)
     except urllib.error.URLError as e:
         logging.exception(e)
+    except TypeError:
+        logging.info("Cant find image link")
+        pass
+
+def save_image(movie_link, meta):
+    logging.info("fetching image "+movie_link)
+    with open("%s" % (settings.IMAGE_PATH+movie_link+".jpg"), 'wb') as image_file:
+        image_request = Request(meta['content'],
+                          headers={'User-Agent': 'Mozilla/5.0'})
+        image_file.write(urlopen(image_request).read())
+        logging.info("Imaged fetched")
+    
 
 def movie_poster(poster_links, movie_title, movie_link,cursor, connect):
     "Fetch movie poster"
