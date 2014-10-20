@@ -80,7 +80,7 @@ def series_poster(cursor, connect, series_id):
         pass
 
 
-def correct_decode(info, cursor):
+def correct_decode(info):
     "fetch and decode images"
     if re.search(r'^http', info[1]):
         request = Request(info[1],
@@ -97,10 +97,9 @@ def correct_decode(info, cursor):
         meta = soup.find('meta', {'property': 'og:image'})
         save_image(info[0], meta)
     except urllib.error.URLError as e:
-        logging.exception(e)
+        logging.warn("Unable to connect to image link")
     except TypeError:
         logging.info("Cant find image link")
-        pass
 
 def save_image(movie_link, meta):
     logging.info("fetching image "+movie_link)
@@ -238,9 +237,11 @@ def fetch_movies(cursor, connect):
     cursor.execute("SELECT title,link,id from movies where id >"+
                        '(SELECT cast(value as INTEGER) from config where key="last_movie_id")')
     for movie in cursor.fetchall():
-        correct_decode(movie, cursor)
+        correct_decode(movie)
         cursor.execute("INSERT INTO movie_images(movie_id, path) " +
                        'VALUES(?,?)', (movie[2],settings.IMAGE_PATH+movie[0]+'.jpg'))
+        cursor.execute("UPDATE config set value=? where key='last_movie_id'",
+                               (movie[2],))
         connect.commit()
 
 
