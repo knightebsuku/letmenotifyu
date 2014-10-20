@@ -102,12 +102,15 @@ def correct_decode(info):
         logging.info("Cant find image link")
 
 def save_image(movie_link, meta):
-    logging.info("fetching image "+movie_link)
-    with open("%s" % (settings.IMAGE_PATH+movie_link+".jpg"), 'wb') as image_file:
-        image_request = Request(meta['content'],
+    if os.path.isfile(settings.IMAGE_PATH+movie_link+".jpg"):
+        logging.info("File already exists")
+    else:
+        logging.info("fetching image "+movie_link)
+        with open("%s" % (settings.IMAGE_PATH+movie_link+".jpg"), 'wb') as image_file:
+            image_request = Request(meta['content'],
                           headers={'User-Agent': 'Mozilla/5.0'})
-        image_file.write(urlopen(image_request).read())
-        logging.info("Imaged fetched")
+            image_file.write(urlopen(image_request).read())
+            logging.info("Imaged fetched")
     
 
 def movie_poster(poster_links, movie_title, movie_link,cursor, connect):
