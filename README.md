@@ -3,7 +3,7 @@ Letmenotifyu
 
 Program to notifyu users of new Episode and Movie releases from primewire.ag
 
-Version: 2.0.2
+Version: 2.0.5
 -------------------
 
 Program Features
