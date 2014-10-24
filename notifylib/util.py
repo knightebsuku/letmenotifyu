@@ -70,7 +70,7 @@ def series_poster(cursor, connect, series_id):
     "fetch series JPEG"
     cursor.execute("SELECT title,series_link from series where id=?", (series_id,))
     series_link = cursor.fetchone()
-    correct_decode(series_link, cursor)
+    correct_decode(series_link)
     try:
         cursor.execute("INSERT INTO series_images(series_id,path) VALUES(?,?)",
                             (series_id, settings.IMAGE_PATH+series_link[0]+'.jpg',))
@@ -171,7 +171,8 @@ def check_url(text, notice, dialog, cursor, connection, link_box):
         change_string = title.group(2)
         show_title = change_string.replace("-", " ")
         logging.info("Inserting new series %s" % show_title)
-        cursor.execute('INSERT INTO series(title,' +
+        try:
+            cursor.execute('INSERT INTO series(title,' +
                            'series_link,' +
                            'number_of_episodes,' +
                            'number_of_seasons,' +
@@ -179,10 +180,15 @@ def check_url(text, notice, dialog, cursor, connection, link_box):
                            'current_season,' +
                            'last_update)' +
                            ' VALUES(?,?,0,0,1,0,?)', (show_title.title(), text, datetime.now(),))
-        connection.commit()
-        logging.debug("Series Added: "+show_title)
-        link_box.set_text('')
-        dialog.get_object('linkdialog').destroy()
+            connection.commit()
+            logging.debug("Series Added: "+show_title)
+            link_box.set_text('')
+            dialog.get_object('linkdialog').destroy()
+        except sqlite3.IntegrityError:
+            logging.error("Series already added")
+            notice.set_text("Series already added")
+            notice.set_visible(True)
+            dialog.get_object('imcheck').set_visible(True)
     else:
         notice.set_text("Not a valid link or link already exists")
         notice.set_visible(True)
