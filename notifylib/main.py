@@ -22,7 +22,7 @@ class Main(object):
         self.torrent = Torrent(self.cursor)
         self.builder.add_from_file("ui/main.glade")
         self.active_series_view = self.builder.get_object("ActiveSeries")
-        self.active_series_view.add_events(Gdk.EventMask.BUTTON_PRESS_MASK)
+        #self.active_series_view.add_events(Gdk.EventMask.BUTTON_PRESS_MASK)
         signals = {'on_AppWindow_destroy': Gtk.main_quit,
                    'on_headers_event': self.on_headers_event,
                    'on_GenreIcon_activated': self.on_GenreIcon_activated,
@@ -45,18 +45,31 @@ class Main(object):
                    'on_Quit_activate': Gtk.main_quit,
                    'on_About_activate': self.on_About_activate,
                    'on_Kickass_activate': self.on_Kickass_activate,
-                   'on_Piratebay_activate': self.on_Piratebay_activate}
+                   'on_Piratebay_activate': self.on_Piratebay_activate,
+                   'on_LatestMovies_activate': self.on_LatestMovies_activate}
 
         self.builder.connect_signals(signals)
         self.general_model = self.builder.get_object("General")
         self.genre_icon_view = self.builder.get_object("GenreIcon")
+        self.general_icon_view = self.builder.get_object('General_icon_view')
         self.latest_episodes_view = self.builder.get_object("LatestEpisodesIcon")
         self.series_archive_view = self.builder.get_object("SeriesArchive")
         self.builder.get_object('AppWindow').show()
-        self.update = RunUpdate(self.db_file)
-        self.update.setDaemon(True)
-        self.update.start()
+        #self.update = RunUpdate(self.db_file)
+        #self.update.setDaemon(True)
+        #self.update.start()
         Gtk.main()
+
+    def on_LatestMovies_activate(self,widget):
+        self.general_model.clear()
+        self.cursor.execute("SELECT value from config where key='movie_duration'")
+        duration = self.cursor.fetchone()
+        week = datetime.now() - timedelta(days=int(duration[0]))
+        self.cursor.execute("SELECT title,path from movies join movie_images on movies.id=movie_id and movies.date_added BETWEEN ? and ? order by title",
+                                (week, datetime.now(),))
+        movies = self.cursor.fetchall()
+        for movie in movies:
+            util.render_view(self.image, movie[0], self.general_model,movie[1])
 
     def on_headers_event(self, widget, event):
         headers = self.builder.get_object("headers")

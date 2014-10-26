@@ -2,14 +2,6 @@
 <!-- Generated with glade 3.18.3 -->
 <interface>
   <requires lib="gtk+" version="3.12"/>
-  <object class="GtkListStore" id="General">
-    <columns>
-      <!-- column-name GdkPixbuf1 -->
-      <column type="GdkPixbuf"/>
-      <!-- column-name gchararray1 -->
-      <column type="gchararray"/>
-    </columns>
-  </object>
   <object class="GtkApplicationWindow" id="AppWindow">
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">Letmenotifyu</property>
@@ -161,27 +153,72 @@
           </packing>
         </child>
         <child>
-          <object class="GtkNotebook" id="headers">
+          <object class="GtkBox" id="box2">
             <property name="visible">True</property>
-            <property name="can_focus">True</property>
-            <property name="has_focus">True</property>
-            <property name="is_focus">True</property>
-            <property name="tab_pos">left</property>
-            <property name="show_border">False</property>
-            <signal name="button-press-event" handler="on_headers_event" swapped="no"/>
+            <property name="can_focus">False</property>
             <child>
-              <object class="GtkScrolledWindow" id="scrolledwindow1">
+              <object class="GtkMenuBar" id="menubar2">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="pack_direction">ttb</property>
+                <property name="child_pack_direction">ttb</property>
+                <child>
+                  <object class="GtkMenuItem" id="LatestMovies">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="receives_default">True</property>
+                    <property name="label" translatable="yes">Latest Movies</property>
+                    <signal name="activate" handler="on_LatestMovies_activate" swapped="no"/>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkMenuItem" id="MovieArchive">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">Movie Archive</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkMenuItem" id="LatestEpisodes">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">Lastest Episodes</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkMenuItem" id="ActiveSeries">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">Active Series</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkMenuItem" id="SeriesArchive">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">Series Archive</property>
+                    <property name="use_underline">True</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkScrolledWindow" id="scrolledwindow6">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="shadow_type">in</property>
                 <child>
-                  <object class="GtkIconView" id="LatestMovie">
+                  <object class="GtkIconView" id="General_icon_view">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="margin">6</property>
                     <property name="model">General</property>
                     <property name="activate_on_single_click">True</property>
-                    <signal name="item-activated" handler="on_LatestMovie_activated" swapped="no"/>
                     <child>
                       <object class="GtkCellRendererPixbuf" id="cellrenderertext1"/>
                       <attributes>
@@ -197,192 +234,10 @@
                   </object>
                 </child>
               </object>
-            </child>
-            <child type="tab">
-              <object class="GtkLabel" id="label1">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="label" translatable="yes">Latest Movies</property>
-              </object>
               <packing>
-                <property name="tab_fill">False</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkScrolledWindow" id="scrolledwindow2">
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="shadow_type">in</property>
-                <child>
-                  <object class="GtkIconView" id="GenreIcon">
-                    <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="margin">6</property>
-                    <property name="model">General</property>
-                    <property name="activate_on_single_click">True</property>
-                    <signal name="item-activated" handler="on_GenreIcon_activated" swapped="no"/>
-                    <child>
-                      <object class="GtkCellRendererPixbuf" id="cellrenderertext3"/>
-                      <attributes>
-                        <attribute name="pixbuf">0</attribute>
-                      </attributes>
-                    </child>
-                    <child>
-                      <object class="GtkCellRendererText" id="cellrenderertext4"/>
-                      <attributes>
-                        <attribute name="text">1</attribute>
-                      </attributes>
-                    </child>
-                  </object>
-                </child>
-              </object>
-              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
                 <property name="position">1</property>
-              </packing>
-            </child>
-            <child type="tab">
-              <object class="GtkLabel" id="label2">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="label" translatable="yes">Movie Archive</property>
-              </object>
-              <packing>
-                <property name="position">1</property>
-                <property name="tab_fill">False</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkScrolledWindow" id="scrolledwindow3">
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="shadow_type">in</property>
-                <child>
-                  <object class="GtkIconView" id="LatestEpisodesIcon">
-                    <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="margin">6</property>
-                    <property name="model">General</property>
-                    <property name="activate_on_single_click">True</property>
-                    <signal name="button-press-event" handler="on_LatestEpisodesIcon_event" swapped="no"/>
-                    <signal name="item-activated" handler="on_LatestEpisodesIcon_activated" swapped="no"/>
-                    <child>
-                      <object class="GtkCellRendererPixbuf" id="cellrenderertext5"/>
-                      <attributes>
-                        <attribute name="pixbuf">0</attribute>
-                      </attributes>
-                    </child>
-                    <child>
-                      <object class="GtkCellRendererText" id="cellrenderertext6"/>
-                      <attributes>
-                        <attribute name="text">1</attribute>
-                      </attributes>
-                    </child>
-                  </object>
-                </child>
-              </object>
-              <packing>
-                <property name="position">2</property>
-              </packing>
-            </child>
-            <child type="tab">
-              <object class="GtkLabel" id="label3">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="label" translatable="yes">Latest Episodes</property>
-              </object>
-              <packing>
-                <property name="position">2</property>
-                <property name="tab_fill">False</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkScrolledWindow" id="scrolledwindow4">
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="shadow_type">in</property>
-                <child>
-                  <object class="GtkIconView" id="ActiveSeries">
-                    <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="is_focus">True</property>
-                    <property name="receives_default">True</property>
-                    <property name="margin">6</property>
-                    <property name="model">General</property>
-                    <property name="activate_on_single_click">True</property>
-                    <signal name="button-press-event" handler="on_ActiveSeries_button_event" swapped="no"/>
-                    <signal name="item-activated" handler="on_ActiveSeries_activated" swapped="no"/>
-                    <child>
-                      <object class="GtkCellRendererPixbuf" id="cellrenderertext7"/>
-                      <attributes>
-                        <attribute name="pixbuf">0</attribute>
-                      </attributes>
-                    </child>
-                    <child>
-                      <object class="GtkCellRendererText" id="cellrenderertext8"/>
-                      <attributes>
-                        <attribute name="text">1</attribute>
-                      </attributes>
-                    </child>
-                  </object>
-                </child>
-              </object>
-              <packing>
-                <property name="position">3</property>
-              </packing>
-            </child>
-            <child type="tab">
-              <object class="GtkLabel" id="label4">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="label" translatable="yes">Active Series</property>
-              </object>
-              <packing>
-                <property name="position">3</property>
-                <property name="tab_fill">False</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkScrolledWindow" id="scrolledwindow5">
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="shadow_type">in</property>
-                <child>
-                  <object class="GtkIconView" id="SeriesArchive">
-                    <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="margin">6</property>
-                    <property name="model">General</property>
-                    <property name="activate_on_single_click">True</property>
-                    <signal name="button-press-event" handler="on_SeriesArchive_event" swapped="no"/>
-                    <signal name="item-activated" handler="on_SeriesArchive_activated" swapped="no"/>
-                    <child>
-                      <object class="GtkCellRendererPixbuf" id="cellrenderertext9"/>
-                      <attributes>
-                        <attribute name="pixbuf">0</attribute>
-                      </attributes>
-                    </child>
-                    <child>
-                      <object class="GtkCellRendererText" id="cellrenderertext10"/>
-                      <attributes>
-                        <attribute name="text">1</attribute>
-                      </attributes>
-                    </child>
-                  </object>
-                </child>
-              </object>
-              <packing>
-                <property name="position">4</property>
-              </packing>
-            </child>
-            <child type="tab">
-              <object class="GtkLabel" id="label5">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="label" translatable="yes">Series Archive</property>
-              </object>
-              <packing>
-                <property name="position">4</property>
-                <property name="tab_fill">False</property>
               </packing>
             </child>
           </object>
@@ -394,6 +249,14 @@
         </child>
       </object>
     </child>
+  </object>
+  <object class="GtkListStore" id="General">
+    <columns>
+      <!-- column-name GdkPixbuf1 -->
+      <column type="GdkPixbuf"/>
+      <!-- column-name gchararray1 -->
+      <column type="gchararray"/>
+    </columns>
   </object>
   <object class="GtkMenu" id="Series">
     <property name="visible">True</property>
