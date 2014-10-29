@@ -55,9 +55,9 @@ class Main(object):
         self.latest_episodes_view = self.builder.get_object("LatestEpisodesIcon")
         self.series_archive_view = self.builder.get_object("SeriesArchive")
         self.builder.get_object('AppWindow').show()
-        #self.update = RunUpdate(self.db_file)
-        #self.update.setDaemon(True)
-        #self.update.start()
+        self.update = RunUpdate(self.db_file)
+        self.update.setDaemon(True)
+        self.update.start()
         Gtk.main()
 
     def on_LatestMovies_activate(self,widget):
