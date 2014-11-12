@@ -24,7 +24,9 @@ class Main(object):
         self.active_series_view = self.builder.get_object("ActiveSeries")
         #self.active_series_view.add_events(Gdk.EventMask.BUTTON_PRESS_MASK)
         signals = {'on_AppWindow_destroy': Gtk.main_quit,
-                   'on_headers_event': self.on_headers_event,
+                   'on_HeaderView_event': self.on_HeaderView_event,
+                   #'on_GeneralIconView_activate': self.general_icon_view,
+                   #'on_headers_event': self.on_headers_event,
                    'on_GenreIcon_activated': self.on_GenreIcon_activated,
                    'on_LatestMovie_activated': self.on_LatestMovie_activated,
                    'on_LatestEpisodesIcon_activated': self.on_LatestEpisodes_activated,
@@ -49,16 +51,80 @@ class Main(object):
                    'on_LatestMovies_activate': self.on_LatestMovies_activate}
 
         self.builder.connect_signals(signals)
+        self.header_dic = {'Movie Archive': self.movie_archive,
+                      'Latest Movies': self.latest_movies,
+                      'Latest Episodes': self.latest_episodes,
+                      'Active Series': self.active_series,
+                      'Series Archive': self.series_archive}
         self.general_model = self.builder.get_object("General")
-        self.genre_icon_view = self.builder.get_object("GenreIcon")
         self.general_icon_view = self.builder.get_object('General_icon_view')
-        self.latest_episodes_view = self.builder.get_object("LatestEpisodesIcon")
-        self.series_archive_view = self.builder.get_object("SeriesArchive")
+        util.pre_populate_menu(self.builder)
         self.builder.get_object('AppWindow').show()
-        self.update = RunUpdate(self.db_file)
-        self.update.setDaemon(True)
-        self.update.start()
+        #self.update = RunUpdate(self.db_file)
+        #self.update.setDaemon(True)
+        #self.update.start()
         Gtk.main()
+
+    def on_HeaderView_event(self, widget, event):
+        if event.button == 1:
+            header_view = self.builder.get_object("HeaderView")
+            selection = header_view.get_selection()
+            name, itr = selection.get_selected()
+            header_choice = name[itr][0]
+            try:
+                self.header_dic[header_choice]()
+            except KeyError:
+                pass
+
+    def movie_archive(self):
+        self.general_model.clear()
+        self.cursor.execute("SELECT genre from genre")
+        result = self.cursor.fetchall()
+        self.image.set_from_file("ui/movies.png")
+        pixbuf = self.image.get_pixbuf()
+        for genre in result:
+            self.general_model.append([pixbuf, genre[0]])
+        self.flag = 'movie archive'
+        
+    def latest_movies(self):
+        self.general_model.clear()
+        self.cursor.execute("SELECT value from config where key='movie_duration'")
+        duration = self.cursor.fetchone()
+        week = datetime.now() - timedelta(days=int(duration[0]))
+        self.cursor.execute("SELECT title,path from movies join movie_images on movies.id=movie_id and movies.date_added BETWEEN ? and ? order by title",
+                                (week, datetime.now(),))
+        movies = self.cursor.fetchall()
+        for movie in movies:
+            util.render_view(self.image, movie[0], self.general_model, movie[1])
+        self.flag = 'latest movies'
+
+    def latest_episodes(self):
+        self.latest_dict = {}
+        self.general_model.clear()
+        self.cursor.execute("SELECT value from config where key='series_duration'")
+        duration = self.cursor.fetchone()
+        week = datetime.now() - timedelta(days=int(duration[0]))
+        self.cursor.execute("SELECT episode_name,episode_link,path from episodes join series_images on episodes.series_id=series_images.series_id and episodes.Date BETWEEN ? AND ?",(week, datetime.now(),))
+        for episode in self.cursor.fetchall():
+            util.render_view(self.image, episode[0], self.general_model, episode[2])
+            self.latest_dict[episode[0]] = episode[1]
+        self.flag = 'latest episodes'
+
+    def active_series(self):
+        self.general_model.clear()
+        self.cursor.execute("SELECT title,current_season,path  from series join series_images on series.id=series_images.series_id and series.status=1 order by title")
+        for series in self.cursor.fetchall():
+            util.render_view(self.image, series[0]+" "+"Season"+" "+str(series[1]),
+                              self.general_model, series[2])
+        self.flag = 'active series'
+
+    def series_archive(self):
+            self.general_model.clear()
+            self.cursor.execute("SELECT title,path  from series join series_images on series.id=series_images.series_id order by title")
+            for all_series in self.cursor.fetchall():
+                util.render_view(self.image, all_series[0], self.general_model,
+                                 all_series[1])
+            self.flag = 'series archive'
 
     def on_LatestMovies_activate(self,widget):
         self.general_model.clear()
@@ -71,50 +137,7 @@ class Main(object):
         for movie in movies:
             util.render_view(self.image, movie[0], self.general_model,movie[1])
 
-    def on_headers_event(self, widget, event):
-        headers = self.builder.get_object("headers")
-        if headers.get_current_page() == 0:
-            self.general_model.clear()
-            self.cursor.execute("SELECT value from config where key='movie_duration'")
-            duration = self.cursor.fetchone()
-            week = datetime.now() - timedelta(days=int(duration[0]))
-            self.cursor.execute("SELECT title,path from movies join movie_images on movies.id=movie_id and movies.date_added BETWEEN ? and ? order by title",
-                                (week, datetime.now(),))
-            movies = self.cursor.fetchall()
-            for movie in movies:
-                util.render_view(self.image, movie[0], self.general_model,movie[1])
-        elif headers.get_current_page() == 1:
-            self.general_model.clear()
-            self.genre_icon_view.set_model(self.general_model)
-            self.cursor.execute("SELECT genre from genre")
-            result = self.cursor.fetchall()
-            self.image.set_from_file("ui/movies.png")
-            pixbuf = self.image.get_pixbuf()
-            for genre in result:
-                self.general_model.append([pixbuf, genre[0]])
-        elif headers.get_current_page() == 2:
-            self.latest_dict = {}
-            self.general_model.clear()
-            self.cursor.execute("SELECT value from config where key='series_duration'")
-            duration = self.cursor.fetchone()
-            week = datetime.now() - timedelta(days=int(duration[0]))
-            self.cursor.execute("SELECT episode_name,episode_link,path from episodes join series_images on episodes.series_id=series_images.series_id and episodes.Date BETWEEN ? AND ?",(week, datetime.now(),))
-            for episode in self.cursor.fetchall():
-                util.render_view(self.image, episode[0], self.general_model, episode[2])
-                self.latest_dict[episode[0]] = episode[1]
-        elif headers.get_current_page() == 3:
-            self.general_model.clear()
-            self.cursor.execute("SELECT title,current_season,path  from series join series_images on series.id=series_images.series_id and series.status=1 order by title")
-            for series in self.cursor.fetchall():
-                util.render_view(self.image, series[0]+" "+"Season"+" "+str(series[1]),
-                                  self.general_model, series[2])
-        elif headers.get_current_page() == 4:
-            self.general_model.clear()
-            self.cursor.execute("SELECT title,path  from series join series_images on series.id=series_images.series_id order by title")
-            for all_series in self.cursor.fetchall():
-                util.render_view(self.image, all_series[0], self.general_model,
-                                 all_series[1])
-
+                
     def on_GenreIcon_activated(self, widget, event):
         choice = util.get_selection(self.genre_icon_view, self.general_model)
         if re.search(r'\(\d+\)$', choice):

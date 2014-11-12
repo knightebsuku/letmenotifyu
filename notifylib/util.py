@@ -253,4 +253,14 @@ def fetch_movies(cursor, connect):
                                (movie[2],))
         connect.commit()
 
+def pre_populate_menu(builder):
+    header_list = builder.get_object('HeaderList')
+    header = header_list.append(None, ["Movies"])
+    header_list.append(header, ["Latest Movies"])
+    header_list.append(header, ["Movie Archive"])
+    header = header_list.append(None, ("Series",))
+    header_list.append(header, ["Lastest Episodes"])
+    header_list.append(header, ["Active Series"])
+    header_list.append(header, ["Series Archive"])
+
 
