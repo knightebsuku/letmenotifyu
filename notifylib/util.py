@@ -34,6 +34,7 @@ def open_page(cursor, link, option=None):
         logging.info("Opening link"+ link[0])
     else:
         webbrowser.open_new("http://www.primewire.ag"+link)
+        logging.info("Opening link"+ link)
 
 def primewire(episode_site):
     "process series page"
@@ -253,14 +254,23 @@ def fetch_movies(cursor, connect):
                                (movie[2],))
         connect.commit()
 
-def pre_populate_menu(builder):
+def pre_populate_menu(builder, image):
+    image.set_from_file("icons/32.png")
+    pixbuf = image.get_pixbuf()
     header_list = builder.get_object('HeaderList')
-    header = header_list.append(None, ["Movies"])
-    header_list.append(header, ["Latest Movies"])
-    header_list.append(header, ["Movie Archive"])
-    header = header_list.append(None, ("Series",))
-    header_list.append(header, ["Lastest Episodes"])
-    header_list.append(header, ["Active Series"])
-    header_list.append(header, ["Series Archive"])
+    header = header_list.append(None, [pixbuf, "Movies"])
+    header_list.append(header, [None,"Latest Movies"])
+    header_list.append(header, [None,"Movie Archive"])
+    image.set_from_file("icons/television4.png")
+    pixbuf = image.get_pixbuf()
+    header = header_list.append(None, [pixbuf, "Series"])
+    header_list.append(header, [None, "Latest Episodes"])
+    header_list.append(header, [None, "Active Series"])
+    header_list.append(header, [None, "Series Archive"])
+    image.set_from_file("icons/visible2.png")
+    pixbuf = image.get_pixbuf()
+    header =header_list.append(None,[pixbuf, 'Watch List'])
+    header_list.append(header,[None, "Movies"])
+    header_list.append(header,[None, "Series"])
 
 

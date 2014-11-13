@@ -12,6 +12,8 @@
   </object>
   <object class="GtkTreeStore" id="HeaderList">
     <columns>
+      <!-- column-name GdkPixbuf1 -->
+      <column type="GdkPixbuf"/>
       <!-- column-name gchararray1 -->
       <column type="gchararray"/>
     </columns>
@@ -116,21 +118,6 @@
                         <signal name="activate" handler="on_update_activate" swapped="no"/>
                       </object>
                     </child>
-                    <child>
-                      <object class="GtkSeparatorMenuItem" id="menuitem6">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkMenuItem" id="poster_update">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="label" translatable="yes">Update Posters</property>
-                        <property name="use_underline">True</property>
-                        <signal name="activate" handler="on_poster_update_activate" swapped="no"/>
-                      </object>
-                    </child>
                   </object>
                 </child>
               </object>
@@ -193,9 +180,15 @@
                     <property name="clickable">True</property>
                     <property name="alignment">0.019999999552965164</property>
                     <child>
+                      <object class="GtkCellRendererPixbuf" id="cellrendererpixbuf1"/>
+                      <attributes>
+                        <attribute name="pixbuf">0</attribute>
+                      </attributes>
+                    </child>
+                    <child>
                       <object class="GtkCellRendererText" id="cellrenderertext3"/>
                       <attributes>
-                        <attribute name="text">0</attribute>
+                        <attribute name="text">1</attribute>
                       </attributes>
                     </child>
                   </object>
