@@ -24,6 +24,8 @@ class Main(object):
         self.builder.add_from_file("ui/main.glade")
         signals = {'on_AppWindow_destroy': Gtk.main_quit,
                    'on_HeaderView_event': self.on_header_view_event,
+                   #'on_HeaderView_cursor_changed': self.header_cursor_changed,
+                   'on_HeaderView_row_activated': self.header_view_row,
                    'on_GeneralIconView_activated': self.general_view_activate,
                    'on_GeneralIconView_event': self.general_view_event,
                    'on_AddSeries_activate': self.on_AddSeries_activate,
@@ -47,6 +49,7 @@ class Main(object):
                       'Series Archive': self.series_archive}
         self.general_model = self.builder.get_object("General")
         self.general_icon_view = self.builder.get_object('GeneralIconView')
+        self.cell_text = self.builder.get_object("CellRenderText")
         util.pre_populate_menu(self.builder,self.image)
         self.builder.get_object('AppWindow').show()
         #self.update = RunUpdate(self.db_file)
@@ -69,6 +72,10 @@ class Main(object):
             util.open_page(self.cursor, self.active_series_dic[choice])
         elif self.flag == "series archive":
             self.series_archive_select(choice)
+        elif self.flag == "no seasons":
+            self.no_season_select(choice)
+        elif self.flag == "season select":
+            util.open_page(self.cursor, self.archive_series_dict[choice])
 
     def general_view_event(self, widget, event):
         if event.type == Gdk.EventType.BUTTON_PRESS:
@@ -99,6 +106,13 @@ class Main(object):
                 self.header_dic[header_choice]()
             except KeyError:
                 pass
+
+    def header_view_row(self, widget, event, selection):
+        print("row activated")
+        #selection.s
+        #color = Gdk.RGBA(blue=0.5)
+        #color.parse('#003399')
+        #self.cell_text.set_property("cell-background-rgba",color)
 
     def movie_archive_select(self,choice):
         self.cursor.execute("SELECT id from genre where genre=?",
@@ -194,31 +208,30 @@ class Main(object):
             self.flag = 'series archive'
 
     def series_archive_select(self,choice):
-        if re.search(r'^Season', choice):
-            self.archive_series_dict = {}
-            no = choice.split("Season ")[1]
-            self.cursor.execute("SELECT episode_name,episode_link FROM episodes" +
-                                ' WHERE series_id=(SELECT id from series where title=?)' +
-                                ' and episode_link LIKE ?',
-                                (self.series_name, "%season-" + no + "%",))
-            self.general_model.clear()
-            for current_season in self.cursor.fetchall():
-                util.render_view(self.image, current_season[0], self.general_model)
-                self.archive_series_dict[current_season[0]] = current_season[1]
-            self.flag = "season select"
-        elif re.search(r'^Episode', choice):
-            util.open_page(self.cursor, self.archive_series_dict[choice])
-        else:
-            self.series_name = choice
-            self.cursor.execute("SELECT number_of_seasons from series where title=?",
-                                (choice,))
-            no_seasons = self.cursor.fetchone()
-            index = 1
-            self.general_model.clear()
-            while index <= int(no_seasons[0]):
-                util.render_view(self.image, "Season %s" % index, self.general_model)
-                index += 1
-            self.flag = "no seasons"
+        self.series_name = choice
+        self.cursor.execute("SELECT number_of_seasons from series where title=?",
+                            (choice,))
+        no_seasons = self.cursor.fetchone()
+        index = 1
+        self.general_model.clear()
+        while index <= int(no_seasons[0]):
+            util.render_view(self.image, "Season %s" % index, self.general_model)
+            index += 1
+        self.flag = "no seasons"
+            
+    def no_season_select(self,choice):
+        self.archive_series_dict = {}
+        no = choice.split("Season ")[1]
+        self.cursor.execute("SELECT episode_name,episode_link FROM episodes" +
+                            ' WHERE series_id=(SELECT id from series where title=?)' +
+                            ' and episode_link LIKE ?',
+                            (self.series_name, "%season-" + no + "%",))
+        self.general_model.clear()
+        for current_season in self.cursor.fetchall():
+            util.render_view(self.image, current_season[0], self.general_model)
+            self.archive_series_dict[current_season[0]] = current_season[1]
+        self.flag = "season select"
+        
 
     def on_AddSeries_activate(self,widget):
         gui.Add_Series(self.cursor, self.connect)
