@@ -24,8 +24,6 @@ class Main(object):
         self.builder.add_from_file("ui/main.glade")
         signals = {'on_AppWindow_destroy': Gtk.main_quit,
                    'on_HeaderView_event': self.on_header_view_event,
-                   #'on_HeaderView_cursor_changed': self.header_cursor_changed,
-                   'on_HeaderView_row_activated': self.header_view_row,
                    'on_GeneralIconView_activated': self.general_view_activate,
                    'on_GeneralIconView_event': self.general_view_event,
                    'on_AddSeries_activate': self.on_AddSeries_activate,
@@ -39,7 +37,10 @@ class Main(object):
                    'on_Quit_activate': Gtk.main_quit,
                    'on_About_activate': self.on_About_activate,
                    'on_Kickass_activate': self.on_Kickass_activate,
-                   'on_Piratebay_activate': self.on_Piratebay_activate}
+                   'on_Piratebay_activate': self.on_Piratebay_activate,
+                   'on_BtnRoot_activate': self.button_root_activate,
+                   'on_BtnLevel1_activate': self.button_one_activate}
+                   #'on_BtnLevel2_activate': self.button_two_activate}
 
         self.builder.connect_signals(signals)
         self.header_dic = {'Movie Archive': self.movie_archive,
@@ -49,7 +50,8 @@ class Main(object):
                       'Series Archive': self.series_archive}
         self.general_model = self.builder.get_object("General")
         self.general_icon_view = self.builder.get_object('GeneralIconView')
-        self.cell_text = self.builder.get_object("CellRenderText")
+        self.button_level_1 = self.builder.get_object("BtnLevel1")
+        self.button_level_2 = self.builder.get_object("BtnLevel2")
         util.pre_populate_menu(self.builder,self.image)
         self.builder.get_object('AppWindow').show()
         #self.update = RunUpdate(self.db_file)
@@ -98,21 +100,17 @@ class Main(object):
                                                        event.button, event.time)
 
     def on_header_view_event(self, widget, event):
+        button_root = self.builder.get_object("BtnRoot")
         if event.button == 1:
             selection = widget.get_selection()
             name, itr = selection.get_selected()
             header_choice = name[itr][1]
             try:
                 self.header_dic[header_choice]()
+                button_root.set_property("label", header_choice)
+                button_root.set_property("visible", True)
             except KeyError:
                 pass
-
-    def header_view_row(self, widget, event, selection):
-        print("row activated")
-        #selection.s
-        #color = Gdk.RGBA(blue=0.5)
-        #color.parse('#003399')
-        #self.cell_text.set_property("cell-background-rgba",color)
 
     def movie_archive_select(self,choice):
         self.cursor.execute("SELECT id from genre where genre=?",
@@ -231,6 +229,19 @@ class Main(object):
             util.render_view(self.image, current_season[0], self.general_model)
             self.archive_series_dict[current_season[0]] = current_season[1]
         self.flag = "season select"
+
+    def button_root_activate(self, widget):
+        label = widget.get_label()
+        if label == self.flag:
+            print("OK")
+        
+
+    def button_one_activate(self, widget):
+        label = widget.get_label()
+        if self.flag == "genre select":
+            self.movie_archive_select(label)
+            
+            
         
 
     def on_AddSeries_activate(self,widget):
