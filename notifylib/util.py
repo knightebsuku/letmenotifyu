@@ -120,7 +120,7 @@ def movie_poster(poster_links, movie_title, movie_link,cursor, connect):
     for url_link in poster_links:
         if re.search(number.group(0), url_link):
             with open("%s" %(settings.IMAGE_PATH+movie_title+".jpg"),'wb') as image_file:
-                image_request = Request(url_link,
+                image_request = Request("http:"+url_link,
                                         headers={'User-Agent': 'Mozilla/5.0'})
                 image_file.write(urlopen(image_request).read())
                 logging.info("Image fetched")
