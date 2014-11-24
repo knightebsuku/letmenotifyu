@@ -65,6 +65,8 @@ def series_compare(cursor, new_list, series_id):
     for old_episode in data:
         old_list.append((old_episode[0],old_episode[1].replace("\n", "")))
     list_difference = set(new_list).difference(old_list)
+    logging.info(new_list)
+    logging.info(old_list)
     return list_difference
 
 def series_poster(cursor, connect, series_id):

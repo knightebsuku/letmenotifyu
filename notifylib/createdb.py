@@ -175,5 +175,16 @@ class Database:
             database_version = '2.0'
 
         if database_version == '2.0':
-            logging.info("***Database upto date***")
+            logging.info("***Database needs to be upgraded***")
+            logging.info("Updating episode_name in episode database")
+            self.cursor.execute("SELECT episode_name,episode_link from episodes")
+            for query in self.cursor.fetchall():
+                new_ep_name = query[0].replace("pisode", "")
+                self.cursor.execute("UPDATE episodes SET episode_name=? WHERE"
+                                    + " episode_link=?",
+                                    (new_ep_name,query[1],))
+                self.connect.commit()
+            self.cursor.execute("UPDATE config set value='2.1' where key='version'")
+            self.connect.commit()
+            logging.info("episode names changed")
             self.connect.close()
