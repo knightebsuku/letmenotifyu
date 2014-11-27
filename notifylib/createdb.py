@@ -177,6 +177,7 @@ class Database:
         if database_version == '2.0':
             logging.info("***Database needs to be upgraded***")
             logging.info("Updating episode_name in episode database")
+            self.cursor.execute("delete from episodes")
             self.cursor.execute("SELECT episode_name,episode_link from episodes")
             for query in self.cursor.fetchall():
                 new_ep_name = query[0].replace("pisode", "")

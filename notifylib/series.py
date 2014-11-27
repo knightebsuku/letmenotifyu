@@ -11,7 +11,7 @@ class Series:
         self.connect = connect
 
     def fetch_series_data(self):
-        self.cursor.execute('SELECT id,series_link,number_of_episodes from series where status=1 limit 1')
+        self.cursor.execute('SELECT id,series_link,number_of_episodes from series where status=1')
         return self.cursor.fetchall()
 
     def fetch_new_episdoes(self, series_link):
