@@ -1,0 +1,32 @@
+letmenotifyu (2.0.5-2) UNRELEASED; urgency=low
+
+  * Initial Release of the 1.9 series
+  * Removed Quit Item
+  * Fixed Database
+  * Fixed startup
+  * Added Basic Logging
+  * Fixed deletion of series if wrong page is loaded
+  * Fixed movie update
+  * Separated Series and Movie Updates
+  * Fixed update 
+  * Current Series only shows current seson of series playing
+  * Fixed rogue x 
+  * Fixed startup error
+  * Fixed Movie Links
+  * New Release 1.10
+  * Fixed Notification when a new Series is added
+  * maintanance
+  * List Series in Alphabetical order
+  * fixed newline in sqlite3
+  * Fixed Movie Update
+  * Add Menu for Current Series
+  * New GUI Layout
+  * Database changes
+  * Fix about menu
+  * Fix right click on series archive
+  * Fixed updating posters
+  * Update version
+  * fix add series link
+  * fix url link to images
+
+ -- Lunga Mthembu <shellcomplex7@gmail.com>  Tue, 18 Nov 2014 16:53:49 +0200

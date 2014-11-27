@@ -1,0 +1,11 @@
+Package: letmenotifyu
+Version: 2.0.5-2
+Architecture: all
+Maintainer: Lunga Mthembu <zerefs@gmail.com>
+Installed-Size: 184
+Depends: python3 (>= 3.2), sqlite3 (>= 3.6), python3-notify2 (>= 0.2), python3-bs4 (>= 4.0)
+Section: x11
+Priority: extra
+Homepage: https://github.com/zerefs/letmenotifyu
+Description: Program to notify users
+ Letmenotifyu is a program that will notify you of the lastest series and movies
