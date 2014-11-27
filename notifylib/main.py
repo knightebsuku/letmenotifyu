@@ -38,9 +38,9 @@ class Main(object):
                    'on_About_activate': self.on_About_activate,
                    'on_Kickass_activate': self.on_Kickass_activate,
                    'on_Piratebay_activate': self.on_Piratebay_activate,
-                   'on_BtnRoot_activate': self.button_root_activate,
-                   'on_BtnLevel1_activate': self.button_one_activate}
-                   #'on_BtnLevel2_activate': self.button_two_activate}
+                   'on_BtnRoot_clicked': self.button_root_clicked,
+                   'on_BtnLevel1_clicked': self.button_one_clicked,
+                   'on_BtnLevel2_clicked': self.button_two_clicked}
 
         self.builder.connect_signals(signals)
         self.header_dic = {'Movie Archive': self.movie_archive,
@@ -54,9 +54,9 @@ class Main(object):
         self.button_level_2 = self.builder.get_object("BtnLevel2")
         util.pre_populate_menu(self.builder,self.image)
         self.builder.get_object('AppWindow').show()
-        self.update = RunUpdate(self.db_file)
-        self.update.setDaemon(True)
-        self.update.start()
+        #self.update = RunUpdate(self.db_file)
+        #self.update.setDaemon(True)
+        #self.update.start()
         Gtk.main()
 
     def general_view_activate(self, widget, choice):
@@ -66,16 +66,25 @@ class Main(object):
             util.open_page(self.cursor, self.latest_dict[choice])
         elif self.flag == "movie archive":
             self.movie_archive_select(choice)
+            self.button_level_1.set_property("visible", True)
+            self.button_level_1.set_property("label", choice)
+            #activate buttons here
         elif self.flag == "genre select":
             util.open_page(self.cursor, choice, "movie")
         elif self.flag == "active series":
             self.active_series_select(choice)
+            self.button_level_1.set_property("visible", True)
+            self.button_level_1.set_property("label", choice)
         elif self.flag == "select series":
             util.open_page(self.cursor, self.active_series_dic[choice])
         elif self.flag == "series archive":
             self.series_archive_select(choice)
+            self.button_level_1.set_property("visible", True)
+            self.button_level_1.set_property("label", choice)
         elif self.flag == "no seasons":
             self.no_season_select(choice)
+            self.button_level_2.set_property("visible", True)
+            self.button_level_2.set_property("label", choice)
         elif self.flag == "season select":
             util.open_page(self.cursor, self.archive_series_dict[choice])
 
@@ -109,6 +118,8 @@ class Main(object):
                 self.header_dic[header_choice]()
                 button_root.set_property("label", header_choice)
                 button_root.set_property("visible", True)
+                self.button_level_1.set_property("visible", False)
+                self.button_level_2.set_property("visible", False)
             except KeyError:
                 pass
 
@@ -230,21 +241,21 @@ class Main(object):
             self.archive_series_dict[current_season[0]] = current_season[1]
         self.flag = "season select"
 
-    def button_root_activate(self, widget):
-        label = widget.get_label()
-        if label == self.flag:
-            print("OK")
-        
+    def button_root_clicked(self, widget):
+        self.header_dic[widget.get_label()]()
 
-    def button_one_activate(self, widget):
-        label = widget.get_label()
-        if self.flag == "genre select":
-            self.movie_archive_select(label)
-            
-            
-        
+    def button_one_clicked(self, widget):
+        if self.flag in ("movie archive", "genre select"):
+            self.movie_archive_select(widget.get_label())
+        elif self.flag in ("active series", "select series"):
+            self.active_series_select(widget.get_label())
+        elif self.flag in ("season select", "series_archive"):
+            self.series_archive_select(widget.get_label())
 
-    def on_AddSeries_activate(self,widget):
+    def button_two_clicked(self, widget):
+        self.no_season_select(widget.get_label())
+
+    def on_AddSeries_activate(self, widget):
         gui.Add_Series(self.cursor, self.connect)
 
     def on_About_activate(self, widget):

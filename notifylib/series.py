@@ -58,9 +58,9 @@ class Series:
                                 'where id=?',
                                  (new_ep_number, no_seasons, datetime.now(),
                                   no_seasons,  series_id,))
-            logging.info("New series episodes added")
             util.series_poster(self.cursor, self.connect, series_id)
             self.connect.commit()
+            logging.info("New series episodes added")
         except Exception as e:
             logging.error("unable to add series episodes")
             logging.exception(e)

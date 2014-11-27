@@ -69,7 +69,6 @@ def series_compare(cursor, new_list, series_id):
     logging.info(new_list)
     return list_difference
 
-
 def series_poster(cursor, connect, series_id):
     "fetch series JPEG"
     cursor.execute("SELECT title,series_link from series where id=?", (series_id,))
@@ -284,8 +283,9 @@ def pre_populate_menu(builder, image):
     header_list.append(header, [None, "Latest Episodes"])
     header_list.append(header, [None, "Active Series"])
     header_list.append(header, [None, "Series Archive"])
-    image.set_from_file("icons/invert-visible.png")
-    pixbuf = image.get_pixbuf()
-    header = header_list.append(None, [pixbuf, 'Watch List'])
-    header_list.append(header, [None, "Movies"])
-    header_list.append(header, [None, "Series"])
+    #Watch list not ready yet.
+    #image.set_from_file("icons/invert-visible.png")
+    #pixbuf = image.get_pixbuf()
+    #header = header_list.append(None, [pixbuf, 'Watch List'])
+    #header_list.append(header, [None, "Movies"])
+    #header_list.append(header, [None, "Series"])

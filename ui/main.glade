@@ -164,7 +164,7 @@
               <object class="GtkButton" id="BtnRoot">
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <signal name="activate" handler="on_BtnRoot_activate" swapped="no"/>
+                <signal name="clicked" handler="on_BtnRoot_clicked" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">True</property>
@@ -176,7 +176,7 @@
               <object class="GtkButton" id="BtnLevel1">
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <signal name="activate" handler="on_BtnLevel1_activate" swapped="no"/>
+                <signal name="clicked" handler="on_BtnLevel1_clicked" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">True</property>
@@ -188,7 +188,7 @@
               <object class="GtkButton" id="BtnLevel2">
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <signal name="activate" handler="on_BtnLevel2_activate" swapped="no"/>
+                <signal name="clicked" handler="on_BtnLevel2_clicked" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">True</property>

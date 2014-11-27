@@ -59,7 +59,7 @@ class Database:
         self.cursor.execute('CREATE table series_images(' +
                             'id INTEGER PRIMARY KEY,' +
                             'series_id INTEGER NOT NULL,'
-                            'path VARCHAR(20) NOT NULL,' +
+                            'path VARCHAR(20) UNIQUE NOT NULL,' +
                             'FOREIGN KEY (series_id) REFERENCES series(id))')
         logging.info("****Creating movie images table")
         self.cursor.execute('CREATE table movie_images(' +
@@ -142,7 +142,7 @@ class Database:
             self.connect.commit()
             self.cursor.execute('CREATE table series_images(' +
                             'id INTEGER PRIMARY KEY,' +
-                            'series_id INTEGER NOT NULL,'
+                            'series_id INTEGER NOT NULL,' +
                             'path VARCHAR(20) NOT NULL,' +
                             'FOREIGN KEY(series_id) REFERENCES series(title))')
             logging.info("****Creating next images table****")
@@ -176,16 +176,22 @@ class Database:
 
         if database_version == '2.0':
             logging.info("***Database needs to be upgraded***")
-            logging.info("Updating episode_name in episode database")
-            self.cursor.execute("delete from episodes")
-            self.cursor.execute("SELECT episode_name,episode_link from episodes")
-            for query in self.cursor.fetchall():
-                new_ep_name = query[0].replace("pisode", "")
-                self.cursor.execute("UPDATE episodes SET episode_name=? WHERE"
-                                    + " episode_link=?",
-                                    (new_ep_name,query[1],))
-                self.connect.commit()
-            self.cursor.execute("UPDATE config set value='2.1' where key='version'")
+            self.cursor.execute("DELETE FROM episodes")
+            self.cursor.execute("UPDATE series SET number_of_episodes=0," +
+                                "number_of_seasons=0," +
+                                "current_season=0")
+            self.cursor.execute("CREATE TEMP TABLE series_images_temp as "+
+                                'SELECT * FROM series_images')
+            self.cursor.execute("DROP TABLE series_images")
+            self.cursor.execute('CREATE table series_images(' +
+                            'id INTEGER PRIMARY KEY,' +
+                            'series_id INTEGER NOT NULL,' +
+                            'path VARCHAR(20) UNIQUE NOT NULL,' +
+                            'FOREIGN KEY(series_id) REFERENCES series(title))')
+            self.cursor.execute("INSERT INTO series_images(" +
+                                'id,' +
+                                'series_id,' +
+                                'path) SELECT * from series_images_temp')
+            self.cursor.execute("UPDATE config set value='2.0.6' where key='version'")
             self.connect.commit()
-            logging.info("episode names changed")
             self.connect.close()
