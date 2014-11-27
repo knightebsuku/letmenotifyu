@@ -3,7 +3,7 @@ Letmenotifyu
 
 Program to notifyu users of new Episode and Movie releases from primewire.ag
 
-Version: 2.0.5
+Version: 2.0.6
 -------------------
 
 Program Features
@@ -42,7 +42,8 @@ Dependencies
 Installation
 ----------------------------
 
-    python setup.py
+    python setup.py.
+    I've included the debian directory so that you will be able to create a .deb file.
 
 
 Some Usage
