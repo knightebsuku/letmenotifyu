@@ -21,25 +21,25 @@ class Series:
         self.cursor.execute("SELECT title from series where id=?", (series_id,))
         series_title = self.cursor.fetchone()
         logging.info("adding new episodes for %s",series_title[0])
-        try:
-            for new_data in all_eps:
-                self.cursor.execute("INSERT INTO episodes("+
+        for new_data in all_eps:
+            try:
+                self.cursor.execute("INSERT INTO episodes(" +
                                     'series_id,' +
                                     'episode_link,' +
                                     'episode_name,' +
                                     'Date) ' +
                                     'VALUES(?,?,?,?)'
                                     ,(series_id, new_data[0], new_data[1], datetime.now(),))
+                self.connect.commit()
                 announce("New Series Episode", series_title[0],
                          "www.primewire.ag" + new_data[0])
-            self.cursor.execute("UPDATE series set number_of_episodes=?,"+
+                
+            except sqlite3.IntegrityError as e:
+                logging.error("Series episode already exists")
+        self.cursor.execute("UPDATE series set number_of_episodes=?,"+
                                 'number_of_seasons=?,last_update=?  where id=?',
                                 (new_ep_number, no_seasons, datetime.now(), series_id,))
-            self.connect.commit()
-        except sqlite3.IntegrityError as e:
-            logging.error("Unable to add new episodes for %s",series_title[0])
-            logging.warn(new_data[0])
-            self.connect.rollback()
+        self.connect.commit()
 
     def new_series_episodes(self, all_episodes, new_ep_number, series_id, no_seasons):
         logging.info("New series to be added")
