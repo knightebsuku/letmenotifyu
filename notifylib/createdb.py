@@ -59,7 +59,7 @@ class Database:
         self.cursor.execute('CREATE table series_images(' +
                             'id INTEGER PRIMARY KEY,' +
                             'series_id INTEGER NOT NULL,'
-                            'path VARCHAR(20) NOT NULL,' +
+                            'path VARCHAR(20) UNIQUE NOT NULL,' +
                             'FOREIGN KEY (series_id) REFERENCES series(id))')
         logging.info("****Creating movie images table")
         self.cursor.execute('CREATE table movie_images(' +
@@ -67,7 +67,7 @@ class Database:
                             'movie_id INTEGER NOT NULL,' +
                             'path VARCHAR(20) UNIQUE NOT NULL,' +
                             'FOREIGN KEY(movie_id) REFERENCES movies(Id))')
-        self.cursor.execute("INSERT INTO config(key,value) VALUES('version','2.0')")
+        self.cursor.execute("INSERT INTO config(key,value) VALUES('version','2.0.6')")
         self.cursor.execute("INSERT INTO config(key,value) VALUES('update_interval','3600')")
         self.cursor.execute("INSERT INTO config(key,value) VALUES('last_movie_id', '0')")
         self.cursor.execute("INSERT INTO config(key,value) VALUES('last_series_id','0')")
@@ -142,7 +142,7 @@ class Database:
             self.connect.commit()
             self.cursor.execute('CREATE table series_images(' +
                             'id INTEGER PRIMARY KEY,' +
-                            'series_id INTEGER NOT NULL,'
+                            'series_id INTEGER NOT NULL,' +
                             'path VARCHAR(20) NOT NULL,' +
                             'FOREIGN KEY(series_id) REFERENCES series(title))')
             logging.info("****Creating next images table****")
@@ -175,4 +175,23 @@ class Database:
             database_version = '2.0'
 
         if database_version == '2.0':
-            logging.info("***Database upto date***")
+            logging.info("***Database needs to be upgraded***")
+            self.cursor.execute("DELETE FROM episodes")
+            self.cursor.execute("UPDATE series SET number_of_episodes=0," +
+                                "number_of_seasons=0," +
+                                "current_season=0")
+            self.cursor.execute("CREATE TEMP TABLE series_images_temp as "+
+                                'SELECT * FROM series_images')
+            self.cursor.execute("DROP TABLE series_images")
+            self.cursor.execute('CREATE table series_images(' +
+                            'id INTEGER PRIMARY KEY,' +
+                            'series_id INTEGER NOT NULL,' +
+                            'path VARCHAR(20) UNIQUE NOT NULL,' +
+                            'FOREIGN KEY(series_id) REFERENCES series(title))')
+            self.cursor.execute("INSERT INTO series_images(" +
+                                'id,' +
+                                'series_id,' +
+                                'path) SELECT * from series_images_temp')
+            self.cursor.execute("UPDATE config set value='2.0.6' where key='version'")
+            self.connect.commit()
+            self.connect.close()

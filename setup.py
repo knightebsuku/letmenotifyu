@@ -1,7 +1,7 @@
 from distutils.core import setup
 if __name__=='__main__':
     setup(name='letmenotifyu',
-          version='2.0.0',
+          version='2.0.7',
           description='Program to notify users of new movie and series episode release from http://www.primewire.ag/',
           author='Lunga Mthembu',
           author_email='shellcomplex7@gmail.com',
