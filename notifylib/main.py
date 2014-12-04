@@ -54,9 +54,9 @@ class Main(object):
         self.button_level_2 = self.builder.get_object("BtnLevel2")
         util.pre_populate_menu(self.builder,self.image)
         self.builder.get_object('AppWindow').show()
-        #self.update = RunUpdate(self.db_file)
-        #self.update.setDaemon(True)
-        #self.update.start()
+        self.update = RunUpdate(self.db_file)
+        self.update.setDaemon(True)
+        self.update.start()
         Gtk.main()
 
     def general_view_activate(self, widget, choice):
@@ -68,7 +68,6 @@ class Main(object):
             self.movie_archive_select(choice)
             self.button_level_1.set_property("visible", True)
             self.button_level_1.set_property("label", choice)
-            #activate buttons here
         elif self.flag == "genre select":
             util.open_page(self.cursor, choice, "movie")
         elif self.flag == "active series":
@@ -91,7 +90,7 @@ class Main(object):
     def general_view_event(self, widget, event):
         if event.type == Gdk.EventType.BUTTON_PRESS:
             path = widget.get_path_at_pos(event.x, event.y)
-            if path != None:
+            if path:
                 widget.select_path(path)
                 choice = util.get_selection(widget, self.general_model)
                 self.striped_name = choice.split(" Season")[0]
@@ -129,7 +128,7 @@ class Main(object):
         genre_key = self.cursor.fetchone()
         self.cursor.execute("SELECT title,path from movies " +
                                 "join movie_images on  movies.id=movie_images.movie_id "+
-                                "and  movies.genre_id=?",
+                                "and  movies.genre_id=? order by movies.title",
                                 (genre_key[0],))
         movie_info = self.cursor.fetchall()
         self.general_model.clear()

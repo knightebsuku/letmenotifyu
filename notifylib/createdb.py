@@ -67,7 +67,7 @@ class Database:
                             'movie_id INTEGER NOT NULL,' +
                             'path VARCHAR(20) UNIQUE NOT NULL,' +
                             'FOREIGN KEY(movie_id) REFERENCES movies(Id))')
-        self.cursor.execute("INSERT INTO config(key,value) VALUES('version','2.0')")
+        self.cursor.execute("INSERT INTO config(key,value) VALUES('version','2.0.6')")
         self.cursor.execute("INSERT INTO config(key,value) VALUES('update_interval','3600')")
         self.cursor.execute("INSERT INTO config(key,value) VALUES('last_movie_id', '0')")
         self.cursor.execute("INSERT INTO config(key,value) VALUES('last_series_id','0')")
