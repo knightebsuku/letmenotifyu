@@ -1,5 +1,6 @@
-letmenotifyu (2.0.5-2) UNRELEASED; urgency=low
+letmenotifyu (2.0.7-1) UNRELEASED; urgency=low
 
+  [ Lunga Mthembu ]
   * Initial Release of the 1.9 series
   * Removed Quit Item
   * Fixed Database
@@ -29,4 +30,7 @@ letmenotifyu (2.0.5-2) UNRELEASED; urgency=low
   * fix add series link
   * fix url link to images
 
- -- Lunga Mthembu <shellcomplex7@gmail.com>  Tue, 18 Nov 2014 16:53:49 +0200
+  [ lunga ]
+  * dev 
+
+ -- lunga <lunga@debian>  Sun, 07 Dec 2014 22:07:13 +0200

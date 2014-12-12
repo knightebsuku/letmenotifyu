@@ -17,6 +17,7 @@ def render_view(image, string, store_model, image_file="ui/movies.png"):
     pixbuf = image.get_pixbuf()
     store_model.append([pixbuf, string])
 
+
 def get_selection(view, store_model):
     "Get selection of GtkIconView"
     tree_path = view.get_selected_items()
@@ -25,35 +26,36 @@ def get_selection(view, store_model):
     selection = model.get_value(iters, 1)
     return selection
 
+
 def open_page(cursor, link, option=None):
     "open webbrowser page"
     if option == "movie":
         cursor.execute("SELECT link FROM movies where title=?", (link,))
         link = cursor.fetchone()
         webbrowser.open_new("http://www.primewire.ag"+link[0])
-        logging.info("Opening link"+ link[0])
+        logging.info("Opening link" + link[0])
     else:
         webbrowser.open_new("http://www.primewire.ag"+link)
+        logging.info("Opening link" + link)
+
 
 def primewire(episode_site):
     "process series page"
     try:
         req = Request(episode_site, headers={'User-Agent': 'Mozilla/5.0'})
         data = urlopen(req).read().decode('ISO-8859-1')
-        soup = BeautifulSoup(data)
-        episode_page_data = soup
+        series_page_data = BeautifulSoup(data)
         all_series_info = []
-        div_class = episode_page_data.find_all('div', {'class':'tv_episode_item'})
-        for links in div_class:
-            for series_links in links.find_all('a'):
-                all_series_info.append((series_links.get('href'),
-                                        links.get_text().replace(" ", "").replace("\n",'')))
-            seasons = episode_page_data.findAll("h2",
-                                                    text=re.compile(r'^Season'))
+        for episode_item in series_page_data.find_all('div', {'class': 'tv_episode_item'}):
+            link = episode_item.a['href']
+            ep_no = episode_item.find('a').contents[0]
+            ep_name = episode_item.find('a').contents[1].text
+            all_series_info.append((link, ep_no.replace(" ", "")+ep_name))
+            seasons = series_page_data.find_all('a', {'class': 'season-toggle'})
         return all_series_info, len(all_series_info), len(seasons)
-    except Exception as e:
+    except Exception:
         logging.warn("Unable to connect to %s " % episode_site)
-        logging.exception(e)
+
 
 def series_compare(cursor, new_list, series_id):
     "Compare db list with new series"
@@ -62,16 +64,17 @@ def series_compare(cursor, new_list, series_id):
                    (series_id,))
     data = cursor.fetchall()
     for old_episode in data:
-        old_list.append((old_episode[0],old_episode[1].replace("\n", "")))
+        old_list.append((old_episode[0], old_episode[1].replace("\n", "")))
     list_difference = set(new_list).difference(old_list)
+    logging.info(new_list)
     return list_difference
 
 def series_poster(cursor, connect, series_id):
     "fetch series JPEG"
     cursor.execute("SELECT title,series_link from series where id=?", (series_id,))
     series_link = cursor.fetchone()
-    correct_decode(series_link)
     try:
+        correct_decode(series_link)
         cursor.execute("INSERT INTO series_images(series_id,path) VALUES(?,?)",
                             (series_id, settings.IMAGE_PATH+series_link[0]+'.jpg',))
         connect.commit()
@@ -85,40 +88,47 @@ def correct_decode(info):
     if re.search(r'^http', info[1]):
         request = Request(info[1],
                       headers={'User-Agent': 'Mozilla/5.0'})
+        image_type = "series"
     else:
         request = Request("http://www.primewire.ag"+info[1],
                       headers={'User-Agent': 'Mozilla/5.0'})
+        image_type = "movie"
     try:
         soup = BeautifulSoup(urlopen(request).read().decode("UTF-8"))
         meta = soup.find('meta', {'property': 'og:image'})
-        save_image(info[0], meta)
+        save_image(info[0], meta, image_type)
     except UnicodeDecodeError:
         soup = BeautifulSoup(urlopen(request).read().decode("latin1"))
         meta = soup.find('meta', {'property': 'og:image'})
-        save_image(info[0], meta)
-    except urllib.error.URLError as e:
+        save_image(info[0], meta,image_type)
+    except urllib.error.URLError:
         logging.warn("Unable to connect to image link")
     except TypeError:
         logging.info("Cant find image link")
 
-def save_image(movie_link, meta):
+
+def save_image(movie_link, meta, image_type):
     if os.path.isfile(settings.IMAGE_PATH+movie_link+".jpg"):
         logging.info("File already exists")
     else:
         logging.info("fetching image "+movie_link)
         with open("%s" % (settings.IMAGE_PATH+movie_link+".jpg"), 'wb') as image_file:
-            image_request = Request(meta['content'],
+            if image_type == "series":
+                full_image_url = "http:"+meta['content']
+            else:
+                full_image_url = meta['content']
+            image_request = Request(full_image_url,
                           headers={'User-Agent': 'Mozilla/5.0'})
             image_file.write(urlopen(image_request).read())
             logging.info("Imaged fetched")
-    
 
-def movie_poster(poster_links, movie_title, movie_link,cursor, connect):
+
+def movie_poster(poster_links, movie_title, movie_link, cursor, connect):
     "Fetch movie poster"
     number = re.search(r'\d{4,}', movie_link)
     for url_link in poster_links:
         if re.search(number.group(0), url_link):
-            with open("%s" %(settings.IMAGE_PATH+movie_title+".jpg"),'wb') as image_file:
+            with open("%s" % (settings.IMAGE_PATH+movie_title+".jpg"),'wb') as image_file:
                 image_request = Request("http:"+url_link,
                                         headers={'User-Agent': 'Mozilla/5.0'})
                 image_file.write(urlopen(image_request).read())
@@ -131,6 +141,7 @@ def movie_poster(poster_links, movie_title, movie_link,cursor, connect):
                 cursor.execute("UPDATE config set value=? where key='last_movie_id'",
                                (key[0],))
                 connect.commit()
+
 
 def get_intervals(cursor, interval, movie, series):
     cursor.execute("SELECT value FROM config WHERE key='update_interval'")
@@ -146,12 +157,14 @@ def get_intervals(cursor, interval, movie, series):
     series_value = key[0]
     series.set_text(series_value)
 
+
 def process_page(movie_page):
     "find image links from page"
     jpg_posters = []
     for image_jpg in movie_page:
         jpg_posters.append(image_jpg.find('img')['src'])
     return jpg_posters
+
 
 def movie_compare(cursor, new_list):
     "Compare new move_list with old movie List"
@@ -179,7 +192,8 @@ def check_url(text, notice, dialog, cursor, connection, link_box):
                            'status,' +
                            'current_season,' +
                            'last_update)' +
-                           ' VALUES(?,?,0,0,1,0,?)', (show_title.title(), text, datetime.now(),))
+                           ' VALUES(?,?,0,0,1,0,?)',
+                           (show_title.title(), text, datetime.now(),))
             connection.commit()
             logging.debug("Series Added: "+show_title)
             link_box.set_text('')
@@ -194,6 +208,7 @@ def check_url(text, notice, dialog, cursor, connection, link_box):
         notice.set_visible(True)
         dialog.get_object('imcheck').set_visible(True)
         logging.warn("Invalid link:"+text)
+
 
 def which_sql_message(Instruction):
     if Instruction == "start":
@@ -242,8 +257,9 @@ def star_logging():
     else:
         os.makedirs(settings.DIRECTORY_PATH)
 
+
 def fetch_movies(cursor, connect):
-    cursor.execute("SELECT title,link,id from movies where id >"+
+    cursor.execute("SELECT title,link,id from movies where id >" +
                        '(SELECT cast(value as INTEGER) from config where key="last_movie_id")')
     for movie in cursor.fetchall():
         correct_decode(movie)
@@ -254,3 +270,22 @@ def fetch_movies(cursor, connect):
         connect.commit()
 
 
+def pre_populate_menu(builder, image):
+    image.set_from_file("icons/invert-32.png")
+    pixbuf = image.get_pixbuf()
+    header_list = builder.get_object('HeaderList')
+    header = header_list.append(None, [pixbuf, "Movies"])
+    header_list.append(header, [None, "Latest Movies"])
+    header_list.append(header, [None, "Movie Archive"])
+    image.set_from_file("icons/invert-television.png")
+    pixbuf = image.get_pixbuf()
+    header = header_list.append(None, [pixbuf, "Series"])
+    header_list.append(header, [None, "Latest Episodes"])
+    header_list.append(header, [None, "Active Series"])
+    header_list.append(header, [None, "Series Archive"])
+    #Watch list not ready yet.
+    #image.set_from_file("icons/invert-visible.png")
+    #pixbuf = image.get_pixbuf()
+    #header = header_list.append(None, [pixbuf, 'Watch List'])
+    #header_list.append(header, [None, "Movies"])
+    #header_list.append(header, [None, "Series"])
