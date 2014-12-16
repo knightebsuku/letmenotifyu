@@ -54,9 +54,9 @@ class Main(object):
         self.button_level_2 = self.builder.get_object("BtnLevel2")
         util.pre_populate_menu(self.builder,self.image)
         self.builder.get_object('AppWindow').show()
-        self.update = RunUpdate(self.db_file)
-        self.update.setDaemon(True)
-        self.update.start()
+        #self.update = RunUpdate(self.db_file)
+        #self.update.setDaemon(True)
+        #self.update.start()
         Gtk.main()
 
     def general_view_activate(self, widget, choice):

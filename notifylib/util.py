@@ -247,7 +247,7 @@ def fetch_current_season(cursor, connection, series_title):
     return str(no_season[0])
 
 
-def star_logging():
+def start_logging():
     "Start logging"
     if os.path.isdir(settings.DIRECTORY_PATH):
         logging.basicConfig(filename=settings.LOG_FILE_PATH,
@@ -288,3 +288,9 @@ def pre_populate_menu(builder, image):
     #header = header_list.append(None, [pixbuf, 'Watch List'])
     #header_list.append(header, [None, "Movies"])
     #header_list.append(header, [None, "Series"])
+
+
+def create_directories():
+    os.mkdir(settings.IMAGE_PATH)
+    os.mkdir(settings.TORRENT_DIRECTORY)
+    logging.info("Directories created")

@@ -1,20 +1,16 @@
 #!/usr/bin/python3
 
-import logging
-import sqlite3
-from notifylib.createdb import Database
+from notifylib.database import database_change
 from notifylib.main import Main
 from notifylib import settings
 from notifylib import util
 
 if __name__ == "__main__":
-    util.star_logging()
+    util.start_logging()
     try:
-        db = Database(settings.DATABASE_PATH)
-        db.upgrade_database()
-    except sqlite3.OperationalError as e:
-        logging.info("No database found, creating a new one")
-        db = Database(settings.DATABASE_PATH)
-        db.create_database()
+        util.create_directories()
+    except Exception:
+        pass
     finally:
+        database_change()
         Main(settings.DATABASE_PATH)
