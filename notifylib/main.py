@@ -1,5 +1,4 @@
 import sqlite3
-import re
 import logging
 
 from datetime import datetime, timedelta
@@ -8,6 +7,7 @@ from notifylib import gui
 from notifylib.torrent import Torrent
 from notifylib import util
 from notifylib.threads import RunUpdate
+from notifylib import settings
 
 GObject.threads_init()
 
@@ -134,7 +134,7 @@ class Main(object):
         self.general_model.clear()
         for results in movie_info:
             util.render_view(self.image, results[0],
-                                 self.general_model, results[1])
+                                 self.general_model, settings.IMAGE_PATH+results[1])
         self.flag = "genre select"
 
     def active_series_select(self, choice):
@@ -177,7 +177,8 @@ class Main(object):
                             (week, datetime.now(),))
         movies = self.cursor.fetchall()
         for movie in movies:
-            util.render_view(self.image, movie[0], self.general_model, movie[1])
+            util.render_view(self.image, movie[0], self.general_model,
+                             settings.IMAGE_PATH+movie[1])
         self.flag = 'latest movies'
 
     def latest_episodes(self):
@@ -192,7 +193,7 @@ class Main(object):
                             "and episodes.Date BETWEEN ? AND ?",
                             (week, datetime.now(),))
         for episode in self.cursor.fetchall():
-            util.render_view(self.image, episode[0], self.general_model, episode[2])
+            util.render_view(self.image, episode[0], self.general_model, settings.IMAGE_PATH+episode[2])
             self.latest_dict[episode[0]] = episode[1]
         self.flag = 'latest episodes'
 
@@ -203,7 +204,7 @@ class Main(object):
                             "series.status=1 order by title")
         for series in self.cursor.fetchall():
             util.render_view(self.image, series[0]+" "+"Season"+" "+str(series[1]),
-                              self.general_model, series[2])
+                              self.general_model, settings.IMAGE_PATH+series[2])
         self.flag = 'active series'
 
     def series_archive(self):
@@ -212,7 +213,7 @@ class Main(object):
                             "series_images on series.id=series_images.series_id order by title")
         for all_series in self.cursor.fetchall():
             util.render_view(self.image, all_series[0], self.general_model,
-                                 all_series[1])
+                                 settings.IMAGE_PATH+all_series[1])
             self.flag = 'series archive'
 
     def series_archive_select(self,choice):
