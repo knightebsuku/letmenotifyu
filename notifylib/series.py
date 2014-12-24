@@ -18,9 +18,9 @@ class Series:
         return util.primewire(series_link)
 
     def insert_new_epsiodes(self, all_eps, new_ep_number, series_id, no_seasons):
-        self.cursor.execute("SELECT title from series where id=?", (series_id,))
-        series_title = self.cursor.fetchone()
-        logging.info("adding new episodes for %s",series_title[0])
+        self.cursor.execute("SELECT title,watch from series where id=?", (series_id,))
+        series_detail = self.cursor.fetchall()
+        logging.info("adding new episodes for %s",series_detail[0])
         for new_data in all_eps:
             try:
                 self.cursor.execute("INSERT INTO episodes(" +
@@ -31,7 +31,7 @@ class Series:
                                     'VALUES(?,?,?,?)'
                                     ,(series_id, new_data[0], new_data[1], datetime.now(),))
                 self.connect.commit()
-                announce("New Series Episode", series_title[0],
+                announce("New Series Episode", series_detail[0],
                          "www.primewire.ag" + new_data[0])
                 
             except sqlite3.IntegrityError as e:
