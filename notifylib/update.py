@@ -1,6 +1,8 @@
 import sqlite3
 import logging
-from notifylib.movies import Movies
+
+from notifylib.movies import get_upcoming_movies, insert_upcoming_movies
+#from notifylib.movies import Movies
 from notifylib.series import Series
 from notifylib import util
 
@@ -11,9 +13,11 @@ class Update:
         self.cursor = self.connect.cursor()
 
     def movie(self):
-        movie = Movies(self.cursor, self.connect)
-        new_movie_list, movie_page = movie.fetch_new_movies()
-        movie.insert_new_movies(new_movie_list, movie_page)
+        upcoming_movie_data = get_upcoming_movies()
+        insert_upcoming_movies(upcoming_movie_data, self.connect, self.cursor)
+        #movie = Movies(self.cursor, self.connect)
+       # new_movie_list, movie_page = movie.fetch_new_movies()
+        #movie.insert_new_movies(new_movie_list, movie_page)
 
     def series(self):
         series = Series(self.cursor, self.connect)

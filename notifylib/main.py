@@ -43,8 +43,8 @@ class Main(object):
                    'on_BtnLevel2_clicked': self.button_two_clicked}
 
         self.builder.connect_signals(signals)
-        self.header_dic = {'Movie Archive': self.movie_archive,
-                      'Latest Movies': self.latest_movies,
+        self.header_dic = {'Released Movies': self.movie_archive,
+                      'Upcoming Movies': self.latest_movies,
                       'Latest Episodes': self.latest_episodes,
                       'Active Series': self.active_series,
                       'Series Archive': self.series_archive}
@@ -167,14 +167,9 @@ class Main(object):
 
     def latest_movies(self):
         self.general_model.clear()
-        self.cursor.execute("SELECT value from config where key='movie_duration'")
-        duration = self.cursor.fetchone()
-        week = datetime.now() - timedelta(days=int(duration[0]))
-        self.cursor.execute("SELECT title,path from movies "+
-                            "join movie_images "+
-                            "on movies.id=movie_id and "+
-                            "movies.date_added BETWEEN ? and ? order by title",
-                            (week, datetime.now(),))
+        self.cursor.execute("SELECT title,path from upcoming_movies "+
+                            "join upcoming_images "+
+                            "on upcoming_movies.id=movie_id order by title")
         movies = self.cursor.fetchall()
         for movie in movies:
             util.render_view(self.image, movie[0], self.general_model,

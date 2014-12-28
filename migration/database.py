@@ -40,6 +40,7 @@ class Database(object):
                     self.connect.execute(change[1])
                     self.connect.execute("INSERT INTO migration(version,date) VALUES(?,?)", (change[0],dt.datetime.now(),))
                     self.connect.commit()
+                    logging.debug(change[1])
         except sqlite3.OperationalError as e:
             logging.error("unable to insert change {}".format(change[0]))
             logging.exception(e)

@@ -79,6 +79,27 @@ def database_change():
         [20, "INSERT INTO watch_queue_status(name) VALUES('new')"],
         [21, "INSERT INTO watch_queue_status(name) VALUES('torrent downloaded')"],
         [22, "INSERT INTO watch_queue_status(name) VALUES('complete')"],
-        [23, "DELETE FROM config where id=2"],
-        [24, "DELETE FROM config where id=7"]
+        [23, "CREATE TABLE upcoming_movies("+
+         'id INTEGER PRIMARY KEY,'+
+         'title VARCHAR(20) UNIQUE NOT NULL,'+
+        'link VARCHAR(20) UNIQUE NOT NULL)'],
+        [24, "CREATE TABLE upcoming_images("+
+         'id INTEGER PRIMARY KEY,'+
+         'movie_id INTEGER NOT NULL,'+
+         'path VARCHAR(50) UNIQUE NOT NULL,'+
+         'FOREIGN KEY(movie_id) REFERENCES upcoming_movies(id))']
     ])
+
+
+
+
+
+
+
+
+
+
+
+
+
+
