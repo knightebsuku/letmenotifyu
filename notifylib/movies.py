@@ -9,6 +9,8 @@ import re
 import sqlite3
 import urllib
 import json
+import os
+import hashlib
 
 def get_upcoming_movies():
     "Get list of upcoming movies by yifi"
@@ -30,107 +32,123 @@ def get_released_movies():
         logging.error("unable to fetch movie list")
         logging.exception(e)
 
-def insert_released_movies():
+def insert_released_movies(data, cursor, db):
     "insert new movies"
+    released_data = movie_compare(cursor, "movies", data["MovieList"])
+    if released_data:
+        for movie_detail in released_data:
+            try:
+                genre_id = get_movie_genre(movie_detail["Genre"], cursor, db)
+                row = db.execute("INSERT INTO movies(genre_id,title,link,date_added,movie_id)"+
+                           'VALUES(?,?,?,?,?)',
+                           (genre_id,
+                            movie_detail['MovieTitle'],
+                            movie_detail["ImdbLink"],
+                            movie_detail["DateUploaded"],
+                            movie_detail["MovieID"],))
+                db.execute("INSERT INTO movie_torrent_links(movie_id,link,hash_sum) VALUES(?,?,?)",
+                           (row.lastrowid, movie_detail["TorrentUrl"], movie_detail["TorrentHash"],))
+                insert_movie_image(movie_detail["MovieTitle"], movie_detail["CoverImage"], db)
+                announce('Newly Released Movie', movie_detail["MovieTitle"],
+                         movie_detail["ImdbLink"])
+                db.commit()
+            except Exception as e:
+                db.rollback()
+                logging.exception(e)
+                exit()
 
 def insert_upcoming_movies(movie_data, db,cursor):
+    "insert upcoming new movies"
     new_movie_data = movie_compare(cursor, "upcoming_movies", movie_data)
     if new_movie_data:
         for movie_detail in new_movie_data:
             try:
                 db.execute("INSERT INTO upcoming_movies(title,link) VALUES(?,?)",
                        (movie_detail["MovieTitle"], movie_detail["ImdbLink"],))
-                upcoming_movie_image(movie_detail["MovieTitle"],
-                                    movie_detail["MovieCover"], db, cursor)
+                insert_movie_image(movie_detail["MovieTitle"],
+                                    movie_detail["MovieCover"], db)
                 announce('Upcoming Movie', movie_detail["MovieTitle"],
                          movie_detail["ImdbLink"])
+                db.commit()
             except Exception as e:
                 db.rollback()
                 logging.exception(e)
     else:
         logging.debug("no new upcoming movies")
 
-def upcoming_movie_image(movie_title, image_url, db, cursor):
-    cursor.execute("SELECT id FROM upcoming_movies WHERE title=?",
-                   (movie_title,))
-    title_id = cursor.fetchone()
+def insert_movie_image(movie_title, image_url, db):
     if fetch_image(image_url, movie_title):
-        db.execute("INSERT INTO upcoming_images(movie_id,path) VALUES(?,?)",
-                   (title_id[0], movie_title+".png",))
-        db.commit()
+        try:
+            db.execute("INSERT INTO movie_images(title,path) VALUES(?,?)",
+                   (movie_title, movie_title+".png",))
+        except sqlite3.IntegrityError:
+            logging.info('image record already exists in database')
 
 def fetch_image(image_url, title,):
     "fetch image"
-    try:
-        with open(settings.IMAGE_PATH+title+".png",'wb') as image_file:
-            image_file.write(urlopen(image_url).read())
-            logging.debug("imaged fetched")
+    if os.path.isfile(settings.IMAGE_PATH+title+".png"):
+        logging.debug("file already exists")
         return True
-    except Exception as e:
-        logging.exception(e)
-        exit()
-        return False
+    else:
+        try:
+            with open(settings.IMAGE_PATH+title+".png",'wb') as image_file:
+                image_file.write(urlopen(image_url).read())
+                logging.debug("imaged fetched")
+            return True
+        except Exception as e:
+            logging.exception(e)
+            return False
 
+def fetch_torrent(torrent_url, movie_title, cursor):
+    "fetch torrent images"
+    if os.path.isfile(settings.TORRENT_DIRECTORY+movie_title+".torrent"):
+        logging.debug("torrent file already exists")
+    else:
+        try:
+            with open(settings.TORRENT_DIRECTORY+movie_title+".torrent","wb") as torrent_file:
+                torrent_file.write(urlopen(torrent_url).read())
+                logging.debug("torrent file downloded")
+                correct = check_hash(settings.TORRENT_DIRECTORY+movie_title+".torrent",
+                                     movie_title, cursor)
+                if correct:
+                    return True
+        except Exception as e:
+            logging.exception(e)
+            return False
+                
+
+
+def check_hash(torrent_file, movie_title, cursor):
+    "calculate hash_sum and check if it matches"
+    cursor.execute("SELECT hash_sum from movies where title=?",(movie_title,))
+    hash_sum = cursor.fetchone()[0]
+    torrent_hash = hashlib.md5(open(torrent_file).read()).hexdigest()
+    if torrent_hash == hash_sum:
+        logging.debug("hash sums match")
+        return True
+    else:
+        logging.debug("hash sum mismatch")
+        return False
+    
 def movie_compare(cursor, table, new_data):
     "compare new movie list to current database"
     new_movie_data = []
     cursor.execute("SELECT title from "+table)
     data = [x[0] for x in cursor.fetchall()]
-    logging.debug(data)
     for movie_data in new_data:
         if movie_data["MovieTitle"]  not in data:
             new_movie_data.append(movie_data)
     return new_movie_data
 
-## class Movies:
-##     def __init__(self, cursor, connect):
-##         self.cursor = cursor
-##         self.connect = connect
-
-##     def fetch_new_movies(self):
-##         "Get all movies from page"
-##         request = Request("http://www.primewire.ag/index.php?sort=featured",
-##                   headers={'User-Agent': 'Mozilla/5.0'})
-##         try:
-##             featured_movies = urlopen(request).read().decode('UTF-8')
-##         except UnicodeDecodeError:
-##             featured_movies = urlopen(request).read().decode('latin1')
-##         except urllib.error.URLError:
-##             return
-##         soup = BeautifulSoup(featured_movies)
-##         div_class = soup.find_all('div', {'class': 'index_item index_item_ie'})
-##         new_data = []
-##         for links in div_class:
-##             temp_list = []
-            ## for movie_links in links.find_all('a', {'href': re.compile("(/watch|/?genre)")}):
-            ##     title = movie_links.get_text()
-            ##     movie_title = title.replace("Watch", "")
-            ##     links = movie_links['href']
-            ##     temp_list.append([movie_title, links])
-            ## try:
-            ##     self.cursor.execute("INSERT INTO genre(genre) VALUES(?)",
-            ##                         (temp_list[1][0],))
-            ##     self.connect.commit()
-            ## except sqlite3.IntegrityError as e:
-    ##             pass
-    ##         self.cursor.execute("SELECT Id from genre where genre=?",
-    ##                                 (temp_list[1][0],))
-    ##         key = self.cursor.fetchone()
-    ##         new_data.append((int(key[0]), temp_list[0][0], temp_list[0][1]))
-    ##     return new_data, div_class
-
-    ## def insert_new_movies(self, new_movie_list, movie_page):
-    ##     "Insert new movies"
-    ##     poster_links = util.process_page(movie_page)
-    ##     diff_movie = util.movie_compare(self.cursor, new_movie_list)
-    ##     try:
-    ##         for movie_data in diff_movie:
-    ##             self.cursor.execute("INSERT INTO movies(genre_id,title,link,date_added) VALUES(?,?,?,?)",
-    ##                                  (movie_data[0], movie_data[1], movie_data[2],datetime.now(),))
-    ##             util.movie_poster(poster_links, movie_data[1], movie_data[2],
-    ##                               self.cursor, self.connect)
-    ##             self.connect.commit()
-    ##             announce('New Movie', movie_data[1],"http://www.primewire.ag"+movie_data[2])
-    ##     except sqlite3.IntegrityError:
-    ##         logging.error("Movie Already exsists")
-    ##         self.connect.rollback()
+def get_movie_genre(genre, cursor, db):
+    cursor.execute("SELECT Id FROM genre where genre=?",(genre,))
+    if cursor.fetchone() is None:
+        logging.debug("genre does not exist yet")
+        row = db.execute("INSERT INTO genre(genre) VALUES(?)",(genre,))
+        genre_id = row.lastrowid
+        return genre_id
+    else:
+        logging.debug('genre exists')
+        cursor.execute("SELECT Id FROM genre where genre=?",(genre,))
+        genre_id = cursor.fetchone()
+        return int(genre_id[0])
