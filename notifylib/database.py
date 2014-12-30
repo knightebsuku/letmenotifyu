@@ -87,7 +87,43 @@ def database_change():
          'id INTEGER PRIMARY KEY,'+
          'movie_id INTEGER NOT NULL,'+
          'path VARCHAR(50) UNIQUE NOT NULL,'+
-         'FOREIGN KEY(movie_id) REFERENCES upcoming_movies(id))']
+         'FOREIGN KEY(movie_id) REFERENCES upcoming_movies(id))'],
+        [25, "DELETE FROM movies"],
+        [26,"DROP TABLE movie_images"],
+        [27, 'CREATE table movie_images(' +
+          'id INTEGER PRIMARY KEY,' +
+          'title VARCHAR(20) UNIQUE NOT NULL,' +
+          'path VARCHAR(20) UNIQUE NOT NULL)'],
+        [28, "DROP TABLE upcoming_images"],
+        [29, "CREATE TABLE movie_torrent_links("+
+           'id INTEGER PRIMARY KEY,'+
+           'movie_id INTEGER UNIQUE NOT NULL,'+
+           'link VARCHAR(50) NOT NULL,'+
+           'hash_sum VARCHAR(50) NOT NULL,'
+           'FOREIGN KEY(movie_id) REFERENCES movies(id))'],
+        [30, "DROP TABLE movies"],
+        [31, 'CREATE TABLE movies(' +
+                            'id INTEGER PRIMARY KEY, ' +
+                            'movie_id INTEGER UNIQUE NOT NULL,'
+                            'genre_id INTEGER  NOT NULL,' +
+                            ' title VARCHAR(20) UNIQUE NOT NULL,' +
+                            ' link VARCHAR(20) NOT NULL,' +
+                            'date_added TIMESTAMP NOT NULL,' +
+                            ' FOREIGN KEY(genre_id) REFERENCES genre(Id) ON UPDATE CASCADE ON DELETE CASCADE)'],
+        [32, "ALTER TABLE movies ADD COLUMN hash_sum  VARCHAR NOT NULL DEFAULT 0"],
+        [33, "CREATE TABLE movie_queue("+
+             'id INTEGER PRIMARY_KEY,'+
+             'movie_id INTEGER UNIQUE NOT NULL,'+
+             'watch_queue_status_id INTEGER NOT NULL,'+
+             'FOREIGN KEY(movie_id) REFERENCES movies(id),'+
+             'FOREIGN KEY(watch_queue_status_id) REFERENCES watch_queue_status(id))'],
+        [34, 'DELETE FROM watch_queue_status'],
+        [35, "INSERT INTO watch_queue_status(name) VALUES('new')"],
+        [36, "INSERT INTO watch_queue_status(name) VALUES('torrent downloaded')"],
+        [37, "INSERT INTO watch_queue_status(name) VALUES('downloading')"],
+        [38, "INSERT INTO watch_queue_status(name) VALUES('complete')"],
+        [39, "INSERT INTO watch_queue_status(name) VALUES('error downloading')"]
+                  
     ])
 
 
