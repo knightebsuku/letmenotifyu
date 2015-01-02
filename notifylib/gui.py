@@ -117,11 +117,12 @@ class Preferences(object):
 
 class Error(object):
     "Error notification"
-    def __init__(self):
+    def __init__(self, text):
         self.error = Gtk.Builder()
         self.error.add_from_file("ui/error.glade")
         signals = {'on_btnOk_clicked': self.on_btnOk_clicked}
         self.error.connect_signals(signals)
+        self.error.get_object('error').set_text(text)
         self.error.get_object('error').show()
 
     def on_btnOk_clicked(self, widget):
