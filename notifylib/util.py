@@ -32,7 +32,7 @@ def open_page(cursor, link, option=None):
     if option == "movie":
         cursor.execute("SELECT link FROM movies where title=?", (link,))
         link = cursor.fetchone()
-        webbrowser.open_new("http://www.primewire.ag"+link[0])
+        webbrowser.open_new(link[0])
         logging.info("Opening link" + link[0])
     else:
         webbrowser.open_new("http://www.primewire.ag"+link)

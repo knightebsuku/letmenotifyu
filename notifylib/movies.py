@@ -1,16 +1,12 @@
 from urllib.request import Request, urlopen
-from bs4 import BeautifulSoup
 from notifylib.notify import announce
-from datetime import datetime
-from notifylib import util
 from notifylib import settings
 import logging
-import re
 import sqlite3
-import urllib
 import json
 import os
 import hashlib
+import urllib
 
 def get_upcoming_movies():
     "Get list of upcoming movies by yifi"
@@ -18,9 +14,8 @@ def get_upcoming_movies():
         yifi_url = urlopen("https://yts.re/api/upcoming.json")
         json_data = json.loads(yifi_url.read().decode('utf-8'))
         return json_data
-    except Exception as e:
+    except (urllib.error.HTTPError, urllib.error.URLError):
         logging.error("Unable to connect to the website")
-        logging.exception(e)
 
 def get_released_movies():
     "Get list of movies released by yifi"
@@ -28,9 +23,8 @@ def get_released_movies():
         yifi_url = urlopen("https://yts.re/api/list.json?quality=720p&limit=50")
         json_data = json.loads(yifi_url.read().decode('utf-8'))
         return json_data
-    except Exception as e:
+    except (urllib.error.HTTPError, urllib.error.URLError):
         logging.error("unable to fetch movie list")
-        logging.exception(e)
 
 def insert_released_movies(data, cursor, db):
     "insert new movies"
@@ -49,13 +43,13 @@ def insert_released_movies(data, cursor, db):
                 db.execute("INSERT INTO movie_torrent_links(movie_id,link,hash_sum) VALUES(?,?,?)",
                            (row.lastrowid, movie_detail["TorrentUrl"], movie_detail["TorrentHash"],))
                 insert_movie_image(movie_detail["MovieTitle"], movie_detail["CoverImage"], db)
-                announce('Newly Released Movie', movie_detail["MovieTitle"],
-                         movie_detail["ImdbLink"])
+                db.execute("DELETE FROM upcoming_movies where title=?",(movie_detail['MovieTitle'],))
                 db.commit()
+                #announce('Newly Released Movie', movie_detail["MovieTitle"],
+                         #movie_detail["ImdbLink"])
             except Exception as e:
                 db.rollback()
                 logging.exception(e)
-                exit()
 
 def insert_upcoming_movies(movie_data, db,cursor):
     "insert upcoming new movies"
@@ -67,9 +61,9 @@ def insert_upcoming_movies(movie_data, db,cursor):
                        (movie_detail["MovieTitle"], movie_detail["ImdbLink"],))
                 insert_movie_image(movie_detail["MovieTitle"],
                                     movie_detail["MovieCover"], db)
-                announce('Upcoming Movie', movie_detail["MovieTitle"],
-                         movie_detail["ImdbLink"])
                 db.commit()
+                #announce('Upcoming Movie', movie_detail["MovieTitle"],
+                         #movie_detail["ImdbLink"])
             except Exception as e:
                 db.rollback()
                 logging.exception(e)
@@ -99,7 +93,7 @@ def fetch_image(image_url, title,):
             logging.exception(e)
             return False
 
-def fetch_torrent(torrent_url, movie_title, cursor):
+def fetch_torrent(torrent_url, movie_title, cursor,hash_sum):
     "fetch torrent images"
     if os.path.isfile(settings.TORRENT_DIRECTORY+movie_title+".torrent"):
         logging.debug("torrent file already exists")
@@ -108,20 +102,19 @@ def fetch_torrent(torrent_url, movie_title, cursor):
             with open(settings.TORRENT_DIRECTORY+movie_title+".torrent","wb") as torrent_file:
                 torrent_file.write(urlopen(torrent_url).read())
                 logging.debug("torrent file downloded")
-                correct = check_hash(settings.TORRENT_DIRECTORY+movie_title+".torrent",
-                                     movie_title, cursor)
-                if correct:
-                    return True
+                return True
+                #correct = check_hash(settings.TORRENT_DIRECTORY+movie_title+".torrent", hash_sum)
+                #if correct:
+                    #return True
         except Exception as e:
+            logging.error("unable to fetch torrent")
             logging.exception(e)
             return False
                 
 
 
-def check_hash(torrent_file, movie_title, cursor):
+def check_hash(torrent_file, hash_sum):
     "calculate hash_sum and check if it matches"
-    cursor.execute("SELECT hash_sum from movies where title=?",(movie_title,))
-    hash_sum = cursor.fetchone()[0]
     torrent_hash = hashlib.md5(open(torrent_file).read()).hexdigest()
     if torrent_hash == hash_sum:
         logging.debug("hash sums match")

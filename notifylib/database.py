@@ -112,7 +112,7 @@ def database_change():
                             ' FOREIGN KEY(genre_id) REFERENCES genre(Id) ON UPDATE CASCADE ON DELETE CASCADE)'],
         [32, "ALTER TABLE movies ADD COLUMN hash_sum  VARCHAR NOT NULL DEFAULT 0"],
         [33, "CREATE TABLE movie_queue("+
-             'id INTEGER PRIMARY_KEY,'+
+             'id INTEGER PRIMARY KEY NOT NULL,'+
              'movie_id INTEGER UNIQUE NOT NULL,'+
              'watch_queue_status_id INTEGER NOT NULL,'+
              'FOREIGN KEY(movie_id) REFERENCES movies(id),'+
@@ -122,7 +122,11 @@ def database_change():
         [36, "INSERT INTO watch_queue_status(name) VALUES('torrent downloaded')"],
         [37, "INSERT INTO watch_queue_status(name) VALUES('downloading')"],
         [38, "INSERT INTO watch_queue_status(name) VALUES('complete')"],
-        [39, "INSERT INTO watch_queue_status(name) VALUES('error downloading')"]
+        [39, "INSERT INTO watch_queue_status(name) VALUES('error downloading')"],
+        [40,"CREATE TABLE upcoming_queue("+
+         'id INTEGER PRIMARY KEY NOT NULL,'+
+         'title VARCHAR(20) UNIQUE NOT NULL,'+
+         'FOREIGN KEY(title) REFERENCES upcoming_movies(title))']
                   
     ])
 

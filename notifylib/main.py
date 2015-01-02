@@ -2,20 +2,20 @@ import sqlite3
 import logging
 
 from datetime import datetime, timedelta
-from gi.repository import Gtk, GObject, Gdk
+from gi.repository import Gtk, Gdk
 from notifylib import gui
 from notifylib.torrent import Torrent
 from notifylib import util
 from notifylib.threads import RunUpdate
 from notifylib import settings
 
-GObject.threads_init()
 
 class Main(object):
     "Main application"
     def __init__(self, db):
         self.connect = sqlite3.connect(db)
         self.cursor = self.connect.cursor()
+        self.connect.execute("PRAGMA journal_mode=WAL")
         self.db_file = db
         self.builder = Gtk.Builder()
         self.image = Gtk.Image()
@@ -34,13 +34,17 @@ class Main(object):
                    'on_Current_Season_activate': self.on_Current_Season_activate,
                    'on_preferences_activate': self.on_pref_activate,
                    'on_update_activate': self.on_update_activate,
-                   'on_Quit_activate': Gtk.main_quit,
+                   'on_Quit_activate': self.on_quit,
                    'on_About_activate': self.on_About_activate,
                    'on_Kickass_activate': self.on_Kickass_activate,
                    'on_Piratebay_activate': self.on_Piratebay_activate,
                    'on_BtnRoot_clicked': self.button_root_clicked,
                    'on_BtnLevel1_clicked': self.button_one_clicked,
-                   'on_BtnLevel2_clicked': self.button_two_clicked}
+                   'on_BtnLevel2_clicked': self.button_two_clicked,
+                   'on_details_activate':self.movie_details_activate,
+                   'on_watchlist_activate': self.watch_list,
+                   'on_udetails_activate': self.upcoming_details,
+                   'on_queue_activate': self.upcoming_queue}
 
         self.builder.connect_signals(signals)
         self.header_dic = {'Released Movies': self.movie_archive,
@@ -54,10 +58,11 @@ class Main(object):
         self.button_level_2 = self.builder.get_object("BtnLevel2")
         util.pre_populate_menu(self.builder,self.image)
         self.builder.get_object('AppWindow').show()
-        #self.update = RunUpdate(self.db_file)
-        #self.update.setDaemon(True)
-        #self.update.start()
         Gtk.main()
+
+    def on_quit(self, widget):
+        self.connect.close()
+        Gtk.main_quit()
 
     def general_view_activate(self, widget, choice):
         if self.flag == "latest movies":
@@ -106,6 +111,14 @@ class Main(object):
                     self.torrent.query(choice)
                     self.builder.get_object("torrents").popup(None, None, None, None,
                                                        event.button, event.time)
+                elif event.button == 3 and self.flag == "genre select":
+                    self.movie_choosen = choice
+                    self.builder.get_object("Movies").popup(None, None, None, None,
+                                                            event.button,event.time)
+                elif event.button == 3 and self.flag == "latest movies":
+                    self.upcoming_choosen = choice
+                    self.builder.get_object("upcoming").popup(None,None,None,None,
+                                                              event.button, event.time)
 
     def on_header_view_event(self, widget, event):
         button_root = self.builder.get_object("BtnRoot")
@@ -126,8 +139,8 @@ class Main(object):
         self.cursor.execute("SELECT id from genre where genre=?",
                                 (choice,))
         genre_key = self.cursor.fetchone()
-        self.cursor.execute("SELECT title,path from movies " +
-                                "join movie_images on  movies.id=movie_images.movie_id "+
+        self.cursor.execute("SELECT movies.title,path from movies,movie_images " +
+                                "WHERE movies.title=movie_images.title "+
                                 "and  movies.genre_id=? order by movies.title",
                                 (genre_key[0],))
         movie_info = self.cursor.fetchall()
@@ -167,9 +180,9 @@ class Main(object):
 
     def latest_movies(self):
         self.general_model.clear()
-        self.cursor.execute("SELECT title,path from upcoming_movies "+
-                            "join upcoming_images "+
-                            "on upcoming_movies.id=movie_id order by title")
+        self.cursor.execute("SELECT upcoming_movies.title,path from upcoming_movies"+
+                            ",movie_images "+
+                            "where upcoming_movies.title=movie_images.title ORDER BY upcoming_movies.id DESC")
         movies = self.cursor.fetchall()
         for movie in movies:
             util.render_view(self.image, movie[0], self.general_model,
@@ -288,3 +301,29 @@ class Main(object):
         new_thread.setDaemon(True)
         new_thread.start()
         logging.info("Starting new thread")
+
+    def watch_list(self, widget):
+        try:
+            self.cursor.execute("INSERT INTO movie_queue(movie_id,watch_queue_status_id) "+
+                            "SELECT movies.id,watch_queue_status.id FROM movies,watch_queue_status "+
+                            "WHERE movies.title=? and watch_queue_status.name='new'",(self.movie_choosen,))
+            self.connect.commit()
+        except sqlite3.IntegrityError:
+            gui.Error("record is already in the movie queue")
+            logging.info("recored is already in movie queue")
+
+    def movie_details_activate(self,widget):
+        "show details of the movie selected"
+
+    def upcoming_details(self,widget):
+        "show details of the upcoming movie"
+
+    def upcoming_queue(self,widget):
+        try:
+            self.cursor.execute("INSERT INTO upcoming_queue(title) "+
+                                "SELECT title from upcoming_movies where title=?",(self.upcoming_choosen,))
+            self.connect.commit()
+        except sqlite3.IntegrityError:
+            gui.Error("record is already in upcoming queue")
+            #ui interface
+            logging.warn("record is already in upcoming_queue")
