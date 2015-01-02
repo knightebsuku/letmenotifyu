@@ -309,6 +309,32 @@
       </object>
     </child>
   </object>
+  <object class="GtkMenu" id="Movies">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <child>
+      <object class="GtkMenuItem" id="details">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="label" translatable="yes">Details</property>
+        <signal name="activate" handler="on_details_activate" swapped="no"/>
+      </object>
+    </child>
+    <child>
+      <object class="GtkSeparatorMenuItem" id="menuitem5">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+      </object>
+    </child>
+    <child>
+      <object class="GtkMenuItem" id="watchlist">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="label" translatable="yes">Add to watch list</property>
+        <signal name="activate" handler="on_watchlist_activate" swapped="no"/>
+      </object>
+    </child>
+  </object>
   <object class="GtkMenu" id="Series">
     <property name="visible">True</property>
     <property name="app_paintable">True</property>
@@ -396,6 +422,34 @@
         <property name="label" translatable="yes">Piratebay</property>
         <property name="use_underline">True</property>
         <signal name="activate" handler="on_Piratebay_activate" swapped="no"/>
+      </object>
+    </child>
+  </object>
+  <object class="GtkMenu" id="upcoming">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <child>
+      <object class="GtkMenuItem" id="udetails">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="label" translatable="yes">Details</property>
+        <property name="use_underline">True</property>
+        <signal name="activate" handler="on_udetails_activate" swapped="no"/>
+      </object>
+    </child>
+    <child>
+      <object class="GtkSeparatorMenuItem" id="menuitem6">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+      </object>
+    </child>
+    <child>
+      <object class="GtkMenuItem" id="queue">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="label" translatable="yes">Add to watch queue</property>
+        <property name="use_underline">True</property>
+        <signal name="activate" handler="on_queue_activate" swapped="no"/>
       </object>
     </child>
   </object>
