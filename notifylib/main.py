@@ -6,8 +6,9 @@ from gi.repository import Gtk, Gdk
 from notifylib import gui
 from notifylib.torrent import Torrent
 from notifylib import util
-from notifylib.threads import RunUpdate
 from notifylib import settings
+from notifylib import background_worker as bw
+from threading import Thread
 
 
 class Main(object):
@@ -34,7 +35,7 @@ class Main(object):
                    'on_Current_Season_activate': self.on_Current_Season_activate,
                    'on_preferences_activate': self.on_pref_activate,
                    'on_update_activate': self.on_update_activate,
-                   'on_Quit_activate': self.on_quit,
+                   'on_Quit_activate': Gtk.main_quit,
                    'on_About_activate': self.on_About_activate,
                    'on_Kickass_activate': self.on_Kickass_activate,
                    'on_Piratebay_activate': self.on_Piratebay_activate,
@@ -44,7 +45,9 @@ class Main(object):
                    'on_details_activate':self.movie_details_activate,
                    'on_watchlist_activate': self.watch_list,
                    'on_udetails_activate': self.upcoming_details,
-                   'on_queue_activate': self.upcoming_queue}
+                   'on_queue_activate': self.upcoming_queue,
+                   'on_search_search_changed': self.search_changed,
+                   'on_series_watch_activate': self.series_watch}
 
         self.builder.connect_signals(signals)
         self.header_dic = {'Released Movies': self.movie_archive,
@@ -58,11 +61,16 @@ class Main(object):
         self.button_level_2 = self.builder.get_object("BtnLevel2")
         util.pre_populate_menu(self.builder,self.image)
         self.builder.get_object('AppWindow').show()
+        movie_process = Thread(target=bw.process_movie_queue)
+        movie_process.setDaemon(True)
+        series_process = Thread(target=bw.process_series_queue)
+        series_process.setDaemon(True)
+        update = Thread(target=bw.update)
+        update.setDaemon(True)
+        movie_process.start()
+        series_process.start()
+        update.start()
         Gtk.main()
-
-    def on_quit(self, widget):
-        self.connect.close()
-        Gtk.main_quit()
 
     def general_view_activate(self, widget, choice):
         if self.flag == "latest movies":
@@ -102,6 +110,7 @@ class Main(object):
                 if event.button == 1:
                     self.general_view_activate(widget, choice)
                 elif event.button == 3 and self.flag == "series archive":
+                    self.title_choosen = choice
                     self.builder.get_object("Series").popup(None, None, None, None,
                                                             event.button, event.time)
                 elif event.button == 3 and self.flag == "active series":
@@ -138,6 +147,7 @@ class Main(object):
     def movie_archive_select(self,choice):
         self.cursor.execute("SELECT id from genre where genre=?",
                                 (choice,))
+        self.search_choice = choice
         genre_key = self.cursor.fetchone()
         self.cursor.execute("SELECT movies.title,path from movies,movie_images " +
                                 "WHERE movies.title=movie_images.title "+
@@ -295,11 +305,6 @@ class Main(object):
 
     def on_update_activate(self, widget):
         "Stop current updating thread and start new one"
-        self.update.stop()
-        logging.info("Stopping current thead")
-        new_thread = RunUpdate(self.db_file)
-        new_thread.setDaemon(True)
-        new_thread.start()
         logging.info("Starting new thread")
 
     def watch_list(self, widget):
@@ -327,3 +332,42 @@ class Main(object):
             gui.Error("record is already in upcoming queue")
             #ui interface
             logging.warn("record is already in upcoming_queue")
+
+    def search_changed(self,widget):
+        "change search"
+        print(widget.get_text())
+        if self.flag == 'latest movies':
+            self.general_model.clear()
+            self.cursor.execute("SELECT upcoming_movies.title,path from upcoming_movies"+
+                            ",movie_images "+
+                            "where upcoming_movies.title=movie_images.title and upcoming_movies.title like ('%' || ? || '%')",
+                                 (widget.get_text(),))
+            movies = self.cursor.fetchall()
+            for movie in movies:
+                util.render_view(self.image, movie[0], self.general_model,
+                             settings.IMAGE_PATH+movie[1])
+            self.flag = 'latest movies'
+        elif self.flag == 'genre select':
+            self.cursor.execute("SELECT id from genre where genre=?",
+                                (self.search_choice,))
+            genre_key = self.cursor.fetchone()
+            self.cursor.execute("SELECT movies.title,path from movies,movie_images " +
+                                "WHERE movies.title=movie_images.title "+
+                                "and  movies.genre_id=? and movies.title like ('%' || ? || '%') ",
+                                (genre_key[0], widget.get_text(),))
+            movie_info = self.cursor.fetchall()
+            self.general_model.clear()
+            for results in movie_info:
+                util.render_view(self.image, results[0],
+                                 self.general_model, settings.IMAGE_PATH+results[1])
+            self.flag = "genre select"
+
+    def series_watch(self,widget):
+        "update series table"
+        if self.flag == 'series archive':
+            try:
+                self.connect.execute("UPDATE series set watch=1 where title=?",(self.title_choosen,))
+                self.connect.commit()
+                gui.Error("{} has been added to the watch list".format(self.title_choosen))
+            except sqlite3.OperationalError as e:
+                logging.exception(e)

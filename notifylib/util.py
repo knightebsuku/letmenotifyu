@@ -56,18 +56,6 @@ def primewire(episode_site):
     except Exception:
         logging.warn("Unable to connect to %s " % episode_site)
 
-
-def series_compare(cursor, new_list, series_id):
-    "Compare db list with new series"
-    old_list = []
-    cursor.execute("SELECT episode_link,episode_name from episodes where series_id=?",
-                   (series_id,))
-    data = cursor.fetchall()
-    for old_episode in data:
-        old_list.append((old_episode[0], old_episode[1].replace("\n", "")))
-    list_difference = set(new_list).difference(old_list)
-    return list_difference
-
 def series_poster(cursor, connect, series_id):
     "fetch series JPEG"
     cursor.execute("SELECT title,series_link from series where id=?", (series_id,))
@@ -294,3 +282,24 @@ def create_directories():
     os.mkdir(settings.IMAGE_PATH)
     os.mkdir(settings.TORRENT_DIRECTORY)
     logging.info("Directories created")
+
+
+def fetch_torrent(torrent_url, title):
+    "fetch torrent images"
+    if os.path.isfile(settings.TORRENT_DIRECTORY+title+".torrent"):
+        logging.debug("torrent file already exists")
+        return True
+    else:
+        try:
+            with open(settings.TORRENT_DIRECTORY+title+".torrent","wb") as torrent_file:
+                torrent_file.write(urlopen(torrent_url).read())
+                logging.debug("torrent file downloded")
+                return True
+                #correct = check_hash(settings.TORRENT_DIRECTORY+movie_title+".torrent", hash_sum)
+                #if correct:
+                    #return True
+        except Exception as e:
+            logging.error("unable to fetch torrent")
+            logging.exception(e)
+            return False
+                

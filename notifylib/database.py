@@ -126,7 +126,24 @@ def database_change():
         [40,"CREATE TABLE upcoming_queue("+
          'id INTEGER PRIMARY KEY NOT NULL,'+
          'title VARCHAR(20) UNIQUE NOT NULL,'+
-         'FOREIGN KEY(title) REFERENCES upcoming_movies(title))']
+         'FOREIGN KEY(title) REFERENCES upcoming_movies(title))'],
+         [41, "DROP TABLE watch_queue"],
+         [42, "CREATE TABLE series_queue(" +
+          'id INTEGER PRIMARY KEY NOT NULL,' +
+          'series_id INTEGER NOT NULL,' +
+          'episode_id INTEGER UNIQUE NOT NULL,' +
+          'episode_name VARCHAR(20) NOT NULL,' +
+          'watch_queue_status_id INTEGER NOT NULL,'+
+          'FOREIGN KEY(series_id) REFERENCES series(id),'+
+          'FOREIGN KEY(episode_id) REFERENCES episodes(id),'+
+          'FOREIGN KEY(watch_queue_status_id) REFERENCES watch_queue_status(id))'],
+          [43, "INSERT INTO config(key,value) VALUES('process_interval',600)"],
+          [44, "CREATE TABLE series_torrent_links("+
+           'id INTEGER PRIMARY KEY NOT NULL,'+
+           'series_queue_id INTEGER UNIQUE NOT NULL,'+
+           'link VARCHAR(30) NOT NULL,'+
+           'FOREIGN KEY(series_queue_id) REFERENCES series_queue(id))']
+          
                   
     ])
 

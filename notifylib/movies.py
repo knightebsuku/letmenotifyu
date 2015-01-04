@@ -45,8 +45,8 @@ def insert_released_movies(data, cursor, db):
                 insert_movie_image(movie_detail["MovieTitle"], movie_detail["CoverImage"], db)
                 db.execute("DELETE FROM upcoming_movies where title=?",(movie_detail['MovieTitle'],))
                 db.commit()
-                #announce('Newly Released Movie', movie_detail["MovieTitle"],
-                         #movie_detail["ImdbLink"])
+                announce('Newly Released Movie', movie_detail["MovieTitle"],
+                         movie_detail["ImdbLink"])
             except Exception as e:
                 db.rollback()
                 logging.exception(e)
@@ -62,8 +62,8 @@ def insert_upcoming_movies(movie_data, db,cursor):
                 insert_movie_image(movie_detail["MovieTitle"],
                                     movie_detail["MovieCover"], db)
                 db.commit()
-                #announce('Upcoming Movie', movie_detail["MovieTitle"],
-                         #movie_detail["ImdbLink"])
+                announce('Upcoming Movie', movie_detail["MovieTitle"],
+                         movie_detail["ImdbLink"])
             except Exception as e:
                 db.rollback()
                 logging.exception(e)
@@ -92,25 +92,6 @@ def fetch_image(image_url, title,):
         except Exception as e:
             logging.exception(e)
             return False
-
-def fetch_torrent(torrent_url, movie_title, cursor,hash_sum):
-    "fetch torrent images"
-    if os.path.isfile(settings.TORRENT_DIRECTORY+movie_title+".torrent"):
-        logging.debug("torrent file already exists")
-    else:
-        try:
-            with open(settings.TORRENT_DIRECTORY+movie_title+".torrent","wb") as torrent_file:
-                torrent_file.write(urlopen(torrent_url).read())
-                logging.debug("torrent file downloded")
-                return True
-                #correct = check_hash(settings.TORRENT_DIRECTORY+movie_title+".torrent", hash_sum)
-                #if correct:
-                    #return True
-        except Exception as e:
-            logging.error("unable to fetch torrent")
-            logging.exception(e)
-            return False
-                
 
 
 def check_hash(torrent_file, hash_sum):

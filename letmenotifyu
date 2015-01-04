@@ -6,8 +6,6 @@ from notifylib import database as db
 from notifylib.main import Main
 from notifylib import settings
 from notifylib import util
-from multiprocessing import Process
-from notifylib import background_worker as bw
 
 if __name__ == "__main__":
     util.start_logging()
@@ -20,10 +18,4 @@ if __name__ == "__main__":
         print(e)
     finally:
         db.database_change()
-        p = Process(target=bw.process_movie_queue)
-        d = Process(target=bw.update)
-        p.daemon = True
-        d.daemon = True
-        p.start()
-        d.start()
         Main(settings.DATABASE_PATH)

@@ -109,7 +109,7 @@ class Preferences(object):
             logging.info("Not a valid number")
             logging.exception(e)
             self.connect.rollback()
-            Error()
+            Error("Not a valid number")
 
     def on_btnCancel_clicked(self, widget):
         self.pref.get_object('pref').destroy()
@@ -122,7 +122,7 @@ class Error(object):
         self.error.add_from_file("ui/error.glade")
         signals = {'on_btnOk_clicked': self.on_btnOk_clicked}
         self.error.connect_signals(signals)
-        self.error.get_object('error').set_text(text)
+        self.error.get_object('error').set_property('text', text)
         self.error.get_object('error').show()
 
     def on_btnOk_clicked(self, widget):
