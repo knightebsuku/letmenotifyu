@@ -164,7 +164,7 @@ def which_sql_message(Instruction):
 
 def fetch_current_season(cursor, series_title):
     cursor.execute('SELECT current_season from series where title=?', (series_title,))
-    (no_season) = cursor.fetchone()
+    (no_season,) = cursor.fetchone()
     return str(no_season)
 
 

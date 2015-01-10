@@ -16,9 +16,3 @@ class Torrent:
         result = self.cursor.fetchone()
         webbrowser.open_new(result[0]+self.title[0])
         logging.info("Opening kickass Link")
-
-    def piratebay(self):
-        self.cursor.execute("SELECT link FROM torrent_sites where name='The Pirate Bay'")
-        result = self.cursor.fetchone()
-        webbrowser.open_new(result[0]+self.title[0])
-        logging.info("Opening Piratebay Link")

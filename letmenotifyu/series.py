@@ -58,26 +58,29 @@ class Series(object):
 
     def update_series(self):
         self.cursor.execute('SELECT id,series_link,number_of_episodes from series where status=1')
-        for current_series in self.cursor.fetchall():
-            series_info, episode_count, season_count = fetch_new_episdoes(current_series[1])
-            if current_series[2] == 0:
-                logging.debug('series does not have any episodes, adding.....')
-                self.new_series_episodes(series_info, episode_count,current_series[0],season_count)
-            elif current_series[2] == episode_count:
-                logging.info("no new episodes for {}".format(current_series[1]))
-            elif current_series[2] < episode_count:
-                new_list = series_compare(self.cursor, series_info, current_series[0])
-                self.insert_new_epsiodes(new_list, episode_count, current_series[0], season_count)
+        for (ids, series_link, number_eps,) in self.cursor.fetchall():
+            try:
+                series_info, episode_count, season_count = fetch_new_episdoes(series_link)
+                if number_eps == 0:
+                    logging.debug('series does not have any episodes, adding.....')
+                    self.new_series_episodes(series_info, episode_count, ids, season_count)
+                elif number_eps == episode_count:
+                    logging.info("no new episodes for {}".format(series_link))
+                elif number_eps < episode_count:
+                    new_list = series_compare(self.cursor, series_info, ids)
+                    self.insert_new_epsiodes(new_list, episode_count, ids, season_count)
+            except TypeError:
+                logging.error("unable to connect to primewire.ag")
             
 
     def insert_new_epsiodes(self, all_eps, new_ep_number, series_id, no_seasons):
         self.cursor.execute("SELECT title,watch from series where id=?", (series_id,))
-        series_detail = self.cursor.fetchone()
-        if series_detail[1] == 1:
+        (series_detail,watch_status) = self.cursor.fetchone()
+        if watch_status == 1:
             logging.debug('episodes will be added to watch list')
-            insert_records(self.connect,self.cursor,all_eps,series_id,series_detail[0])
+            insert_records(self.connect,self.cursor,all_eps,series_id,series_detail)
         else:
-            for new_data in all_eps:
+            for (episode_link, episode_name) in all_eps:
                 try:
                     self.cursor.execute("INSERT INTO episodes(" +
                                     'series_id,' +
@@ -85,10 +88,10 @@ class Series(object):
                                     'episode_name,' +
                                     'Date) ' +
                                     'VALUES(?,?,?,?)'
-                                    ,(series_id, new_data[0], new_data[1], datetime.now(),))
+                                    ,(series_id, episode_link, episode_name, datetime.now(),))
                     self.connect.commit()
-                    announce("New Series Episode", series_detail[0],
-                         "www.primewire.ag" + new_data[0])
+                    announce("New Series Episode", series_detail,
+                             "www.primewire.ag" + episode_link)
                 except sqlite3.IntegrityError:
                     logging.error("Series episode already exists")
         self.cursor.execute("UPDATE series set number_of_episodes=?,"+
@@ -99,13 +102,13 @@ class Series(object):
     def new_series_episodes(self, all_episodes, new_ep_number, series_id, no_seasons):
         "new series"
         try:
-            for new_data in all_episodes:
+            for (episode_link, episode_name) in all_episodes:
                 self.cursor.execute("INSERT INTO episodes("+
                                     'series_id,'+
                                     'episode_link,'+
                                     'episode_name) ' +
                                     'VALUES(?,?,?)',
-                                    (series_id, new_data[0], new_data[1],))
+                                    (series_id, episode_link, episode_name,))
             self.cursor.execute("UPDATE series set number_of_episodes=?,"+
                                 'number_of_seasons=?,'+
                                 'last_update=?,'+
@@ -116,10 +119,11 @@ class Series(object):
             util.series_poster(self.cursor, self.connect, series_id)
             self.connect.commit()
             logging.info("new series has all episodes")
-        except Exception as e:
-            logging.error("unable to add series episodes")
-            logging.exception(e)
+        except sqlite3.IntegrityError as e:
+            logging.error("episode already exists")
             self.connect.rollback()
+        except sqlite3.OperationalError as e:
+            logging.exception(e)
 
 
 

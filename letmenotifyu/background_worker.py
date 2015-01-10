@@ -5,6 +5,7 @@ import logging
 import time
 import gzip
 import os
+
 from letmenotifyu.notify import announce
 from letmenotifyu import settings
 from letmenotifyu.movies import (get_upcoming_movies, insert_upcoming_movies,
@@ -50,7 +51,7 @@ def process_series_queue():
         cursor.execute("SELECT title, series_queue.id, episode_name,watch_queue_status_id "+
                        'FROM  series_queue join series on series_id=series.id')
         queues = cursor.fetchall()
-        for (title, series_id, ep_name, watch_id) in queues:
+        for (title, queue_id, ep_name, watch_id) in queues:
             if watch_id == 1:
                 logging.debug("fetching episode torrent for {}".format(title))
                 try:
@@ -58,35 +59,39 @@ def process_series_queue():
                     if util.fetch_torrent(episode_link.replace("\n",""),series_title):
                         try:
                             connect.execute("INSERT INTO series_torrent_links(series_queue_id,link) VALUES(?,?)",
-                                (series_id, episode_link,))
+                                (queue_id, episode_link,))
                             connect.execute("UPDATE series_queue set watch_queue_status_id=2 where id=?",
-                                    (series_id,))
+                                    (queue_id,))
                             connect.commit()
                         except sqlite3.IntegrityError:
                             logging.warn("link already exists in series_torrent_link table")
                 except TypeError:
                     pass
             elif watch_id == 2:
-                title_space = series_title.replace(" ",".")
-                if os.path.isdir(settings.INCOMPLETE_DIRECTORY+title_space):
-                    try:
-                        connect.execute("UPDATE series_queue set watch_queue_status_id=3 where series_id=?",
-                                        (series_id,))
-                        connect.commit()
-                    except sqlite3.OperationalError as e:
-                        logging.exception(e)
+                series_title = title.replace(" ",".")
+                for dirs in os.listdir(settings.INCOMPLETE_DIRECTORY):
+                    if dirs.startswith(series_title):
+                        try:
+                            connect.execute("UPDATE series_queue SET watch_queue_status_id=3 WHERE id=?",
+                                        (queue_id,))
+                            connect.commit()
+                            break
+                        except sqlite3.OperationalError as e:
+                            logging.exception(e)
+                            break
             elif watch_id == 3:
-                title_space = series_title.replace(" ",".")
-                if os.path.isdir(settings.COMPLETE_DIRECTORY+title_space):
-                    try:
-                        connect.execute("UPDATE series_queue set watch_queue_status_id=3 where series_id=?",
-                                        (series_id,))
-                        connect.commit()
-                        announce("Torrent Downloaded", "Series",
-                                 series_title)
-                    except sqlite3.OperationalError as e:
-                        logging.exception(e)
-        cursor.execute("PRAGMA wal_checkpoint(PASSIVE)")       
+                series_title = title.replace(" ",".")
+                for dirs in os.listdir(settings.COMPLETE_DIRECTORY):
+                    if dirs.startswith(series_title):
+                        try:
+                            connect.execute("UPDATE series_queue set watch_queue_status_id=4 where id=?",
+                                            (queue_id,))
+                            connect.commit()
+                            announce("Torrent Downloaded", "Series",
+                                     series_title)
+                            break
+                        except sqlite3.OperationalError as e:
+                            logging.exception(e)
         value = util.get_config_value(cursor,'series_process_interval')
         time.sleep(int(value))
 
@@ -166,10 +171,13 @@ def check_upcoming_queue(connect,cursor):
                 connect.execute("DELETE FROM upcoming_queue WHERE title=?",(title[0],))
 
 def fetch_kickass_file():
-    kickass_file = urlopen("https://kickass.so/hourlydump.txt.gz")
-    with gzip.open(kickass_file,'r') as gzip_file:
-        with open(settings.KICKASS_FILE,'wb') as dump_file:
-            for line in gzip_file:
-                dump_file.write(line)
-    logging.debug(settings.KICKASS_FILE)
-    return settings.KICKASS_FILE
+    try:
+        kickass_file = urlopen("https://kickass.so/hourlydump.txt.gz")
+        with gzip.open(kickass_file,'r') as gzip_file:
+            with open(settings.KICKASS_FILE,'wb') as dump_file:
+                for line in gzip_file:
+                    dump_file.write(line)
+        return settings.KICKASS_FILE
+    except urllib.error.URLError:
+        logging.debug("unable to connect to kickass")
+        return settings.KICKASS_FILE

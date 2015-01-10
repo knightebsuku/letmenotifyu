@@ -92,17 +92,6 @@ def fetch_image(image_url, title,):
         except Exception as e:
             logging.exception(e)
             return False
-
-
-def check_hash(torrent_file, hash_sum):
-    "calculate hash_sum and check if it matches"
-    torrent_hash = hashlib.md5(open(torrent_file).read()).hexdigest()
-    if torrent_hash == hash_sum:
-        logging.debug("hash sums match")
-        return True
-    else:
-        logging.debug("hash sum mismatch")
-        return False
     
 def movie_compare(cursor, table, new_data):
     "compare new movie list to current database"

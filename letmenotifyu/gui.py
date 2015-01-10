@@ -61,20 +61,6 @@ class Confirm(object):
     def on_btnCancel_clicked(self, widget):
         self.confirm.get_object('msgdlg').destroy()
 
-
-class Statistics(object):
-    "Show stats of series"
-    def __init__(self, title, connect, cursor):
-        self.builder = Gtk.Builder()
-        self.builder.add_from_file("ui/stats.glade")
-        signals = {'on_btnClose_clicked': self.on_btnClose_clicked}
-        self.builder.connect_signals(signals)
-        util.set_stats(title, connect, cursor, self.builder)
-        self.builder.get_object('win_stats').show()
-
-    def on_btnClose_clicked(self, widget):
-        self.builder.get_object("win_stats").destroy()
-
 class Preferences(object):
     "preference menu"
     def __init__(self, cursor, connect):
