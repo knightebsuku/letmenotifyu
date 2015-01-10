@@ -63,75 +63,52 @@ def primewire(episode_site):
             all_series_info.append((link, ep_no.replace(" ", "")+ep_name))
             seasons = series_page_data.find_all('a', {'class': 'season-toggle'})
         return all_series_info, len(all_series_info), len(seasons)
-    except Exception:
-        logging.warn("Unable to connect to %s " % episode_site)
+    except urllib.error.URLError:
+        logging.warn("Unable to connect to {} ".format(episode_site))
 
 def series_poster(cursor, connect, series_id):
     "fetch series JPEG"
     cursor.execute("SELECT title,series_link from series where id=?", (series_id,))
-    series_link = cursor.fetchone()
+    (title, series_link) = cursor.fetchone()
     try:
-        correct_decode(series_link)
+        correct_decode(title, series_link)
         cursor.execute("INSERT INTO series_images(series_id,path) VALUES(?,?)",
-                            (series_id, series_link[0]+'.jpg',))
+                            (series_id, '{}.jpg'.format(title),))
         connect.commit()
     except sqlite3.IntegrityError:
         logging.warn("File already exists")
 
 
-def correct_decode(info):
+def correct_decode(title, series_link):
     "fetch and decode images"
-    if re.search(r'^http', info[1]):
-        request = Request(info[1],
+    if re.search(r'^http', series_link):
+        request = Request(series_link,
                       headers={'User-Agent': 'Mozilla/5.0'})
-        image_type = "series"
-    else:
-        request = Request("http://www.primewire.ag"+info[1],
-                      headers={'User-Agent': 'Mozilla/5.0'})
-        image_type = "movie"
     try:
         soup = BeautifulSoup(urlopen(request).read().decode("UTF-8"))
         meta = soup.find('meta', {'property': 'og:image'})
-        save_image(info[0], meta, image_type)
+        save_image(title, meta)
     except UnicodeDecodeError:
         soup = BeautifulSoup(urlopen(request).read().decode("latin1"))
         meta = soup.find('meta', {'property': 'og:image'})
-        save_image(info[0], meta,image_type)
+        save_image(title, meta)
     except urllib.error.URLError:
         logging.warn("Unable to connect to image link")
     except TypeError:
         logging.info("Cant find image link")
 
 
-def save_image(movie_link, meta, image_type):
+def save_image(movie_link, meta):
     if os.path.isfile(settings.IMAGE_PATH+movie_link+".jpg"):
         logging.info("File already exists")
     else:
         logging.info("fetching image "+movie_link)
         with open("%s" % (settings.IMAGE_PATH+movie_link+".jpg"), 'wb') as image_file:
-            if image_type == "series":
-                full_image_url = "http:"+meta['content']
-            else:
-                full_image_url = meta['content']
+            full_image_url = "http:"+meta['content']
             image_request = Request(full_image_url,
                           headers={'User-Agent': 'Mozilla/5.0'})
             image_file.write(urlopen(image_request).read())
             logging.info("Imaged fetched")
-
-def get_intervals(cursor, interval, movie, series):
-    cursor.execute("SELECT value FROM config WHERE key='update_interval'")
-    key = cursor.fetchone()
-    value = float(key[0])/3600
-    interval.set_text(str(value))
-    cursor.execute("SELECT value from config WHERE key='movie_duration'")
-    key = cursor.fetchone()
-    movie_value = key[0]
-    movie.set_text(movie_value)
-    cursor.execute("SELECT value from config WHERE key='series_duration'")
-    key = cursor.fetchone()
-    series_value = key[0]
-    series.set_text(series_value)
-
 
 def process_page(movie_page):
     "find image links from page"
@@ -146,7 +123,7 @@ def check_url(text, notice, dialog, cursor, connection, link_box):
         title = re.search(r"http://www.primewire.ag/(.*)-\d+\-(.*)", text)
         change_string = title.group(2)
         show_title = change_string.replace("-", " ")
-        logging.info("Inserting new series %s" % show_title)
+        logging.info("Inserting new series {}".format(show_title))
         try:
             cursor.execute('INSERT INTO series(title,' +
                            'series_link,' +
@@ -158,7 +135,7 @@ def check_url(text, notice, dialog, cursor, connection, link_box):
                            ' VALUES(?,?,0,0,1,0,?)',
                            (show_title, text, datetime.now(),))
             connection.commit()
-            logging.debug("Series Added: "+show_title)
+            logging.debug("Series Added: {}".format(show_title))
             link_box.set_text('')
             dialog.get_object('linkdialog').destroy()
         except sqlite3.IntegrityError:
@@ -185,30 +162,10 @@ def which_sql_message(Instruction):
         message = "Are you sure you want to delete"
     return message, use_sql
 
-
-def set_stats(title, cursor, builder):
-    cursor.execute("Select series_link,number_of_episodes,number_of_seasons,last_update,status FROM series WHERE title=?",(title,))
-    for data in cursor.fetchall():
-        link = data[0]
-        episodes = str(data[1])
-        seasons = str(data[2])
-        update = str(data[3])
-        status = str(data[4])
-    builder.get_object("title").set_text(title)
-    builder.get_object('url').set_text(link)
-    builder.get_object('episodes').set_text(episodes)
-    builder.get_object('seasons').set_text(seasons)
-    builder.get_object('update').set_text(update[:10])
-    if status == '0':
-        builder.get_object('status').set_text("Not Updating")
-    else:
-        builder.get_object('status').set_text("Updating")
-
-
 def fetch_current_season(cursor, series_title):
     cursor.execute('SELECT current_season from series where title=?', (series_title,))
-    no_season = cursor.fetchone()
-    return str(no_season[0])
+    (no_season) = cursor.fetchone()
+    return str(no_season)
 
 
 def start_logging():
@@ -218,25 +175,18 @@ def start_logging():
                             level=logging.DEBUG)
 
 
-def pre_populate_menu(builder, image):
-    image.set_from_file("icons/invert-32.png")
-    pixbuf = image.get_pixbuf()
+def pre_populate_menu(builder):
     header_list = builder.get_object('HeaderList')
-    header = header_list.append(None, [pixbuf, "Movies"])
-    header_list.append(header, [None, "Upcoming Movies"])
-    header_list.append(header, [None, "Released Movies"])
-    image.set_from_file("icons/invert-television.png")
-    pixbuf = image.get_pixbuf()
-    header = header_list.append(None, [pixbuf, "Series"])
-    header_list.append(header, [None, "Latest Episodes"])
-    header_list.append(header, [None, "Active Series"])
-    header_list.append(header, [None, "Series Archive"])
-    #Watch list not ready yet.
-    #image.set_from_file("icons/invert-visible.png")
-    #pixbuf = image.get_pixbuf()
-    #header = header_list.append(None, [pixbuf, 'Watch List'])
-    #header_list.append(header, [None, "Movies"])
-    #header_list.append(header, [None, "Series"])
+    header = header_list.append(None, ["Movies"])
+    header_list.append(header, ["Upcoming Movies"])
+    header_list.append(header, ["Released Movies"])
+    header = header_list.append(None, ["Series"])
+    header_list.append(header, ["Latest Episodes"])
+    header_list.append(header, ["Active Series"])
+    header_list.append(header, ["Series Archive"])
+    header = header_list.append(None, ['Watch Queue'])
+    header_list.append(header, ["Movie Queue"])
+    header_list.append(header, ["Series Queue"])
 
 
 def fetch_torrent(torrent_url, title):
@@ -251,9 +201,6 @@ def fetch_torrent(torrent_url, title):
                 torrent_file.write(r.content)
                 logging.debug("torrent file downloded")
                 return True
-                #correct = check_hash(settings.TORRENT_DIRECTORY+movie_title+".torrent", hash_sum)
-                #if correct:
-                    #return True
         except Exception as e:
             logging.error("unable to fetch torrent")
             logging.exception(e)
