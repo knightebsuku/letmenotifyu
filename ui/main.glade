@@ -12,8 +12,6 @@
   </object>
   <object class="GtkTreeStore" id="HeaderList">
     <columns>
-      <!-- column-name GdkPixbuf1 -->
-      <column type="GdkPixbuf"/>
       <!-- column-name gchararray1 -->
       <column type="gchararray"/>
     </columns>
@@ -93,29 +91,6 @@
                         <property name="label" translatable="yes">Prefrences</property>
                         <property name="use_underline">True</property>
                         <signal name="activate" handler="on_preferences_activate" swapped="no"/>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-              </object>
-            </child>
-            <child>
-              <object class="GtkMenuItem" id="Tools">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="label" translatable="yes">Tools</property>
-                <property name="use_underline">True</property>
-                <child type="submenu">
-                  <object class="GtkMenu" id="menu4">
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <child>
-                      <object class="GtkMenuItem" id="update">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="label" translatable="yes">Update</property>
-                        <property name="use_underline">True</property>
-                        <signal name="activate" handler="on_update_activate" swapped="no"/>
                       </object>
                     </child>
                   </object>
@@ -257,16 +232,9 @@
                     <property name="clickable">True</property>
                     <property name="alignment">0.019999999552965164</property>
                     <child>
-                      <object class="GtkCellRendererPixbuf" id="cellrendererpixbuf1"/>
-                      <attributes>
-                        <attribute name="pixbuf">0</attribute>
-                      </attributes>
-                    </child>
-                    <child>
                       <object class="GtkCellRendererText" id="CellRenderText"/>
                       <attributes>
-                        <attribute name="markup">1</attribute>
-                        <attribute name="text">1</attribute>
+                        <attribute name="text">0</attribute>
                       </attributes>
                     </child>
                   </object>
@@ -422,16 +390,6 @@
         <signal name="activate" handler="on_series_watch_activate" swapped="no"/>
       </object>
     </child>
-    <child>
-      <object class="GtkMenuItem" id="Properties">
-        <property name="visible">True</property>
-        <property name="can_focus">True</property>
-        <property name="has_focus">True</property>
-        <property name="is_focus">True</property>
-        <property name="label" translatable="yes">Properies</property>
-        <signal name="activate" handler="on_Properties_activate" swapped="no"/>
-      </object>
-    </child>
   </object>
   <object class="GtkMenu" id="torrents">
     <property name="visible">True</property>
@@ -445,17 +403,6 @@
         <property name="label" translatable="yes">Kickass</property>
         <property name="use_underline">True</property>
         <signal name="activate" handler="on_Kickass_activate" swapped="no"/>
-      </object>
-    </child>
-    <child>
-      <object class="GtkMenuItem" id="Piratebay">
-        <property name="visible">True</property>
-        <property name="can_focus">True</property>
-        <property name="has_focus">True</property>
-        <property name="is_focus">True</property>
-        <property name="label" translatable="yes">Piratebay</property>
-        <property name="use_underline">True</property>
-        <signal name="activate" handler="on_Piratebay_activate" swapped="no"/>
       </object>
     </child>
   </object>
