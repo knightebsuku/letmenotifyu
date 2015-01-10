@@ -2,10 +2,10 @@
 
 import os
 import logging
-from notifylib import database as db
-from notifylib.main import Main
-from notifylib import settings
-from notifylib import util
+from letmenotifyu import database as db
+from letmenotifyu.main import Main
+from letmenotifyu import settings
+from letmenotifyu import util
 
 if __name__ == "__main__":
     if not os.path.isdir(settings.DIRECTORY_PATH):
