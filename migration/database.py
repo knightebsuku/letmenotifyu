@@ -25,7 +25,7 @@ class Database(object):
             self.connect.close()
 
     def add_change(self, change_list):
-        "new schema changes"
+        "Add new schema changes"
         try:
             for change in change_list:
                 self.db.execute("SELECT id from migration where version=?", (change[0],))
