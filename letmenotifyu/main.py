@@ -38,8 +38,6 @@ class Main(object):
                    'on_BtnRoot_clicked': self.button_root_clicked,
                    'on_BtnLevel1_clicked': self.button_one_clicked,
                    'on_BtnLevel2_clicked': self.button_two_clicked,
-                   'on_details_activate':self.movie_details_activate,
-                   'on_udetails_activate': self.upcoming_details,
                    'on_queue_activate': self.upcoming_queue,
                    'on_search_search_changed': self.search_changed,
                    'on_series_watch_activate': self.series_watch,
@@ -59,17 +57,16 @@ class Main(object):
         self.button_level_2 = self.builder.get_object("BtnLevel2")
         util.pre_populate_menu(self.builder)
         self.builder.get_object('AppWindow').show()
-        #bw.start_threads()
+        bw.start_threads()
         Gtk.main()
 
     def on_quit(self, widget):
         self.cursor.execute("PRAGMA wal_checkpoint(PASSIVE)")
         Gtk.main_quit()
         
-
     def general_view_activate(self, widget, choice):
         if self.flag == "upcoming movies":
-            util.open_page(self.cursor, choice, "movie")
+            util.open_page(self.cursor, choice, "upcoming")
         elif self.flag == "latest episodes":
             util.open_page(self.cursor, self.latest_dict[choice])
         elif self.flag == "released movies":
@@ -100,29 +97,30 @@ class Main(object):
             path = widget.get_path_at_pos(event.x, event.y)
             if path:
                 widget.select_path(path)
-                choice = util.get_selection(widget, self.general_model)
-                self.striped_name = choice.split(" Season")[0]
+                self.choice = util.get_selection(widget, self.general_model)
+                self.striped_name = self.choice.split(" Season")[0]
                 if event.button == 1:
-                    self.general_view_activate(widget, choice)
+                    self.general_view_activate(widget, self.choice)
                 elif event.button == 3 and self.flag == "series archive":
-                    self.title_choosen = choice
                     self.builder.get_object("Series").popup(None, None, None, None,
                                                             event.button, event.time)
                 elif event.button == 3 and self.flag == "active series":
                     self.builder.get_object("Series").popup(None, None, None, None,
                                                             event.button, event.time)
                 elif event.button == 3 and self.flag == "latest episodes":
-                    self.torrent.query(choice)
+                    self.torrent.query(self.choice)
                     self.builder.get_object("torrents").popup(None, None, None, None,
                                                        event.button, event.time)
                 elif event.button == 3 and self.flag == "genre select":
-                    self.movie_choosen = choice
                     self.builder.get_object("Movies").popup(None, None, None, None,
                                                             event.button,event.time)
                 elif event.button == 3 and self.flag == "upcoming movies":
-                    self.upcoming_choosen = choice
                     self.builder.get_object("upcoming").popup(None,None,None,None,
                                                               event.button, event.time)
+                elif event.button == 3 and self.flag == 'watch movies' or "watch series":
+                    self.builder.get_object("RemoveQueue").popup(None,None,None,None,
+                                                                 event.button,event.time)
+                    
 
     def on_header_view_event(self, widget, event):
         button_root = self.builder.get_object("BtnRoot")
@@ -277,7 +275,7 @@ class Main(object):
                              'where wqs.id=sq.watch_queue_status_id '+
                              'and sq.series_id=si.series_id')
         for (path, watch_name, episode_name) in self.cursor.fetchall():
-            util.render_view(self.image, episode_name+" "+watch_name, self.general_model,
+            util.render_view(self.image, episode_name+":  "+watch_name, self.general_model,
                              settings.IMAGE_PATH+path)
         self.flag = 'watch series'
         
@@ -296,7 +294,7 @@ class Main(object):
         self.no_season_select(widget.get_label())
 
     def on_AddSeries_activate(self, widget):
-        gui.Add_Series(self.cursor, self.connect)
+        gui.AddSeries(self.cursor, self.connect)
 
     def on_About_activate(self, widget):
         gui.About()
@@ -319,20 +317,14 @@ class Main(object):
     def on_Current_Season_activate(self, widget):
         gui.Current_Season(self.cursor, self.connect, self.striped_name)
 
-    def movie_details_activate(self,widget):
-        "show details of the movie selected"
-
-    def upcoming_details(self,widget):
-        "show details of the upcoming movie"
-
     def upcoming_queue(self,widget):
         try:
             self.cursor.execute("INSERT INTO upcoming_queue(title) "+
-                                "SELECT title from upcoming_movies where title=?",(self.upcoming_choosen,))
+                                "SELECT title from upcoming_movies where title=?",(self.choice,))
             self.connect.commit()
+            gui.Error("{} added to upcoming queue".format(self.choice))
         except sqlite3.IntegrityError:
             gui.Error("record is already in upcoming queue")
-            #ui interface
             logging.warn("record is already in upcoming_queue")
 
     def search_changed(self,widget):
@@ -367,9 +359,9 @@ class Main(object):
         "update series table"
         if self.flag == 'series archive':
             try:
-                self.connect.execute("UPDATE series set watch=1 where title=?",(self.title_choosen,))
+                self.connect.execute("UPDATE series set watch=1 where title=?",(self.choice,))
                 self.connect.commit()
-                gui.Error("{} has been added to the watch list".format(self.title_choosen))
+                gui.Error("{} has been added to the watch list".format(self.choice))
             except sqlite3.OperationalError as e:
                 logging.exception(e)
 
@@ -377,9 +369,9 @@ class Main(object):
         try:
             self.cursor.execute("INSERT INTO movie_queue(movie_id,watch_queue_status_id) "+
                                 "SELECT movies.id,watch_queue_status.id FROM movies,watch_queue_status "+
-                                "WHERE movies.title=? and watch_queue_status.name='new'",(self.movie_choosen,))
+                                "WHERE movies.title=? and watch_queue_status.name='new'",(self.choice,))
             self.connect.commit()
-            gui.Error("{} has been added to the watch list".format(self.movie_choosen))
+            gui.Error("{} has been added to the watch list".format(self.choice))
         except sqlite3.IntegrityError:
             gui.Error("record is already in the movie queue")
             logging.info("recored is already in movie queue")

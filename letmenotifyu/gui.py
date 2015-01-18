@@ -1,18 +1,25 @@
+#!/usr/bin/python3
+
 import logging
+import configparser
+import sqlite3
+import re
+from datetime import datetime
 from gi.repository import Gtk
 from letmenotifyu import util
+from letmenotifyu import settings
 
 class About(object):
     "Show about menu"
     def __init__(self):
         about = Gtk.Builder()
         about.add_from_file("ui/about.glade")
-        window = about.get_object('abtdlg')
+        window = about.get_object('AboutDialog')
         window.run()
         window.destroy()
 
 
-class Add_Series(object):
+class AddSeries(object):
     "Addition of new series"
     def __init__(self, cursor, connection):
         self.cursor = cursor
@@ -23,16 +30,49 @@ class Add_Series(object):
               'on_btnOk_clicked': self.on_btnOk_clicked}
         self.dialog.connect_signals(connectors)
         self.notice = self.dialog.get_object('lblNotice')
+        self.link_box = self.dialog.get_object('entlink')
         self.dialog.get_object('linkdialog').show()
+
+    def check_url(self,text):
+        "check adding new series"
+        if re.search(r'http://www.primewire.ag/(.*)-\d+-(.*)-online-free', text):
+            title = re.search(r"http://www.primewire.ag/(.*)-\d+-(.*)-online-free", text)
+            change_string = title.group(2)
+            show_title = change_string.replace("-", " ")
+            logging.info("Inserting new series {}".format(show_title))
+            try:
+                self.cursor.execute('INSERT INTO series(title,' +
+                               'series_link,' +
+                               'number_of_episodes,' +
+                               'number_of_seasons,' +
+                               'status,' +
+                               'current_season,' +
+                               'last_update)' +
+                               ' VALUES(?,?,0,0,1,0,?)',
+                               (show_title, text, datetime.now(),))
+                self.connection.commit()
+                logging.debug("Series Added: {}".format(show_title))
+                self.link_box.set_text('')
+                self.dialog.get_object('linkdialog').destroy()
+            except sqlite3.IntegrityError:
+                self.connection.rollback()
+                logging.error("Series already added")
+                self.notice.set_text("Series already added")
+                self.notice.set_visible(True)
+                self.dialog.get_object('imcheck').set_visible(True)
+        else:
+            self.notice.set_text("Not a valid link or link already exists")
+            self.notice.set_visible(True)
+            self.dialog.get_object('imcheck').set_visible(True)
+            logging.warn("Invalid link:"+text)
+
 
     def on_btnCancel_clicked(self, widget):
         self.dialog.get_object('linkdialog').destroy()
 
     def on_btnOk_clicked(self, widget):
-        link_box = self.dialog.get_object('entlink')
-        util.check_url(link_box.get_text(), self.notice, self.dialog,
-                  self.cursor, self.connection, link_box)
-        link_box.set_text('')
+        self.check_url(self.link_box.get_text())
+        self.link_box.set_text('')
 
 
 class Confirm(object):
@@ -68,28 +108,60 @@ class Preferences(object):
         self.connect = connect
         self.pref = Gtk.Builder()
         self.pref.add_from_file("ui/preferences.glade")
-        signals = {'on_btnSave_clicked': self.on_btnSave_clicked,
-                 'on_btnCancel_clicked': self.on_btnCancel_clicked}
+        signals = {'on_BtnOK_clicked': self.on_btnSave_clicked,
+                 'on_BtnCancel_clicked': self.on_btnCancel_clicked}
         self.pref.connect_signals(signals)
-        self.interval = self.pref.get_object('txtupdate')
-        self.movie_update = self.pref.get_object('txtmovies')
-        self.series_update = self.pref.get_object('txtseries')
-        util.get_intervals(self.cursor, self.interval, self.movie_update, self.series_update)
-        self.pref.get_object('pref').show()
+        self.populate_fields()
+        self.pref.get_object('Preference').show()
 
+    def populate_fields(self):
+        update_interval  = util.get_config_value(self.cursor,"update_interval")
+        movie_process = util.get_config_value(self.cursor,"movie_process_interval")
+        series_process = util.get_config_value(self.cursor,"series_process_interval")
+        series_duration = util.get_config_value(self.cursor,"series_duration")
+        max_movie_result = util.get_config_value(self.cursor,'max_movie_results')
+        self.pref.get_object("spUpdate").set_value(float(update_interval))
+        self.pref.get_object("spMovieQueue").set_value(float(movie_process))
+        self.pref.get_object("spSeriesQueue").set_value(float(series_process))
+        self.pref.get_object("spSeriesDuration").set_value(float(series_duration))
+        self.pref.get_object("spMovieResults").set_value(float(max_movie_result))
+        self.pref.get_object("fcbImages").set_current_folder(settings.IMAGE_PATH)
+        self.pref.get_object("fcbTorrents").set_current_folder(settings.TORRENT_DIRECTORY)
+        self.pref.get_object("fcbComplete").set_current_folder(settings.COMPLETE_DIRECTORY)
+        self.pref.get_object("fcbIncomplete").set_current_folder(settings.INCOMPLETE_DIRECTORY)
+
+    def write_to_config(self):
+        config = configparser.ConfigParser()
+        images = self.pref.get_object("fcbImages").get_current_folder()
+        torrents = self.pref.get_object("fcbTorrents").get_current_folder()
+        complete = self.pref.get_object("fcbComplete").get_current_folder()
+        incomplete = self.pref.get_object("fcbIncomplete").get_current_folder()
+        config['DIRECTORIES'] = {'ImagesDIrectory': images+'/',
+                             'TorrentsDirectory': torrents+'/',
+                             'CompleteDownloads': complete+'/',
+                                 'IncompleteDownloads': incomplete+'/'}
+        with open(settings.DIRECTORY_PATH+'/config.ini','w') as cfg_file:
+            config.write(cfg_file)
+        
     def on_btnSave_clicked(self, widget):
         try:
-            update  = str(float(self.interval.get_text())*3600)
-            series_duration = str(int(self.series_update.get_text()))
-            movie_duration = str(int(self.movie_update.get_text()))
-            self.cursor.execute("UPDATE config set value=? where key='update_interval'",
-                                (update,))
-            self.cursor.execute("UPDATE config set value=? where key='series_duration'",
-                                (series_duration,))
-            self.cursor.execute("UPDATE config set value=? where key='movie_duration'",
-                                (movie_duration,))
+            update_interval = self.pref.get_object("spUpdate").get_value()
+            movie_process = self.pref.get_object('spMovieQueue').get_value()
+            series_process = self.pref.get_object("spSeriesQueue").get_value()
+            movie_results = self.pref.get_object("spMovieResults").get_value()
+            series_duration = self.pref.get_object("spSeriesDuration").get_value()
+            quality_iter = self.pref.get_object('cbMovieQuality').get_active_iter()
+            movie_quality = self.pref.get_object('lsMovieCombo').get_value(quality_iter,0)
+            query = [(update_interval, 'update_interval'),
+                     (movie_process, 'movie_process_interval'),
+                     (series_process, 'series_process_interval'),
+                     (movie_results, 'max_movie_results'),
+                     (movie_quality, 'movie_quality'),
+                     (series_duration, 'series_duration')]
+            self.cursor.executemany("UPDATE config set value=? where key=?", query)
             self.connect.commit()
-            self.pref.get_object('pref').destroy()
+            self.write_to_config()
+            self.pref.get_object('Preference').destroy()
 
         except ValueError as e:
             logging.info("Not a valid number")
@@ -98,7 +170,7 @@ class Preferences(object):
             Error("Not a valid number")
 
     def on_btnCancel_clicked(self, widget):
-        self.pref.get_object('pref').destroy()
+        self.pref.get_object('Preference').destroy()
 
 
 class Error(object):
@@ -126,9 +198,14 @@ class Current_Season(object):
         signals = {'on_btnApply_clicked': self.on_btnApply_clicked,
                  'on_btnCancel_clicked': self.on_btnCancel_clicked}
         self.current_season.connect_signals(signals)
-        cur_sea = util.fetch_current_season(cursor, connection, series_title)
+        cur_sea = self.fetch_current_season(series_title)
         self.current_season.get_object('txtCurrent').set_text(cur_sea)
         self.current_season.get_object("CurrentSeason").show()
+
+    def fetch_current_season(self, series_title):
+        self.cursor.execute('SELECT current_season from series where title=?', (series_title,))
+        (no_season,) = self.cursor.fetchone()
+        return no_season
 
     def on_btnCancel_clicked(self, widget):
         self.current_season.get_object('CurrentSeason').close()

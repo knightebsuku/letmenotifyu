@@ -147,7 +147,9 @@ def database_change():
         [47, "INSERT INTO config(key,value) VALUES('movie_process_interval', '3600')"],
         [48, "INSERT INTO config(key,value) VALUES('series_process_interval','3600')"],
         [49, "INSERT INTO config(key,value) VALUES('movie_duration','7')"],
-        [50, "INSERT INTO config(key,value) VALUES('series_duration','7')"]
+        [50, "INSERT INTO config(key,value) VALUES('series_duration','7')"],
+        [51, "INSERT INTO config(key,value) VALUES('movie_quality','720p')"],
+        [52, "INSERT INTO config(key,value) VALUES('max_movie_results','50')"]
           
                   
     ])

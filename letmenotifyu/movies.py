@@ -1,6 +1,7 @@
 from urllib.request import Request, urlopen
 from letmenotifyu.notify import announce
 from letmenotifyu import settings
+from letmenotifyu import util
 import logging
 import sqlite3
 import json
@@ -8,23 +9,36 @@ import os
 import hashlib
 import urllib
 
+
+
+def movie(connect, cursor):
+    upcoming_movie_data = get_upcoming_movies()
+    if upcoming_movie_data:
+        insert_upcoming_movies(upcoming_movie_data, connect, cursor)
+    released_movie_data = get_released_movies(cursor)
+    if released_movie_data:
+        insert_released_movies(released_movie_data, cursor, connect)
+
 def get_upcoming_movies():
     "Get list of upcoming movies by yifi"
     try:
         yifi_url = urlopen("https://yts.re/api/upcoming.json")
         json_data = json.loads(yifi_url.read().decode('utf-8'))
         return json_data
-    except (urllib.error.HTTPError, urllib.error.URLError):
+    except Exception:
         logging.error("Unable to connect to the website")
 
-def get_released_movies():
+def get_released_movies(cursor):
     "Get list of movies released by yifi"
     try:
-        yifi_url = urlopen("https://yts.re/api/list.json?quality=720p&limit=50")
+        quality = util.get_config_value(cursor,"movie_quality")
+        limit = util.get_config_value(cursor,'max_movie_results')
+        yifi_url = urlopen("https://yts.re/api/list.json?quality={}&limit={}".format(quality,limit))
         json_data = json.loads(yifi_url.read().decode('utf-8'))
         return json_data
-    except (urllib.error.HTTPError, urllib.error.URLError):
+    except Exception as e:
         logging.error("unable to fetch movie list")
+        logging.exception(e)
 
 def insert_released_movies(data, cursor, db):
     "insert new movies"

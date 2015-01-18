@@ -5,12 +5,11 @@ import logging
 import time
 import gzip
 import os
-
+import urllib
 from letmenotifyu.notify import announce
 from letmenotifyu import settings
-from letmenotifyu.movies import (get_upcoming_movies, insert_upcoming_movies,
-                              get_released_movies, insert_released_movies)
-from letmenotifyu.series import Series
+from letmenotifyu.movies import movie
+from letmenotifyu.series import series
 from letmenotifyu import util
 from letmenotifyu import kickass
 from threading import Thread
@@ -36,9 +35,9 @@ def update():
         connect.execute("PRAGMA journal_mode=WAL")
         movie(connect, cursor)
         series(connect, cursor)
-        value = util.get_config_value(cursor,'update_interval')
+        value = util.get_config_value(cursor, 'update_interval')
         connect.close()
-        time.sleep(int(value))
+        time.sleep(float(value)*3600)
 
 def process_series_queue():
     "handle the series queues"
@@ -47,7 +46,7 @@ def process_series_queue():
     connect.execute("PRAGMA journal_mode=WAL")
     while 1:
         logging.debug("processing series queues")
-        api_file = fetch_kickass_file()
+        api_file = fetch_kickass_file(cursor)
         cursor.execute("SELECT title, series_queue.id, episode_name,watch_queue_status_id "+
                        'FROM  series_queue join series on series_id=series.id')
         queues = cursor.fetchall()
@@ -92,8 +91,9 @@ def process_series_queue():
                             break
                         except sqlite3.OperationalError as e:
                             logging.exception(e)
+        cursor.execute("PRAGMA wal_checkpoint(PASSIVE)")
         value = util.get_config_value(cursor,'series_process_interval')
-        time.sleep(int(value))
+        time.sleep(float(value)*3600)
 
 def process_movie_queue():
     "handle movie queues"
@@ -139,45 +139,41 @@ def process_movie_queue():
             else:
                 logging.debug('no new queues')
         value = util.get_config_value(cursor,'movie_process_interval')
-        time.sleep(int(value))
+        time.sleep(float(value)*3600)
         
-
-def movie(connect, cursor):
-    upcoming_movie_data = get_upcoming_movies()
-    insert_upcoming_movies(upcoming_movie_data, connect, cursor)
-    released_movie_data = get_released_movies()
-    insert_released_movies(released_movie_data, cursor, connect)
-
-def series(connect,cursor):
-    series_update = Series(connect,cursor)
-    series_update.update_series()
-
 def check_upcoming_queue(connect,cursor):
     "move upcoming queue movie to movie_queue"
     cursor.execute("SELECT title FROM upcoming_queue")
     data = cursor.fetchall()
-    for title in data:
-        cursor.execute("SELECT id FROM movies WHERE title=?",(title[0],))
+    for (title,) in data:
+        cursor.execute("SELECT id FROM movies WHERE title=?",(title,))
         if cursor.fetchone():
             try:
                 cursor.execute("INSERT INTO movie_queue(movie_id,watch_queue_status_id) "+
                             "SELECT movies.id,watch_queue_status.id FROM movies,watch_queue_status "+
-                            "WHERE movies.title=? AND watch_queue_status.name='new'",(title[0],))
-                connect.execute("DELETE FROM upcoming_queue WHERE title=?",(title[0],))
+                            "WHERE movies.title=? AND watch_queue_status.name='new'",(title,))
+                connect.execute("DELETE FROM upcoming_queue WHERE title=?",(title,))
                 connect.commit()
-                logging.debug("moved {} to movie_queue".format(title[0]))
+                logging.debug("moved {} to movie_queue".format(title))
             except sqlite3.IntegrityError:
                 logging.info("record already exists in movie_queue")
-                connect.execute("DELETE FROM upcoming_queue WHERE title=?",(title[0],))
+                connect.execute("DELETE FROM upcoming_queue WHERE title=?",(title,))
 
-def fetch_kickass_file():
-    try:
-        kickass_file = urlopen("https://kickass.so/hourlydump.txt.gz")
-        with gzip.open(kickass_file,'r') as gzip_file:
-            with open(settings.KICKASS_FILE,'wb') as dump_file:
-                for line in gzip_file:
-                    dump_file.write(line)
+def fetch_kickass_file(cursor):
+    cursor.execute("SELECT * FROM series_queue where watch_queue_status_id=1")
+    if cursor.fetchall():
+        logging.debug("episode in status new, need to fetch kickass file")
+        try:
+            kickass_file = urlopen("https://kickass.so/hourlydump.txt.gz")
+            with gzip.open(kickass_file,'r') as gzip_file:
+                with open(settings.KICKASS_FILE,'wb') as dump_file:
+                    for line in gzip_file:
+                        dump_file.write(line)
+            return settings.KICKASS_FILE
+        except urllib.error.URLError:
+            logging.debug("unable to connect to kickass")
+            return settings.KICKASS_FILE
+    else:
+        logging.debug("no episode in new status")
         return settings.KICKASS_FILE
-    except urllib.error.URLError:
-        logging.debug("unable to connect to kickass")
-        return settings.KICKASS_FILE
+            

@@ -125,6 +125,10 @@ class Series(object):
         except sqlite3.OperationalError as e:
             logging.exception(e)
 
+def series(connect, cursor):
+    "Initialise series to update"
+    series_update = Series(connect, cursor)
+    series_update.update_series()
 
 
 

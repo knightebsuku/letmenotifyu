@@ -11,7 +11,6 @@ import requests
 from urllib.request import Request, urlopen
 from bs4 import BeautifulSoup
 from letmenotifyu import settings
-from datetime import datetime
 
 
 def initialise():
@@ -37,16 +36,19 @@ def get_selection(view, store_model):
     return selection
 
 
-def open_page(cursor, link, option=None):
+def open_page(cursor, title, option=None):
     "open webbrowser page"
     if option == "movie":
-        cursor.execute("SELECT link FROM movies where title=?", (link,))
-        link = cursor.fetchone()
-        webbrowser.open_new(link[0])
-        logging.info("Opening link" + link[0])
+        cursor.execute("SELECT link FROM movies where title=?", (title,))
+        (link,) = cursor.fetchone()
+        webbrowser.open_new(link)
+    elif option == 'upcoming':
+        cursor.execute("SELECT link FROM upcoming_movies where title=?", (title,))
+        (link,) = cursor.fetchone()
+        webbrowser.open_new(link)
     else:
-        webbrowser.open_new("http://www.primewire.ag"+link)
-        logging.info("Opening link" + link)
+        webbrowser.open_new("http://www.primewire.ag"+title)
+    logging.info("Opening link" + title)
 
 
 def primewire(episode_site):
@@ -63,7 +65,7 @@ def primewire(episode_site):
             all_series_info.append((link, ep_no.replace(" ", "")+ep_name))
             seasons = series_page_data.find_all('a', {'class': 'season-toggle'})
         return all_series_info, len(all_series_info), len(seasons)
-    except urllib.error.URLError:
+    except Exception:
         logging.warn("Unable to connect to {} ".format(episode_site))
 
 def series_poster(cursor, connect, series_id):
@@ -117,39 +119,6 @@ def process_page(movie_page):
         jpg_posters.append(image_jpg.find('img')['src'])
     return jpg_posters
 
-def check_url(text, notice, dialog, cursor, connection, link_box):
-    "check adding new series"
-    if re.search(r'http://www.primewire.ag/(.*)-\d+\-(.*)', text):
-        title = re.search(r"http://www.primewire.ag/(.*)-\d+\-(.*)", text)
-        change_string = title.group(2)
-        show_title = change_string.replace("-", " ")
-        logging.info("Inserting new series {}".format(show_title))
-        try:
-            cursor.execute('INSERT INTO series(title,' +
-                           'series_link,' +
-                           'number_of_episodes,' +
-                           'number_of_seasons,' +
-                           'status,' +
-                           'current_season,' +
-                           'last_update)' +
-                           ' VALUES(?,?,0,0,1,0,?)',
-                           (show_title, text, datetime.now(),))
-            connection.commit()
-            logging.debug("Series Added: {}".format(show_title))
-            link_box.set_text('')
-            dialog.get_object('linkdialog').destroy()
-        except sqlite3.IntegrityError:
-            logging.error("Series already added")
-            notice.set_text("Series already added")
-            notice.set_visible(True)
-            dialog.get_object('imcheck').set_visible(True)
-    else:
-        notice.set_text("Not a valid link or link already exists")
-        notice.set_visible(True)
-        dialog.get_object('imcheck').set_visible(True)
-        logging.warn("Invalid link:"+text)
-
-
 def which_sql_message(Instruction):
     if Instruction == "start":
         use_sql = "UPDATE series SET status=1 where title=?"
@@ -161,12 +130,6 @@ def which_sql_message(Instruction):
         use_sql = "DELETE FROM series WHERE title=?"
         message = "Are you sure you want to delete"
     return message, use_sql
-
-def fetch_current_season(cursor, series_title):
-    cursor.execute('SELECT current_season from series where title=?', (series_title,))
-    (no_season,) = cursor.fetchone()
-    return str(no_season)
-
 
 def start_logging():
     "Start logging"
