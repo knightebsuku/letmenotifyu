@@ -306,20 +306,6 @@
     <property name="visible">True</property>
     <property name="can_focus">False</property>
     <child>
-      <object class="GtkMenuItem" id="details">
-        <property name="visible">True</property>
-        <property name="can_focus">False</property>
-        <property name="label" translatable="yes">Details</property>
-        <signal name="activate" handler="on_details_activate" swapped="no"/>
-      </object>
-    </child>
-    <child>
-      <object class="GtkSeparatorMenuItem" id="menuitem5">
-        <property name="visible">True</property>
-        <property name="can_focus">False</property>
-      </object>
-    </child>
-    <child>
       <object class="GtkMenuItem" id="watchlist">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
@@ -400,7 +386,7 @@
         <property name="can_focus">True</property>
         <property name="has_focus">True</property>
         <property name="is_focus">True</property>
-        <property name="label" translatable="yes">Kickass</property>
+        <property name="label" translatable="yes">Open Kickass</property>
         <property name="use_underline">True</property>
         <signal name="activate" handler="on_Kickass_activate" swapped="no"/>
       </object>
@@ -409,21 +395,6 @@
   <object class="GtkMenu" id="upcoming">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
-    <child>
-      <object class="GtkMenuItem" id="udetails">
-        <property name="visible">True</property>
-        <property name="can_focus">False</property>
-        <property name="label" translatable="yes">Details</property>
-        <property name="use_underline">True</property>
-        <signal name="activate" handler="on_udetails_activate" swapped="no"/>
-      </object>
-    </child>
-    <child>
-      <object class="GtkSeparatorMenuItem" id="menuitem6">
-        <property name="visible">True</property>
-        <property name="can_focus">False</property>
-      </object>
-    </child>
     <child>
       <object class="GtkMenuItem" id="queue">
         <property name="visible">True</property>

@@ -12,7 +12,7 @@ class Database(object):
     def initialise(self):
         try:
             self.connect.execute("CREATE TABLE migration("+
-                             'id INTEGER PRIMARY KEY,'+
+                             'id INTEGER PRIMARY KEY NOT NULL,'+
                              'version INTEGER UNIQUE NOT NULL,'+
                              'date TIMESTAMP NOT NULL)')
             self.db.execute("INSERT INTO migration(version,date) VALUES(0,?)",(dt.datetime.now(),))
