@@ -119,18 +119,6 @@ def process_page(movie_page):
         jpg_posters.append(image_jpg.find('img')['src'])
     return jpg_posters
 
-def which_sql_message(Instruction):
-    if Instruction == "start":
-        use_sql = "UPDATE series SET status=1 where title=?"
-        message = "Are you sure you want to start updating"
-    elif Instruction == "stop":
-        use_sql = "UPDATE series SET status=0 where title=?"
-        message = "Are you sure you want to stop updating"
-    elif Instruction == "delete":
-        use_sql = "DELETE FROM series WHERE title=?"
-        message = "Are you sure you want to delete"
-    return message, use_sql
-
 def start_logging():
     "Start logging"
     logging.basicConfig(filename=settings.LOG_FILE_PATH,

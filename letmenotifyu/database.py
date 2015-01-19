@@ -149,9 +149,24 @@ def database_change():
         [49, "INSERT INTO config(key,value) VALUES('movie_duration','7')"],
         [50, "INSERT INTO config(key,value) VALUES('series_duration','7')"],
         [51, "INSERT INTO config(key,value) VALUES('movie_quality','720p')"],
-        [52, "INSERT INTO config(key,value) VALUES('max_movie_results','50')"]
-          
-                  
+        [52, "INSERT INTO config(key,value) VALUES('max_movie_results','50')"],
+        [53, "CREATE TABLE actors("+
+         'id INTEGER PRIMARY KEY NOT NULL,' +
+         'name VARCHAR(20) UNIQUE NOT NULL,' +
+         'actor_link VARCHAR(20) UNIQUE NOT NULL)'],
+        [54, "CREATE TABLE movie_details("+
+         'id INTEGER PRIMARY KEY NOT NULL,'+
+         'movie_id INTEGER UNIQUE NOT NULL,'+
+         'language VARCHAR(20) NOT NULL,'+
+         'movie_rating REAL NOT NULL,'+
+         'youtube_url VARCHAR UNIQUE NOT NULL,'+
+         'description VARCHAR(100) NOT NULL,'+
+         'FOREIGN KEY(movie_id) REFERENCES movies(id))'],
+        [55, "CREATE TABLE actors_movies("+
+         'id INTEGER PRIMARY KEY NOT NULL,'+
+         'actor_id INTEGER NOT NULL,'+
+         'movie_id INTEGER NOT NULL,'+
+         'FOREIGN KEY(movie_id) REFERENCES movies(id))']
     ])
 
 

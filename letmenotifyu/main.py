@@ -57,7 +57,7 @@ class Main(object):
         self.button_level_2 = self.builder.get_object("BtnLevel2")
         util.pre_populate_menu(self.builder)
         self.builder.get_object('AppWindow').show()
-        bw.start_threads()
+        #bw.start_threads()
         Gtk.main()
 
     def on_quit(self, widget):

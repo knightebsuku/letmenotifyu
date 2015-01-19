@@ -40,6 +40,28 @@ def get_released_movies(cursor):
         logging.error("unable to fetch movie list")
         logging.exception(e)
 
+def get_movie_details(q,connect):
+    (movie_id,yify_id) = q.get()
+    try:
+        yify_url = urlopen("https://yts.re/api/movie.json?id={}".format(yify_id))
+        movie_detail = json.loads(yify_url.read().decode('utf-8'))
+        connect.execute("INSERT INTO movie_details(movie_id,language,movie_rating,"+
+                            'youtube_url,description) '+
+                            'VALUES(?,?,?,?,?)',(movie_id,movie_detail['Language'],
+                                                 movie_detail['MovieRating'],
+                                                 movie_detail["YoutubeTrailerUrl"],
+                                                 movie_detail["LongDescription"],))
+        for actor in movie_detail["CastList"]:
+            row = connect.execute("INSERT INTO actors(name,actor_link) "+
+                                  'VALUES(?,?)',(actor["ActorName"], actor['ActorImdbLink'],))
+            connect.execute("INSERT INTO actors_movies(actor_id,movie_id) "+
+                            'VALUES(?,?)',(row.lastrowid,movie_id,))
+        connect.commit()
+    except Exception:
+        connect.rollback()
+        logging.warn("Unable to retrive movie details")
+    
+
 def insert_released_movies(data, cursor, db):
     "insert new movies"
     released_data = movie_compare(cursor, "movies", data["MovieList"])
@@ -57,7 +79,7 @@ def insert_released_movies(data, cursor, db):
                 db.execute("INSERT INTO movie_torrent_links(movie_id,link,hash_sum) VALUES(?,?,?)",
                            (row.lastrowid, movie_detail["TorrentUrl"], movie_detail["TorrentHash"],))
                 insert_movie_image(movie_detail["MovieTitle"], movie_detail["CoverImage"], db)
-                db.execute("DELETE FROM upcoming_movies where title=?",(movie_detail['MovieTitle'],))
+                #db.execute("DELETE FROM upcoming_movies where title=?",(movie_detail['MovieTitle'],))
                 db.commit()
                 announce('Newly Released Movie', movie_detail["MovieTitle"],
                          movie_detail["ImdbLink"])

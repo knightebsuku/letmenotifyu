@@ -87,10 +87,23 @@ class Confirm(object):
         signals = {'on_btnOk_clicked': self.on_btnOk_clicked,
                'on_btnCancel_clicked': self.on_btnCancel_clicked}
         self.confirm.connect_signals(signals)
-        self.message, self.sql = util.which_sql_message(self.instruction)
+        self.message, self.sql = self.which_sql_message()
         self.confirm.get_object('msgdlg').format_secondary_text(self.message+" " +
                                                                 self.title+"?")
         self.confirm.get_object('msgdlg').show()
+
+    def which_sql_message(self):
+        if self.instruction == "start":
+            use_sql = "UPDATE series SET status=1 where title=?"
+            message = "Are you sure you want to start updating"
+        elif self.instruction == "stop":
+            use_sql = "UPDATE series SET status=0 where title=?"
+            message = "Are you sure you want to stop updating"
+        elif self.instruction == "delete":
+            use_sql = "DELETE FROM series WHERE title=?"
+            message = "Are you sure you want to delete"
+        return message, use_sql
+
 
     def on_btnOk_clicked(self, widget):
         self.cursor.execute(self.sql, (self.title,))
@@ -220,3 +233,9 @@ class Current_Season(object):
         except Exception as e:
             logging.warn("Unable to set current season")
             logging.exception(e)
+
+class MovieDetails(object):
+    "show movie details"
+    def __init__(self,cursor,connect,movie_title):
+        self.cursor = cursor
+        self.connect = connection
