@@ -1,12 +1,15 @@
+#!/usr/bin/python3
+
 from urllib.request import Request, urlopen
 from letmenotifyu.notify import announce
 from letmenotifyu import settings
 from letmenotifyu import util
+from threading import Thread
+from queue import Queue
 import logging
 import sqlite3
 import json
 import os
-import hashlib
 import urllib
 
 
@@ -40,32 +43,67 @@ def get_released_movies(cursor):
         logging.error("unable to fetch movie list")
         logging.exception(e)
 
-def get_movie_details(q,connect):
-    (movie_id,yify_id) = q.get()
+def get_movie_details(yify_id):
     try:
         yify_url = urlopen("https://yts.re/api/movie.json?id={}".format(yify_id))
         movie_detail = json.loads(yify_url.read().decode('utf-8'))
-        connect.execute("INSERT INTO movie_details(movie_id,language,movie_rating,"+
-                            'youtube_url,description) '+
-                            'VALUES(?,?,?,?,?)',(movie_id,movie_detail['Language'],
-                                                 movie_detail['MovieRating'],
-                                                 movie_detail["YoutubeTrailerUrl"],
-                                                 movie_detail["LongDescription"],))
-        for actor in movie_detail["CastList"]:
-            row = connect.execute("INSERT INTO actors(name,actor_link) "+
-                                  'VALUES(?,?)',(actor["ActorName"], actor['ActorImdbLink'],))
-            connect.execute("INSERT INTO actors_movies(actor_id,movie_id) "+
-                            'VALUES(?,?)',(row.lastrowid,movie_id,))
-        connect.commit()
-    except Exception:
-        connect.rollback()
-        logging.warn("Unable to retrive movie details")
-    
+        return movie_detail
+    except (urllib.error.URLError,urllib.error.HTTPError):
+        logging.warn("Unable to download movie detail")
+
+def insert_movie_details(q):
+    connect = sqlite3.connect(settings.DATABASE_PATH)
+    cursor = connect.cursor()
+    while True:
+        [movie_id,yify_id] = q.get()
+        movie_detail = get_movie_details(yify_id)
+        if 'status' in movie_detail.keys():
+            logging.warn("No data for current movie")
+            q.task_done()
+        elif not movie_detail:
+            logging.warn("Cant connect to movie_detail")
+            q.task_done()
+        else:
+            try:
+                connect.execute("INSERT INTO movie_details(movie_id,language,movie_rating,"+
+                                    'youtube_url,description) '+
+                                    'VALUES(?,?,?,?,?)',(movie_id,movie_detail['Language'],
+                                                         movie_detail['MovieRating'],
+                                                         movie_detail["YoutubeTrailerUrl"],
+                                                         movie_detail["LongDescription"],))
+                for actor in movie_detail["CastList"]:
+                    try:
+                        row = connect.execute("INSERT INTO actors(name,actor_link) "+
+                                          'VALUES(?,?)',(actor["ActorName"], actor['ActorImdbLink'],))
+                        connect.execute("INSERT INTO actors_movies(actor_id,movie_id) "+
+                                    'VALUES(?,?)',(row.lastrowid, movie_id,))
+                        connect.commit()
+                    except sqlite3.IntegrityError:
+                        logging.error("record already exsists")
+                        cursor.execute("SELECT id from actors where name=?", (actor["ActorName"],))
+                        (actor_id,) = cursor.fetchone()
+                        connect.execute("INSERT INTO actors_movies(actor_id,movie_id) "+
+                                        'VALUES(?,?)', (actor_id,movie_id,))
+                        logging.info("Movie Detail complete")
+                    except sqlite3.OperationalError as e:
+                        logging.exception(e)
+                    finally:
+                        connect.commit()
+            except sqlite3.IntegrityError:
+                logging.warn("Movie Detail already exists")
+            except sqlite3.OperationalError as e:
+                logging.exception(e)
+            finally:
+                q.task_done()
 
 def insert_released_movies(data, cursor, db):
     "insert new movies"
     released_data = movie_compare(cursor, "movies", data["MovieList"])
     if released_data:
+        q = Queue(maxsize=0)
+        details_worker = Thread(target=insert_movie_details, args=(q,))
+        details_worker.setDaemon(True)
+        details_worker.start()
         for movie_detail in released_data:
             try:
                 genre_id = get_movie_genre(movie_detail["Genre"], cursor, db)
@@ -79,6 +117,7 @@ def insert_released_movies(data, cursor, db):
                 db.execute("INSERT INTO movie_torrent_links(movie_id,link,hash_sum) VALUES(?,?,?)",
                            (row.lastrowid, movie_detail["TorrentUrl"], movie_detail["TorrentHash"],))
                 insert_movie_image(movie_detail["MovieTitle"], movie_detail["CoverImage"], db)
+                q.put([row.lastrowid, movie_detail["MovieID"]])
                 #db.execute("DELETE FROM upcoming_movies where title=?",(movie_detail['MovieTitle'],))
                 db.commit()
                 announce('Newly Released Movie', movie_detail["MovieTitle"],
@@ -86,6 +125,7 @@ def insert_released_movies(data, cursor, db):
             except Exception as e:
                 db.rollback()
                 logging.exception(e)
+        q.join()
 
 def insert_upcoming_movies(movie_data, db,cursor):
     "insert upcoming new movies"

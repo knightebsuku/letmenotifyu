@@ -57,7 +57,7 @@ class Main(object):
         self.button_level_2 = self.builder.get_object("BtnLevel2")
         util.pre_populate_menu(self.builder)
         self.builder.get_object('AppWindow').show()
-        #bw.start_threads()
+        bw.start_threads()
         Gtk.main()
 
     def on_quit(self, widget):
@@ -197,7 +197,7 @@ class Main(object):
         self.general_model.clear()
         self.cursor.execute("SELECT value from config where key='series_duration'")
         duration = self.cursor.fetchone()
-        week = datetime.now() - timedelta(days=int(duration[0]))
+        week = datetime.now() - timedelta(days=float(duration[0]))
         self.cursor.execute("SELECT episode_name,episode_link,path from episodes "+
                             "join series_images "+
                             "on episodes.series_id=series_images.series_id "+
