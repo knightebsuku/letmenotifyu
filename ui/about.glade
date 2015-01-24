@@ -21,7 +21,9 @@
     <property name="website_label" translatable="yes">Letmenotifyu</property>
     <property name="license" translatable="yes">GPL 3.0</property>
     <property name="authors">Lunga Mthembu
-Icons http://dryicons.com</property>
+</property>
+    <property name="artists">http://www.designbolts.com
+http://dryicons.com</property>
     <property name="logo">letmenotifyu.png</property>
     <property name="wrap_license">True</property>
     <property name="license_type">gpl-3-0</property>

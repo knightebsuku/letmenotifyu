@@ -48,19 +48,19 @@ def get_movie_details(yify_id):
         yify_url = urlopen("https://yts.re/api/movie.json?id={}".format(yify_id))
         movie_detail = json.loads(yify_url.read().decode('utf-8'))
         return movie_detail
-    except (urllib.error.URLError,urllib.error.HTTPError):
+    except (urllib.error.URLError, urllib.error.HTTPError):
         logging.warn("Unable to download movie detail")
 
 def insert_movie_details(q):
     connect = sqlite3.connect(settings.DATABASE_PATH)
     cursor = connect.cursor()
-    while True:
+    while not q.empty():
         [movie_id,yify_id] = q.get()
         movie_detail = get_movie_details(yify_id)
-        if 'status' in movie_detail.keys():
+        if not movie_detail:
             logging.warn("No data for current movie")
             q.task_done()
-        elif not movie_detail:
+        elif 'status' in movie_detail.keys():
             logging.warn("Cant connect to movie_detail")
             q.task_done()
         else:

@@ -74,7 +74,8 @@ class Main(object):
             self.button_level_1.set_property("visible", True)
             self.button_level_1.set_property("label", choice)
         elif self.flag == "genre select":
-            util.open_page(self.cursor, choice, "movie")
+            gui.MovieDetails(self.cursor, self.connect, choice)
+            #util.open_page(self.cursor, choice, "movie")
         elif self.flag == "active series":
             self.active_series_select(choice)
             self.button_level_1.set_property("visible", True)
@@ -175,9 +176,9 @@ class Main(object):
         self.general_model.clear()
         self.cursor.execute("SELECT genre from genre")
         result = self.cursor.fetchall()
-        self.image.set_from_file("ui/movies.png")
-        pixbuf = self.image.get_pixbuf()
         for genre in result:
+            self.image.set_from_file(settings.ICON_FILE_PATH+genre[0]+'.png')
+            pixbuf = self.image.get_pixbuf()
             self.general_model.append([pixbuf, genre[0]])
         self.flag = "released movies"
 

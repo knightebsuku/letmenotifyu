@@ -30,10 +30,13 @@ def start_threads():
 def update():
     "update movies and series"
     while 1:
+        logging.debug("Checking for new episodes and movies")
         connect = sqlite3.connect(settings.DATABASE_PATH)
         cursor = connect.cursor()
         connect.execute("PRAGMA journal_mode=WAL")
+        logging.debug("Updating Movies")
         movie(connect, cursor)
+        logging.debug("Updating series")
         series(connect, cursor)
         value = util.get_config_value(cursor, 'update_interval')
         connect.close()
@@ -101,6 +104,7 @@ def process_movie_queue():
     cursor = connect.cursor()
     connect.execute("PRAGMA journal_mode=WAL")
     while 1:
+        logging.debug("processing movie queues")
         check_upcoming_queue(connect, cursor)
         cursor.execute("SELECT title,mq.id,mtl.link,watch_queue_status_id FROM "+
                "movie_torrent_links as mtl "+
@@ -138,6 +142,7 @@ def process_movie_queue():
                         logging.exception(e)
             else:
                 logging.debug('no new queues')
+        #connect.execute("DELETE from upcoming_movies where title=movies.title")
         value = util.get_config_value(cursor,'movie_process_interval')
         time.sleep(float(value)*3600)
         

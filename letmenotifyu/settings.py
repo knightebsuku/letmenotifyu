@@ -17,6 +17,7 @@ def create_ini_file():
 DATABASE_PATH = DIRECTORY_PATH+'/dev.sqlite'
 KICKASS_FILE = DIRECTORY_PATH+'/kickass.txt'
 LOG_FILE_PATH = DIRECTORY_PATH+'/dev.log'
+ICON_FILE_PATH = DIRECTORY_PATH+'/icons/'
 
 
 try:

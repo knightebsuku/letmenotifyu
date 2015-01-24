@@ -6,6 +6,7 @@ import sqlite3
 import re
 from datetime import datetime
 from gi.repository import Gtk
+from gi.repository.GdkPixbuf import Pixbuf
 from letmenotifyu import util
 from letmenotifyu import settings
 
@@ -238,4 +239,50 @@ class MovieDetails(object):
     "show movie details"
     def __init__(self,cursor,connect,movie_title):
         self.cursor = cursor
-        self.connect = connection
+        self.connect = connect
+        self.movie_title = movie_title
+        self.details = Gtk.Builder()
+        self.details.add_from_file("ui/MovieDetails.glade")
+        self.fetch_details()
+        self.details.get_object("winMovieDetails").show()
+
+    def fetch_details(self):
+        movie_image = self.details.get_object("imageMovie")
+        movie_title = self.details.get_object("lblMovieTitle")
+        rating = self.details.get_object("lblRating")
+        movie_link = self.details.get_object("lkImdb")
+        youtube_link = self.details.get_object("lkYoutubeUrl")
+        watch_list = self.details.get_object("lblWatchList")
+        description = self.details.get_object("bufDescription")
+        self.cursor.execute("SELECT movies.title,movies.link,movie_images.path "+
+                            'FROM movies,movie_images where movies.title=? '+
+                            'AND movie_images.title=?',(self.movie_title,self.movie_title,))
+        (mt, ml, mi,)= self.cursor.fetchone()
+        movie_title.set_text(mt)
+        movie_link.set_uri(ml)
+        movie_link.set_property('label',"Imdb")
+        pb = Pixbuf.new_from_file(settings.IMAGE_PATH+mi)
+        movie_image.set_from_pixbuf(pb)
+        self.cursor.execute("SELECT id from movie_queue where movie_id="+
+                            '(SELECT id from movies where title=?)',(self.movie_title,))
+        if self.cursor.fetchone():
+            watch_list.set_text("Yes")
+            self.details.get_object("btnWatchList").set_sensitive(False)
+        else:
+            watch_list.set_text("No")
+        self.cursor.execute("SELECT movie_rating,youtube_url,description from movie_details "+
+                            'WHERE movie_id=(SELECT id FROM movies where title=?)',(self.movie_title,))
+        if self.cursor.fetchone() is None:
+            rating.set_text("")
+            youtube_link.set_uri("")
+            youtube_link.set_property("visible", False)
+            description.set_text("")
+        else:
+            self.cursor.execute("SELECT movie_rating,youtube_url,description from movie_details "+
+                            'WHERE movie_id=(SELECT id FROM movies where title=?)',(self.movie_title,))
+            (r, yu, des,) = self.cursor.fetchone()
+            rating.set_text(str(r))
+            youtube_link.set_uri(yu)
+            youtube_link.set_property('label',"Trailer")
+            description.set_text(des)
+            self.details.get_object("btnFetchDetails").set_sensitive(False)
