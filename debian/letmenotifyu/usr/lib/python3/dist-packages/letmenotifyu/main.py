@@ -172,7 +172,7 @@ class Main(object):
         self.cursor.execute("SELECT genre from genre order by genre")
         result = self.cursor.fetchall()
         for genre in result:
-            self.image.set_from_file(settings.ICON_FILE_PATH+genre[0]+'.png')
+            self.image.set_from_file("icons/"+genre[0]+'.png')
             pixbuf = self.image.get_pixbuf()
             self.general_model.append([pixbuf, genre[0]])
         self.flag = "released movies"

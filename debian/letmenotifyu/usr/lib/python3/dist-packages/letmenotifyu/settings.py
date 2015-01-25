@@ -17,7 +17,6 @@ def create_ini_file():
 DATABASE_PATH = DIRECTORY_PATH+'/letmenotifyu.sqlite'
 KICKASS_FILE = DIRECTORY_PATH+'/kickass.txt'
 LOG_FILE_PATH = DIRECTORY_PATH+'/letmenotifyu.log'
-ICON_FILE_PATH = DIRECTORY_PATH+'/icons/'
 DATA_FILES_PATH = '/usr/share/letmenotifyu/'
 
 try:
