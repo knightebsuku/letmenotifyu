@@ -1,23 +1,25 @@
 from distutils.core import setup
 if __name__=='__main__':
     setup(name='letmenotifyu',
-          version='2.0.7',
+          version='2.1.0',
           description='Program to notify users of new movie and series episode release from http://www.primewire.ag/',
           author='Lunga Mthembu',
-          author_email='shellcomplex7@gmail.com',
-          url='https://github.com/shellcomplex/letmenotifyu',
+          author_email='stucomplex@gmail.com',
+          url='https://github.com/stucomplex/letmenotifyu',
           license='GPL',
-          scripts=['letmenotifyu'],
-          packages=['notifylib'],
-          data_files=[('share/applications',['ui/letmenotifyu.desktop']),
-                      ('share/letmenotifyu/ui',['ui/about.glade','ui/confirm.glade','ui/main.glade','ui/stats.glade','ui/error.glade','ui/preferences.glade','ui/set_season.glade','ui/add_series.glade']),
-                      ('share/letmenotifyu/ui',['ui/letmenotifyu.png','ui/letmenotifyu.xpm','ui/movies.png']),
-                      ('share/letmenotifyu/icons',['icons/128.png','icons/16.png','icons/24.png','icons/32.png','icons/64.png','icons/invert-32.png','icons/invert-television.png','icons/invert-visible.png','icons/television.png','icons/visible.png'])]
-                      
-          )
-            
-
-
-
-
-
+          scripts=['letme'],
+          packages=['letmenotifyu','migration'],
+          data_files=[('share/applications',
+                       ['ui/letmenotifyu.desktop']),
+                      ('share/letmenotifyu/ui',
+                       ['ui/About.glade','ui/Confirm.glade','ui/Main.glade','ui/MovieDetails.glade',
+                        'ui/Error.glade','ui/Preferences.glade','ui/SetSeason.glade','ui/AddSeries.glade']),
+                      ('share/letmenotifyu/ui',
+                       ['ui/letmenotifyu.png','ui/letmenotifyu.xpm','ui/movies.png']),
+                      ('share/letmenotifyu/icons',
+                       ['icons/Action.png','icons/Cartoon.png','icons/Documentary.png','icons/Foreign.png', 'icons/Mystery.png',
+                        'icons/War.png','icons/Adventure.png','icons/Comedy.png','icons/Drama.png','icons/Historic.png',
+                        'icons/Romance.png','icons/Western.png','icons/Animation.png','icons/Comic.png','icons/Family.png',
+                        'icons/Horror.png','icons/Sci-Fi.png','icons/Biography.png','icons/Crime.png','icons/Fantasy.png',
+                        'icons/Musical.png','icons/Thriller.png']),
+                        ])

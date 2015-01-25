@@ -3,12 +3,12 @@ Section: x11
 Priority: extra
 Maintainer: Lunga Mthembu <zerefs@gmail.com>
 Build-Depends: debhelper (>= 9.0.0), python3 (>=3.2)
-Standards-Version: 3.9.5
+Standards-Version: 3.9.6
 X-Python3-Version: >= 3.2
-Homepage: https://github.com/zerefs/letmenotifyu
+Homepage: https://github.com/stucomplex/letmenotifyu
 
 Package: letmenotifyu
 Architecture: all
-Depends: python3 (>=3.2),sqlite3 (>=3.6),python3-notify2 (>=0.2), python3-bs4 (>=4.0)
+Depends: python3 (>=3.2),sqlite3 (>=3.6),python3-notify2 (>=0.2), python3-bs4 (>=4.0), python3-requests (>= 2.4.3),
 Description: Program to notify users
  Letmenotifyu is a program that will notify you of the lastest series and movies

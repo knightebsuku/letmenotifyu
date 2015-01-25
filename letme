@@ -1,0 +1,20 @@
+#!/usr/bin/python3
+
+import os
+import logging
+from letmenotifyu import database as db
+from letmenotifyu.main import Main
+from letmenotifyu import settings
+from letmenotifyu import util
+
+os.chdir(settings.DATA_FILES_PATH)
+
+if __name__ == "__main__":
+    if not os.path.isdir(settings.DIRECTORY_PATH):
+        util.initialise()
+    util.start_logging()
+    if  not os.path.isfile(settings.DATABASE_PATH):
+        logging.info("no database file found")
+        db.database_init()
+    db.database_change()
+    Main()
