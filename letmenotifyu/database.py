@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 from letmenotifyu import settings
 from migration.database import Database
@@ -168,10 +168,6 @@ def database_change():
          'movie_id INTEGER NOT NULL,'+
          'FOREIGN KEY(movie_id) REFERENCES movies(id))']
     ])
-
-
-
-
 
 
 

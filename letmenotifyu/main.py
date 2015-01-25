@@ -1,6 +1,7 @@
+#!/usr/bin/python3
+
 import sqlite3
 import logging
-
 from datetime import datetime, timedelta
 from gi.repository import Gtk, Gdk
 from letmenotifyu import gui
@@ -8,7 +9,6 @@ from letmenotifyu.torrent import Torrent
 from letmenotifyu import util
 from letmenotifyu import settings
 from letmenotifyu import background_worker as bw
-
 
 class Main(object):
     "Main application"
@@ -21,20 +21,20 @@ class Main(object):
         self.image = Gtk.Image()
         self.torrent = Torrent(self.cursor)
         self.flag = ""
-        self.builder.add_from_file("ui/main.glade")
+        self.builder.add_from_file("ui/Main.glade")
         signals = {'on_AppWindow_destroy': Gtk.main_quit,
-                   'on_HeaderView_event': self.on_header_view_event,
+                   'on_HeaderView_event': self.header_view_event,
                    'on_GeneralIconView_activated': self.general_view_activate,
                    'on_GeneralIconView_event': self.general_view_event,
-                   'on_AddSeries_activate': self.on_AddSeries_activate,
-                   'on_Stop_Update_activate': self.on_Stop_Update_activate,
-                   'on_Start_Update_activate': self.on_Start_Update_activate,
-                   'on_Delete_Series_activate': self.on_Delete_Series_activate,
-                   'on_Current_Season_activate': self.on_Current_Season_activate,
-                   'on_preferences_activate': self.on_pref_activate,
+                   'on_AddSeries_activate': self.add_series_activate,
+                   'on_Stop_Update_activate': self.stop_update_activate,
+                   'on_Start_Update_activate': self.start_update_activate,
+                   'on_Delete_Series_activate': self.delete_series_activate,
+                   'on_Current_Season_activate': self.set_season_activate,
+                   'on_preferences_activate': self.pref_activate,
                    'on_Quit_activate': self.on_quit,
-                   'on_About_activate': self.on_About_activate,
-                   'on_Kickass_activate': self.on_Kickass_activate,
+                   'on_About_activate': self.about_activate,
+                   'on_Kickass_activate': self.kickass_activate,
                    'on_BtnRoot_clicked': self.button_root_clicked,
                    'on_BtnLevel1_clicked': self.button_one_clicked,
                    'on_BtnLevel2_clicked': self.button_two_clicked,
@@ -63,7 +63,7 @@ class Main(object):
     def on_quit(self, widget):
         self.cursor.execute("PRAGMA wal_checkpoint(PASSIVE)")
         Gtk.main_quit()
-        
+
     def general_view_activate(self, widget, choice):
         if self.flag == "upcoming movies":
             util.open_page(self.cursor, choice, "upcoming")
@@ -75,7 +75,6 @@ class Main(object):
             self.button_level_1.set_property("label", choice)
         elif self.flag == "genre select":
             gui.MovieDetails(self.cursor, self.connect, choice)
-            #util.open_page(self.cursor, choice, "movie")
         elif self.flag == "active series":
             self.active_series_select(choice)
             self.button_level_1.set_property("visible", True)
@@ -87,7 +86,7 @@ class Main(object):
             self.button_level_1.set_property("visible", True)
             self.button_level_1.set_property("label", choice)
         elif self.flag == "no seasons":
-            self.no_season_select(choice)
+            self.season_select(choice)
             self.button_level_2.set_property("visible", True)
             self.button_level_2.set_property("label", choice)
         elif self.flag == "season select":
@@ -112,18 +111,14 @@ class Main(object):
                     self.torrent.query(self.choice)
                     self.builder.get_object("torrents").popup(None, None, None, None,
                                                        event.button, event.time)
-                elif event.button == 3 and self.flag == "genre select":
-                    self.builder.get_object("Movies").popup(None, None, None, None,
-                                                            event.button,event.time)
                 elif event.button == 3 and self.flag == "upcoming movies":
-                    self.builder.get_object("upcoming").popup(None,None,None,None,
+                    self.builder.get_object("upcoming").popup(None, None, None, None,
                                                               event.button, event.time)
-                elif event.button == 3 and self.flag == 'watch movies' or "watch series":
-                    self.builder.get_object("RemoveQueue").popup(None,None,None,None,
-                                                                 event.button,event.time)
-                    
+                elif event.button == 3 and self.flag == "watch series":
+                    self.builder.get_object("RemoveQueue").popup(None, None, None, None,
+                                                                 event.button, event.time)
 
-    def on_header_view_event(self, widget, event):
+    def header_view_event(self, widget, event):
         button_root = self.builder.get_object("BtnRoot")
         if event.button == 1:
             selection = widget.get_selection()
@@ -174,7 +169,7 @@ class Main(object):
 
     def released_movies(self):
         self.general_model.clear()
-        self.cursor.execute("SELECT genre from genre")
+        self.cursor.execute("SELECT genre from genre order by genre")
         result = self.cursor.fetchall()
         for genre in result:
             self.image.set_from_file(settings.ICON_FILE_PATH+genre[0]+'.png')
@@ -241,7 +236,7 @@ class Main(object):
             index += 1
         self.flag = "no seasons"
             
-    def no_season_select(self,choice):
+    def season_select(self,choice):
         self.archive_series_dict = {}
         no = choice.split("Season ")[1]
         self.cursor.execute("SELECT episode_name,episode_link FROM episodes" +
@@ -292,33 +287,33 @@ class Main(object):
             self.series_archive_select(widget.get_label())
 
     def button_two_clicked(self, widget):
-        self.no_season_select(widget.get_label())
+        self.season_select(widget.get_label())
 
-    def on_AddSeries_activate(self, widget):
+    def add_series_activate(self, widget):
         gui.AddSeries(self.cursor, self.connect)
 
-    def on_About_activate(self, widget):
+    def about_activate(self, widget):
         gui.About()
 
-    def on_Kickass_activate(self, widget):
+    def kickass_activate(self, widget):
         self.torrent.kickass()
 
-    def on_Stop_Update_activate(self, widget):
+    def stop_update_activate(self, widget):
         gui.Confirm(self.striped_name, "stop", self.connect, self.cursor)
 
-    def on_Start_Update_activate(self, widget):
+    def start_update_activate(self, widget):
         gui.Confirm(self.striped_name, "start", self.connect, self.cursor)
 
-    def on_Delete_Series_activate(self, widget):
+    def delete_series_activate(self, widget):
         gui.Confirm(self.striped_name, "delete", self.connect, self.cursor)
 
-    def on_pref_activate(self, widget):
+    def pref_activate(self, widget):
         gui.Preferences(self.cursor, self.connect)
 
-    def on_Current_Season_activate(self, widget):
-        gui.Current_Season(self.cursor, self.connect, self.striped_name)
+    def set_season_activate(self, widget):
+        gui.SetSeason(self.cursor, self.connect, self.striped_name)
 
-    def upcoming_queue(self,widget):
+    def upcoming_queue(self, widget):
         try:
             self.cursor.execute("INSERT INTO upcoming_queue(title) "+
                                 "SELECT title from upcoming_movies where title=?",(self.choice,))
@@ -328,9 +323,8 @@ class Main(object):
             gui.Error("record is already in upcoming queue")
             logging.warn("record is already in upcoming_queue")
 
-    def search_changed(self,widget):
-        "change search"
-        print(widget.get_text())
+    def search_changed(self, widget):
+        "change search only for movies"
         if self.flag == 'upcoming movies':
             self.general_model.clear()
             self.cursor.execute("SELECT upcoming_movies.title,path from upcoming_movies"+
@@ -356,8 +350,8 @@ class Main(object):
                                  self.general_model, settings.IMAGE_PATH+path)
             self.flag = "genre select"
 
-    def series_watch(self,widget):
-        "update series table"
+    def series_watch(self, widget):
+        "add series to watch list"
         if self.flag == 'series archive':
             try:
                 self.connect.execute("UPDATE series set watch=1 where title=?",(self.choice,))
@@ -367,6 +361,7 @@ class Main(object):
                 logging.exception(e)
 
     def watch_list(self, widget):
+        "add movie to watch queue"
         try:
             self.cursor.execute("INSERT INTO movie_queue(movie_id,watch_queue_status_id) "+
                                 "SELECT movies.id,watch_queue_status.id FROM movies,watch_queue_status "+

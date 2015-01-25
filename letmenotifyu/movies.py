@@ -118,7 +118,6 @@ def insert_released_movies(data, cursor, db):
                            (row.lastrowid, movie_detail["TorrentUrl"], movie_detail["TorrentHash"],))
                 insert_movie_image(movie_detail["MovieTitle"], movie_detail["CoverImage"], db)
                 q.put([row.lastrowid, movie_detail["MovieID"]])
-                #db.execute("DELETE FROM upcoming_movies where title=?",(movie_detail['MovieTitle'],))
                 db.commit()
                 announce('Newly Released Movie', movie_detail["MovieTitle"],
                          movie_detail["ImdbLink"])
@@ -180,14 +179,14 @@ def movie_compare(cursor, table, new_data):
     return new_movie_data
 
 def get_movie_genre(genre, cursor, db):
-    cursor.execute("SELECT Id FROM genre where genre=?",(genre,))
+    cursor.execute("SELECT Id FROM genre where genre=?", (genre,))
     if cursor.fetchone() is None:
         logging.debug("genre does not exist yet")
-        row = db.execute("INSERT INTO genre(genre) VALUES(?)",(genre,))
+        row = db.execute("INSERT INTO genre(genre) VALUES(?)", (genre,))
         genre_id = row.lastrowid
         return genre_id
     else:
         logging.debug('genre exists')
-        cursor.execute("SELECT Id FROM genre where genre=?",(genre,))
-        genre_id = cursor.fetchone()
-        return int(genre_id[0])
+        cursor.execute("SELECT Id FROM genre where genre=?", (genre,))
+        (genre_id,) = cursor.fetchone()
+        return int(genre_id)

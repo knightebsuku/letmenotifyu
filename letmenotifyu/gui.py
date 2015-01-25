@@ -5,16 +5,19 @@ import configparser
 import sqlite3
 import re
 from datetime import datetime
-from gi.repository import Gtk
+from gi.repository import Gtk, GObject
 from gi.repository.GdkPixbuf import Pixbuf
 from letmenotifyu import util
 from letmenotifyu import settings
+from threading import Thread
+from letmenotifyu.movies import get_movie_details
+
 
 class About(object):
     "Show about menu"
     def __init__(self):
         about = Gtk.Builder()
-        about.add_from_file("ui/about.glade")
+        about.add_from_file("ui/About.glade")
         window = about.get_object('AboutDialog')
         window.run()
         window.destroy()
@@ -26,13 +29,13 @@ class AddSeries(object):
         self.cursor = cursor
         self.connection = connection
         self.dialog = Gtk.Builder()
-        self.dialog.add_from_file("ui/add_series.glade")
-        connectors = {'on_btnCancel_clicked': self.on_btnCancel_clicked,
-              'on_btnOk_clicked': self.on_btnOk_clicked}
+        self.dialog.add_from_file("ui/AddSeries.glade")
+        connectors = {'on_btnCancel_clicked': self.cancel_clicked,
+              'on_btnOk_clicked': self.ok_clicked}
         self.dialog.connect_signals(connectors)
         self.notice = self.dialog.get_object('lblNotice')
-        self.link_box = self.dialog.get_object('entlink')
-        self.dialog.get_object('linkdialog').show()
+        self.link_box = self.dialog.get_object('entLink')
+        self.dialog.get_object('Dialog').show()
 
     def check_url(self,text):
         "check adding new series"
@@ -54,24 +57,24 @@ class AddSeries(object):
                 self.connection.commit()
                 logging.debug("Series Added: {}".format(show_title))
                 self.link_box.set_text('')
-                self.dialog.get_object('linkdialog').destroy()
+                self.dialog.get_object('Dialog').destroy()
             except sqlite3.IntegrityError:
                 self.connection.rollback()
                 logging.error("Series already added")
                 self.notice.set_text("Series already added")
                 self.notice.set_visible(True)
-                self.dialog.get_object('imcheck').set_visible(True)
+                self.dialog.get_object('imCheck').set_visible(True)
         else:
             self.notice.set_text("Not a valid link or link already exists")
             self.notice.set_visible(True)
-            self.dialog.get_object('imcheck').set_visible(True)
+            self.dialog.get_object('imCheck').set_visible(True)
             logging.warn("Invalid link:"+text)
 
 
-    def on_btnCancel_clicked(self, widget):
-        self.dialog.get_object('linkdialog').destroy()
+    def cancel_clicked(self, widget):
+        self.dialog.get_object('Dialog').destroy()
 
-    def on_btnOk_clicked(self, widget):
+    def ok_clicked(self, widget):
         self.check_url(self.link_box.get_text())
         self.link_box.set_text('')
 
@@ -84,14 +87,14 @@ class Confirm(object):
         self.title = title
         self.instruction = instruction
         self.confirm = Gtk.Builder()
-        self.confirm.add_from_file("ui/confirm.glade")
-        signals = {'on_btnOk_clicked': self.on_btnOk_clicked,
-               'on_btnCancel_clicked': self.on_btnCancel_clicked}
+        self.confirm.add_from_file("ui/Confirm.glade")
+        signals = {'on_btnOk_clicked': self.ok_clicked,
+               'on_btnCancel_clicked': self.cancel_clicked}
         self.confirm.connect_signals(signals)
         self.message, self.sql = self.which_sql_message()
-        self.confirm.get_object('msgdlg').format_secondary_text(self.message+" " +
+        self.confirm.get_object('msgDialog').format_secondary_text(self.message+" " +
                                                                 self.title+"?")
-        self.confirm.get_object('msgdlg').show()
+        self.confirm.get_object('msgDialog').show()
 
     def which_sql_message(self):
         if self.instruction == "start":
@@ -106,13 +109,14 @@ class Confirm(object):
         return message, use_sql
 
 
-    def on_btnOk_clicked(self, widget):
+    def ok_clicked(self, widget):
+        "confirm deletion"
         self.cursor.execute(self.sql, (self.title,))
         self.connect.commit()
-        self.confirm.get_object('msgdlg').destroy()
+        self.confirm.get_object('msgDialog').destroy()
         logging.warn("Deleting: "+self.title)
 
-    def on_btnCancel_clicked(self, widget):
+    def cancel_clicked(self, widget):
         self.confirm.get_object('msgdlg').destroy()
 
 class Preferences(object):
@@ -121,14 +125,15 @@ class Preferences(object):
         self.cursor = cursor
         self.connect = connect
         self.pref = Gtk.Builder()
-        self.pref.add_from_file("ui/preferences.glade")
-        signals = {'on_BtnOK_clicked': self.on_btnSave_clicked,
-                 'on_BtnCancel_clicked': self.on_btnCancel_clicked}
+        self.pref.add_from_file("ui/Preferences.glade")
+        signals = {'on_btnOK_clicked': self.save_clicked,
+                 'on_btnCancel_clicked': self.cancel_clicked}
         self.pref.connect_signals(signals)
         self.populate_fields()
         self.pref.get_object('Preference').show()
 
     def populate_fields(self):
+        "populate fields"
         update_interval  = util.get_config_value(self.cursor,"update_interval")
         movie_process = util.get_config_value(self.cursor,"movie_process_interval")
         series_process = util.get_config_value(self.cursor,"series_process_interval")
@@ -145,6 +150,7 @@ class Preferences(object):
         self.pref.get_object("fcbIncomplete").set_current_folder(settings.INCOMPLETE_DIRECTORY)
 
     def write_to_config(self):
+        "save to file"
         config = configparser.ConfigParser()
         images = self.pref.get_object("fcbImages").get_current_folder()
         torrents = self.pref.get_object("fcbTorrents").get_current_folder()
@@ -157,7 +163,7 @@ class Preferences(object):
         with open(settings.DIRECTORY_PATH+'/config.ini','w') as cfg_file:
             config.write(cfg_file)
         
-    def on_btnSave_clicked(self, widget):
+    def save_clicked(self, widget):
         try:
             update_interval = self.pref.get_object("spUpdate").get_value()
             movie_process = self.pref.get_object('spMovieQueue').get_value()
@@ -183,7 +189,7 @@ class Preferences(object):
             self.connect.rollback()
             Error("Not a valid number")
 
-    def on_btnCancel_clicked(self, widget):
+    def cancel_clicked(self, widget):
         self.pref.get_object('Preference').destroy()
 
 
@@ -191,26 +197,26 @@ class Error(object):
     "Error notification"
     def __init__(self, text):
         self.error = Gtk.Builder()
-        self.error.add_from_file("ui/error.glade")
+        self.error.add_from_file("ui/Error.glade")
         signals = {'on_btnOk_clicked': self.on_btnOk_clicked}
         self.error.connect_signals(signals)
-        self.error.get_object('error').set_property('text', text)
-        self.error.get_object('error').show()
+        self.error.get_object('msgError').set_property('text', text)
+        self.error.get_object('msgError').show()
 
     def on_btnOk_clicked(self, widget):
-        self.error.get_object('error').destroy()
+        self.error.get_object('msgError').destroy()
 
 
-class Current_Season(object):
+class SetSeason(object):
     "Current season popup"
     def __init__(self, cursor, connection, series_title):
         self.cursor = cursor
         self.connection = connection
         self.series_title = series_title
         self.current_season = Gtk.Builder()
-        self.current_season.add_from_file("ui/set_season.glade")
-        signals = {'on_btnApply_clicked': self.on_btnApply_clicked,
-                 'on_btnCancel_clicked': self.on_btnCancel_clicked}
+        self.current_season.add_from_file("ui/SetSeason.glade")
+        signals = {'on_btnApply_clicked': self.apply_clicked,
+                 'on_btnCancel_clicked': self.cancel_clicked}
         self.current_season.connect_signals(signals)
         cur_sea = self.fetch_current_season(series_title)
         self.current_season.get_object('txtCurrent').set_text(cur_sea)
@@ -221,10 +227,10 @@ class Current_Season(object):
         (no_season,) = self.cursor.fetchone()
         return no_season
 
-    def on_btnCancel_clicked(self, widget):
+    def cancel_clicked(self, widget):
         self.current_season.get_object('CurrentSeason').close()
 
-    def on_btnApply_clicked(self, widget):
+    def apply_clicked(self, widget):
         try:
             cur_season = self.current_season.get_object('txtCurrent').get_text()
             self.cursor.execute('UPDATE series set current_season = ? where title=?',
@@ -243,16 +249,20 @@ class MovieDetails(object):
         self.movie_title = movie_title
         self.details = Gtk.Builder()
         self.details.add_from_file("ui/MovieDetails.glade")
-        self.fetch_details()
+        signals = {'on_btnFetchDetails_clicked': self.fetch_details,
+                   'on_btnWatchList_clicked': self.watch_list,
+                   'on_btnClose_clicked': self.close}
+        self.details.connect_signals(signals)
+        self.populate()
         self.details.get_object("winMovieDetails").show()
 
-    def fetch_details(self):
+    def populate(self):
         movie_image = self.details.get_object("imageMovie")
         movie_title = self.details.get_object("lblMovieTitle")
         rating = self.details.get_object("lblRating")
         movie_link = self.details.get_object("lkImdb")
         youtube_link = self.details.get_object("lkYoutubeUrl")
-        watch_list = self.details.get_object("lblWatchList")
+        self.watch_list = self.details.get_object("lblWatchList")
         description = self.details.get_object("bufDescription")
         self.cursor.execute("SELECT movies.title,movies.link,movie_images.path "+
                             'FROM movies,movie_images where movies.title=? '+
@@ -266,10 +276,10 @@ class MovieDetails(object):
         self.cursor.execute("SELECT id from movie_queue where movie_id="+
                             '(SELECT id from movies where title=?)',(self.movie_title,))
         if self.cursor.fetchone():
-            watch_list.set_text("Yes")
+            self.watch_list.set_text("Yes")
             self.details.get_object("btnWatchList").set_sensitive(False)
         else:
-            watch_list.set_text("No")
+            self.watch_list.set_text("No")
         self.cursor.execute("SELECT movie_rating,youtube_url,description from movie_details "+
                             'WHERE movie_id=(SELECT id FROM movies where title=?)',(self.movie_title,))
         if self.cursor.fetchone() is None:
@@ -277,6 +287,10 @@ class MovieDetails(object):
             youtube_link.set_uri("")
             youtube_link.set_property("visible", False)
             description.set_text("")
+            self.details.get_object("lkActor1").set_property("visible", False)
+            self.details.get_object("lkActor2").set_property("visible", False)
+            self.details.get_object("lkActor3").set_property("visible", False)
+            self.details.get_object("lkActor4").set_property("visible", False)
         else:
             self.cursor.execute("SELECT movie_rating,youtube_url,description from movie_details "+
                             'WHERE movie_id=(SELECT id FROM movies where title=?)',(self.movie_title,))
@@ -285,4 +299,100 @@ class MovieDetails(object):
             youtube_link.set_uri(yu)
             youtube_link.set_property('label',"Trailer")
             description.set_text(des)
+            self.cursor.execute("SELECT name,actor_link FROM actors AS a JOIN actors_movies AS am "+
+                           'ON a.id=am.actor_id AND am.movie_id='+
+                           '(SELECT id FROM movies WHERE title=?)',(self.movie_title,))
+            cast_list = {1: self.details.get_object("lkActor1"), 2: self.details.get_object("lkActor2"),
+                         3: self.details.get_object("lkActor3"),4: self.details.get_object("lkActor4")}
+            key = 1
+            for (name, link) in self.cursor.fetchall():
+                cast_list[key].set_uri(link)
+                cast_list[key].set_property('label',name)
+                key += 1
             self.details.get_object("btnFetchDetails").set_sensitive(False)
+    def fetch_details(self, widget):
+        "fetch details if not present"
+        self.details.get_object("spFetch").start()
+        fetch  = WorkerThread(self.stop_spin, self.movie_title)
+        fetch.start()
+        
+    def watch_list(self, widget):
+        "add to watch list"
+        self.cursor.execute("INSERT INTO movie_queue(movie_id,watch_queue_status_id) "+
+                                "SELECT movies.id,watch_queue_status.id FROM movies,watch_queue_status "+
+                                "WHERE movies.title=? and watch_queue_status.name='new'",(self.movie_title,))
+        self.connect.commit()
+        self.watch_list.set_text("Yes")
+        self.details.get_object("btnWatchList").set_sensitive(False)
+    def close(self, widget):
+        "close widget"
+        self.details.get_object("winMovieDetails").destroy()
+
+    def stop_spin(self,status):
+        if status == 'no fetch':
+            Error("Unable to fetch movie details")
+        elif status == "no detail":
+            Error("No movie details at this moment")
+        else:
+            self.populate()
+        self.details.get_object("spFetch").stop()
+        
+
+def details(movie_title):
+    "fetching details"
+    connect = sqlite3.connect(settings.DATABASE_PATH)
+    cursor = connect.cursor()
+    cursor.execute("SELECT id,movie_id from movies where title=?",(movie_title,))
+    (movie_id, yify_id,) = cursor.fetchone()
+    movie_detail = get_movie_details(yify_id)
+    if not movie_detail:
+        logging.error("Unable to fetch movie details")
+        status = "no fetch"
+    elif 'status' in movie_detail.keys():
+        logging.error("No movie details at this time")
+        status = "no detail"
+    else:
+        try:
+            connect.execute("INSERT INTO movie_details(movie_id,language,movie_rating,"+
+                                    'youtube_url,description) '+
+                                    'VALUES(?,?,?,?,?)',(movie_id,movie_detail['Language'],
+                                                         movie_detail['MovieRating'],
+                                                         movie_detail["YoutubeTrailerUrl"],
+                                                         movie_detail["LongDescription"],))
+            for actor in movie_detail["CastList"]:
+                try:
+                    row = connect.execute("INSERT INTO actors(name,actor_link) "+
+                                          'VALUES(?,?)',(actor["ActorName"], actor['ActorImdbLink'],))
+                    connect.execute("INSERT INTO actors_movies(actor_id,movie_id) "+
+                                    'VALUES(?,?)',(row.lastrowid, movie_id,))
+                    connect.commit()
+                    status =  "ok"
+                except sqlite3.IntegrityError:
+                    logging.error("Actor already exists")
+                    cursor.execute("SELECT id from actors where name=?", (actor["ActorName"],))
+                    (actor_id,) = cursor.fetchone()
+                    connect.execute("INSERT INTO actors_movies(actor_id,movie_id) "+
+                                        'VALUES(?,?)', (actor_id,movie_id,))
+                    logging.info("Movie Detail complete")
+                    status = "ok"
+                except sqlite3.OperationalError as e:
+                    logging.exception(e)
+                    status = "no detail"
+                finally:
+                    connect.commit()
+        except sqlite3.OperationalError as e:
+            logging.exception(e)
+            return "no detail"
+            
+    connect.close()
+    return status
+             
+class WorkerThread(Thread):
+    def __init__(self,callback,movie_title):
+        Thread.__init__(self)
+        self.callback = callback
+        self.movie_title = movie_title
+
+    def run(self):
+        status = details(self.movie_title)
+        GObject.idle_add(self.callback, status)

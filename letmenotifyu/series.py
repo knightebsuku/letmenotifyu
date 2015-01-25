@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 from datetime import datetime
 from letmenotifyu.notify import announce
 from letmenotifyu import util
@@ -6,6 +8,7 @@ import re
 import sqlite3
 
 def fetch_new_episdoes(series_link):
+    "search for new episodes"
     return util.primewire(series_link)
 
 def series_compare(cursor, new_list, series_id):
@@ -17,6 +20,7 @@ def series_compare(cursor, new_list, series_id):
     return new_data
 
 def insert_records(connect, cursor,new_episodes, series_id, series_title):
+    "inser new episodes"
     for (episode_link, episode_name) in new_episodes:
         try:
             episode_row = cursor.execute("INSERT INTO episodes(" +
@@ -27,7 +31,7 @@ def insert_records(connect, cursor,new_episodes, series_id, series_title):
                                     'VALUES(?,?,?,?)'
                                     ,(series_id, episode_link, episode_name, datetime.now(),))
             row_id = episode_row.lastrowid
-            send_to_queue(series_id,episode_link,connect, row_id)
+            send_to_queue(series_id, episode_link, connect, row_id)
             connect.commit()
             announce("New Series Episode", series_title,
                          "www.primewire.ag" + episode_link)
@@ -78,7 +82,7 @@ class Series(object):
         (series_detail,watch_status) = self.cursor.fetchone()
         if watch_status == 1:
             logging.debug('episodes will be added to watch list')
-            insert_records(self.connect,self.cursor,all_eps,series_id,series_detail)
+            insert_records(self.connect, self.cursor, all_eps, series_id, series_detail)
         else:
             for (episode_link, episode_name) in all_eps:
                 try:
@@ -129,13 +133,3 @@ def series(connect, cursor):
     "Initialise series to update"
     series_update = Series(connect, cursor)
     series_update.update_series()
-
-
-
-
-
-
-
-
-
-

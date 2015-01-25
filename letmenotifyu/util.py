@@ -38,11 +38,7 @@ def get_selection(view, store_model):
 
 def open_page(cursor, title, option=None):
     "open webbrowser page"
-    if option == "movie":
-        cursor.execute("SELECT link FROM movies where title=?", (title,))
-        (link,) = cursor.fetchone()
-        webbrowser.open_new(link)
-    elif option == 'upcoming':
+    if option == 'upcoming':
         cursor.execute("SELECT link FROM upcoming_movies where title=?", (title,))
         (link,) = cursor.fetchone()
         webbrowser.open_new(link)
@@ -112,13 +108,6 @@ def save_image(movie_link, meta):
             image_file.write(urlopen(image_request).read())
             logging.info("Imaged fetched")
 
-def process_page(movie_page):
-    "find image links from page"
-    jpg_posters = []
-    for image_jpg in movie_page:
-        jpg_posters.append(image_jpg.find('img')['src'])
-    return jpg_posters
-
 def start_logging():
     "Start logging"
     logging.basicConfig(filename=settings.LOG_FILE_PATH,
@@ -158,7 +147,6 @@ def fetch_torrent(torrent_url, title):
             return False
 
 def get_config_value(cursor, key):
-    cursor.execute("SELECT value FROM config WHERE key=?",(key,))
+    cursor.execute("SELECT value FROM config WHERE key=?", (key,))
     (value,) = cursor.fetchone()
     return value
-    

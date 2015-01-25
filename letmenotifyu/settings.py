@@ -19,7 +19,6 @@ KICKASS_FILE = DIRECTORY_PATH+'/kickass.txt'
 LOG_FILE_PATH = DIRECTORY_PATH+'/dev.log'
 ICON_FILE_PATH = DIRECTORY_PATH+'/icons/'
 
-
 try:
     config.read(DIRECTORY_PATH+'/config.ini')
     TORRENT_DIRECTORY = config['DIRECTORIES']['TorrentsDirectory']
@@ -28,4 +27,3 @@ try:
     INCOMPLETE_DIRECTORY = config['DIRECTORIES']['IncompleteDownloads']
 except KeyError:
     create_ini_file()
-

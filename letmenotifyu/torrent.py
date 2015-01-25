@@ -9,8 +9,7 @@ class Torrent:
         self.cursor.execute('SELECT title from series where id='+
                     '(SELECT series_id from episodes where episode_name=?)', (episode,))
         self.title = self.cursor.fetchone()
-        
-    
+
     def kickass(self):
         self.cursor.execute("Select link  from torrent_sites where name='Kickass'")
         result = self.cursor.fetchone()
