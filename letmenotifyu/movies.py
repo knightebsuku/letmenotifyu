@@ -54,7 +54,7 @@ def get_movie_details(yify_id):
 def insert_movie_details(q):
     connect = sqlite3.connect(settings.DATABASE_PATH)
     cursor = connect.cursor()
-    while not q.empty():
+    while True:
         [movie_id,yify_id] = q.get()
         movie_detail = get_movie_details(yify_id)
         if not movie_detail:
@@ -95,6 +95,8 @@ def insert_movie_details(q):
                 logging.exception(e)
             finally:
                 q.task_done()
+        if q.empty():
+            break
 
 def insert_released_movies(data, cursor, db):
     "insert new movies"
