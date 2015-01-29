@@ -1,4 +1,4 @@
-letmenotifyu (2.1.0-1) UNRELEASED; urgency=low
+letmenotifyu (2.1.1-1) UNRELEASED; urgency=low
   * Initial Release of the 1.9 series
   * Removed Quit Item
   * Fixed Database
@@ -28,5 +28,7 @@ letmenotifyu (2.1.0-1) UNRELEASED; urgency=low
   * fix add series link
   * fix url link to images
   * Chanage to version 2.1.0
+  * Only download 720 movie
+  * allow decimals in time
 
- -- lunga <complexstu@gmail.com>  Sun, 25 Jan 2015 18:01:10 +0200
+ -- lunga <complexstu@gmail.com>  Thu, 29 Jan 2015 19:39:50 +0200
