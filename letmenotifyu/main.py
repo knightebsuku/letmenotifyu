@@ -16,7 +16,7 @@ class Main(object):
         self.connect = sqlite3.connect(settings.DATABASE_PATH)
         self.cursor = self.connect.cursor()
         self.connect.execute("PRAGMA journal_mode=WAL")
-	self.connect.execute("PRAGMA foreign_keys = ON")
+        self.connect.execute("PRAGMA foreign_keys = ON")
         self.db_file = settings.DATABASE_PATH
         self.builder = Gtk.Builder()
         self.image = Gtk.Image()
