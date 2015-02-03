@@ -166,7 +166,15 @@ def database_change():
          'id INTEGER PRIMARY KEY NOT NULL,'+
          'actor_id INTEGER NOT NULL,'+
          'movie_id INTEGER NOT NULL,'+
-         'FOREIGN KEY(movie_id) REFERENCES movies(id))']
+         'FOREIGN KEY(movie_id) REFERENCES movies(id))'],
+        [56, "CREATE TEMPORARY TABLE bk_actors(id INTEGER,name VARCHAR(20))"],
+        [57, "INSERT INTO bk_actors SELECT id,name from actors"],
+        [58, "DROP TABLE actors"],
+        [59, "CREATE TABLE actors("\
+          'id INTEGER PRIMARY KEY NOT NULL,'\
+          'name VARCHAR(20) UNIQUE NOT NULL)'],
+        [60, "INSERT INTO actors SELECT id,name from bk_actors"],
+        [61, "DROP TABLE bk_actors"]
     ])
 
 
