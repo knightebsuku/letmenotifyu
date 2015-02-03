@@ -219,7 +219,7 @@ class SetSeason(object):
                  'on_btnCancel_clicked': self.cancel_clicked}
         self.current_season.connect_signals(signals)
         cur_sea = self.fetch_current_season(series_title)
-        self.current_season.get_object('txtCurrent').set_text(cur_sea)
+        self.current_season.get_object('txtCurrent').set_text(str(cur_sea))
         self.current_season.get_object("CurrentSeason").show()
 
     def fetch_current_season(self, series_title):

@@ -3,7 +3,7 @@ cea6909e1ad5d754263d03850a3467f1  usr/bin/letme
 d41d8cd98f00b204e9800998ecf8427e  usr/lib/python3/dist-packages/letmenotifyu/__init__.py
 b36f106adaf00d4cfb490ad0e273b2a5  usr/lib/python3/dist-packages/letmenotifyu/background_worker.py
 0dbd5b22eec98b3cf359eeedd9c465e1  usr/lib/python3/dist-packages/letmenotifyu/database.py
-a86218b5c85ff46d6cd01646d72e17a3  usr/lib/python3/dist-packages/letmenotifyu/gui.py
+882b54e6b62f10e1285fd2617eee6cb1  usr/lib/python3/dist-packages/letmenotifyu/gui.py
 f92adda841fba262518761e4170512f1  usr/lib/python3/dist-packages/letmenotifyu/kickass.py
 847db10f1655e3ac66361b1bec6c796a  usr/lib/python3/dist-packages/letmenotifyu/main.py
 48873dfd8f2b6068d64a47ed4ef270ff  usr/lib/python3/dist-packages/letmenotifyu/movies.py
@@ -16,7 +16,7 @@ d41d8cd98f00b204e9800998ecf8427e  usr/lib/python3/dist-packages/migration/__init
 f93a1b78bf60e064c7842c61f44b9276  usr/lib/python3/dist-packages/migration/database.py
 ebd63dd34ef8daa5314bfca6cc7384f3  usr/share/applications/letmenotifyu.desktop
 4678a6ed8c52eeb2fb5a395921e8219e  usr/share/doc/letmenotifyu/README.md
-d897fae66f30a0eb51225b3be58e75ac  usr/share/doc/letmenotifyu/changelog.Debian.gz
+f569a7e253b41ad6540acdb5a62bb377  usr/share/doc/letmenotifyu/changelog.Debian.gz
 3a3c01bfcaedce186ca889e6bc447c86  usr/share/doc/letmenotifyu/copyright
 8bcc029b0391f68efc29dd7cc0aabe26  usr/share/letmenotifyu/icons/Action.png
 753149684e899b298ab0dd4d4aed1d7e  usr/share/letmenotifyu/icons/Adventure.png

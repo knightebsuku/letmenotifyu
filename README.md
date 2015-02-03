@@ -1,9 +1,11 @@
 Letmenotifyu
 ====================
 
-Program to notifyu users of new Episode and Movie releases from primewire.ag
+Program to notifyu users of new episodes from primewire.ag and movies from https://yts.re/api
 
-Version: 2.0.7
+Full program details on
+
+Version: 2.1
 -------------------
 
 Program Features

@@ -1,4 +1,4 @@
-letmenotifyu (2.1.1-1) UNRELEASED; urgency=low
+letmenotifyu (2.1.2-0) UNRELEASED; urgency=low
   * Initial Release of the 1.9 series
   * Removed Quit Item
   * Fixed Database
@@ -30,5 +30,6 @@ letmenotifyu (2.1.1-1) UNRELEASED; urgency=low
   * Chanage to version 2.1.0
   * Only download 720 movie
   * allow decimals in time
+  * fix current season
 
- -- lunga <complexstu@gmail.com>  Thu, 29 Jan 2015 19:39:50 +0200
+ -- lunga <lunga@debian>  Sun, 01 Feb 2015 03:35:12 +0200
