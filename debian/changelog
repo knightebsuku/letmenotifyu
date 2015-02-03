@@ -1,4 +1,4 @@
-letmenotifyu (2.1.2-0) UNRELEASED; urgency=low
+letmenotifyu (2.1.3-1) UNRELEASED; urgency=low
   * Initial Release of the 1.9 series
   * Removed Quit Item
   * Fixed Database
@@ -31,5 +31,7 @@ letmenotifyu (2.1.2-0) UNRELEASED; urgency=low
   * Only download 720 movie
   * allow decimals in time
   * fix current season
+  * update yify api
+  * 
 
- -- lunga <lunga@debian>  Sun, 01 Feb 2015 03:35:12 +0200
+ -- lunga <lunga@debian>  Tue, 03 Feb 2015 23:15:02 +0200

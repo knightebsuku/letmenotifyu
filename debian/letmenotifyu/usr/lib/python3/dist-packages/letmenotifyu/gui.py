@@ -299,15 +299,14 @@ class MovieDetails(object):
             youtube_link.set_uri(yu)
             youtube_link.set_property('label',"Trailer")
             description.set_text(des)
-            self.cursor.execute("SELECT name,actor_link FROM actors AS a JOIN actors_movies AS am "+
+            self.cursor.execute("SELECT name FROM actors AS a JOIN actors_movies AS am "+
                            'ON a.id=am.actor_id AND am.movie_id='+
                            '(SELECT id FROM movies WHERE title=?)',(self.movie_title,))
-            cast_list = {1: self.details.get_object("lkActor1"), 2: self.details.get_object("lkActor2"),
-                         3: self.details.get_object("lkActor3"),4: self.details.get_object("lkActor4")}
+            cast_list = {1: self.details.get_object("lblActor1"), 2: self.details.get_object("lblActor2"),
+                         3: self.details.get_object("lblActor3"),4: self.details.get_object("lblActor4")}
             key = 1
-            for (name, link) in self.cursor.fetchall():
-                cast_list[key].set_uri(link)
-                cast_list[key].set_property('label',name)
+            for (name,) in self.cursor.fetchall():
+                cast_list[key].set_text(name)
                 key += 1
             self.details.get_object("btnFetchDetails").set_sensitive(False)
     def fetch_details(self, widget):
