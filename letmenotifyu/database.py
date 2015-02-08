@@ -174,7 +174,8 @@ def database_change():
           'id INTEGER PRIMARY KEY NOT NULL,'\
           'name VARCHAR(20) UNIQUE NOT NULL)'],
         [60, "INSERT INTO actors SELECT id,name from bk_actors"],
-        [61, "DROP TABLE bk_actors"]
+        [61, "DROP TABLE bk_actors"],
+        [62, "ALTER TABLE movies ADD COLUMN year INTEGER NOT NULL DEFAULT 0"]
     ])
 
 
