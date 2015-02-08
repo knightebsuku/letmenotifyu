@@ -142,7 +142,7 @@ def insert_upcoming_movies(movie_data, db,cursor):
                                     movie_detail["medium_cover_image"], db)
                 db.commit()
                 announce('Upcoming Movie', movie_detail["title"],
-                         "http://www.imdb.com/title/{}".format(movie_detail["Imdb_code"]))
+                         "http://www.imdb.com/title/{}".format(movie_detail["imdb_code"]))
             except Exception as e:
                 db.rollback()
                 logging.exception(e)
