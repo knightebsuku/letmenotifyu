@@ -15,9 +15,9 @@ import urllib
 
 
 def movie(connect, cursor):
-    #upcoming_movie_data = get_upcoming_movies()
-    #if upcoming_movie_data:
-        #insert_upcoming_movies(upcoming_movie_data, connect, cursor)
+    upcoming_movie_data = get_upcoming_movies()
+    if upcoming_movie_data:
+        insert_upcoming_movies(upcoming_movie_data, connect, cursor)
     released_movie_data = get_released_movies(cursor)
     if released_movie_data:
         insert_released_movies(released_movie_data, cursor, connect)
@@ -45,7 +45,7 @@ def get_released_movies(cursor):
 
 def get_movie_details(yify_id):
     try:
-        yify_url = urlopen("https://yts.re/api/v2/movie_details.json?id={}&with_cast=true".format(yify_id))
+        yify_url = urlopen("https://yts.re/api/v2/movie_details.json?movie_id={}&with_cast=true".format(yify_id))
         movie_detail = json.loads(yify_url.read().decode('utf-8'))
         return movie_detail
     except (urllib.error.URLError, urllib.error.HTTPError):
@@ -66,7 +66,7 @@ def insert_movie_details(q):
                                     'youtube_url,description) '+
                                     'VALUES(?,?,?,?,?)',(movie_id,movie_detail['Language'],
                                                          movie_detail['data']["language"],
-                                                         movie_detail["data"]["yt_trailer_code"],
+                                                         "https://www.youtube.com/watch?v={}".format(movie_detail["data"]["yt_trailer_code"]),
                                                          movie_detail["data"]["description_full"],))
                 for actor in movie_detail["data"]["actors"]:
                     try:
@@ -74,7 +74,6 @@ def insert_movie_details(q):
                                           'VALUES(?,?)',(actor["name"],))
                         connect.execute("INSERT INTO actors_movies(actor_id,movie_id) "+
                                     'VALUES(?,?)',(row.lastrowid, movie_id,))
-                        connect.commit()
                     except sqlite3.IntegrityError:
                         logging.error("record already exsists")
                         cursor.execute("SELECT id from actors where name=?", (actor["name"],))
@@ -82,8 +81,6 @@ def insert_movie_details(q):
                         connect.execute("INSERT INTO actors_movies(actor_id,movie_id) "+
                                         'VALUES(?,?)', (actor_id,movie_id,))
                         logging.info("Movie Detail complete")
-                    except sqlite3.OperationalError as e:
-                        logging.exception(e)
                     finally:
                         connect.commit()
             except sqlite3.IntegrityError:
@@ -112,19 +109,20 @@ def insert_released_movies(data, cursor, db):
         for movie_detail in released_data:
             try:
                 genre_id = get_movie_genre(movie_detail["genres"][0], cursor, db)
-                row = db.execute("INSERT INTO movies(genre_id,title,link,date_added,movie_id)"+
-                           'VALUES(?,?,?,?,?)',
+                row = db.execute("INSERT INTO movies(genre_id,title,link,date_added,movie_id,year)"+
+                                 'VALUES(?,?,?,?,?,?)',
                            (genre_id,
-                            movie_detail['title_long'],
+                            movie_detail['title'],
                             "http://www.imdb.com/title/{}".format(movie_detail["imdb_code"]),
                             movie_detail["date_uploaded"],
-                            movie_detail["id"],))
+                            movie_detail["id"],
+                           movie_detail["year"],))
                 db.execute("INSERT INTO movie_torrent_links(movie_id,link,hash_sum) VALUES(?,?,?)",
                            (row.lastrowid, movie_detail["torrents"][0]["url"], movie_detail["torrents"][0]["hash"],))
-                insert_movie_image(movie_detail["title_long"], movie_detail["medium_cover_image"], db)
+                insert_movie_image(movie_detail["title"], movie_detail["medium_cover_image"], db)
                 q.put([row.lastrowid, movie_detail["id"]])
                 db.commit()
-                announce('Newly Released Movie', movie_detail["title_long"],
+                announce('Newly Released Movie', movie_detail["title"],
                          "http://www.imdb.com/title/{}".format(movie_detail["imdb_code"]))
             except Exception as e:
                 db.rollback()
@@ -133,17 +131,18 @@ def insert_released_movies(data, cursor, db):
 
 def insert_upcoming_movies(movie_data, db,cursor):
     "insert upcoming new movies"
-    new_movie_data = movie_compare(cursor, "upcoming_movies", movie_data)
+    new_movie_data = movie_compare(cursor, "upcoming_movies", movie_data["data"]["upcoming_movies"])
     if new_movie_data:
         for movie_detail in new_movie_data:
             try:
                 db.execute("INSERT INTO upcoming_movies(title,link) VALUES(?,?)",
-                       (movie_detail["MovieTitle"], movie_detail["ImdbLink"],))
-                insert_movie_image(movie_detail["MovieTitle"],
-                                    movie_detail["MovieCover"], db)
+                       (movie_detail["title"],
+                        "http://www.imdb.com/title/{}".format(movie_detail["imdb_code"]),))
+                insert_movie_image(movie_detail["title"],
+                                    movie_detail["medium_cover_image"], db)
                 db.commit()
-                announce('Upcoming Movie', movie_detail["MovieTitle"],
-                         movie_detail["ImdbLink"])
+                announce('Upcoming Movie', movie_detail["title"],
+                         "http://www.imdb.com/title/{}".format(movie_detail["Imdb_code"]))
             except Exception as e:
                 db.rollback()
                 logging.exception(e)
@@ -179,7 +178,7 @@ def movie_compare(cursor, table, new_data):
     cursor.execute("SELECT title from "+table)
     old_movie_data = [x[0] for x in cursor.fetchall()]
     for movie_data in new_data:
-        if movie_data["title_long"]  not in old_movie_data:
+        if movie_data["title"]  not in old_movie_data:
             new_movie_data.append(movie_data)
     return new_movie_data
 

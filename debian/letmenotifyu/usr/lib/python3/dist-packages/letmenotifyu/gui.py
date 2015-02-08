@@ -287,10 +287,10 @@ class MovieDetails(object):
             youtube_link.set_uri("")
             youtube_link.set_property("visible", False)
             description.set_text("")
-            self.details.get_object("lkActor1").set_property("visible", False)
-            self.details.get_object("lkActor2").set_property("visible", False)
-            self.details.get_object("lkActor3").set_property("visible", False)
-            self.details.get_object("lkActor4").set_property("visible", False)
+            self.details.get_object("lblActor1").set_property("visible", False)
+            self.details.get_object("lblActor2").set_property("visible", False)
+            self.details.get_object("lblActor3").set_property("visible", False)
+            self.details.get_object("lblActor4").set_property("visible", False)
         else:
             self.cursor.execute("SELECT movie_rating,youtube_url,description from movie_details "+
                             'WHERE movie_id=(SELECT id FROM movies where title=?)',(self.movie_title,))
@@ -329,7 +329,7 @@ class MovieDetails(object):
 
     def stop_spin(self,status):
         if status == 'no fetch':
-            Error("Unable to fetch movie details")
+            Error("Unable to connect to site")
         elif status == "no detail":
             Error("No movie details at this moment")
         else:
@@ -347,45 +347,41 @@ def details(movie_title):
     if not movie_detail:
         logging.error("Unable to fetch movie details")
         status = "no fetch"
-    elif 'status' in movie_detail.keys():
-        logging.error("No movie details at this time")
-        status = "no detail"
-    else:
+    elif movie_detail["status"] == "ok":
         try:
             connect.execute("INSERT INTO movie_details(movie_id,language,movie_rating,"+
                                     'youtube_url,description) '+
-                                    'VALUES(?,?,?,?,?)',(movie_id,movie_detail['Language'],
-                                                         movie_detail['MovieRating'],
-                                                         movie_detail["YoutubeTrailerUrl"],
-                                                         movie_detail["LongDescription"],))
-            for actor in movie_detail["CastList"]:
+                                    'VALUES(?,?,?,?,?)',(movie_id,movie_detail["data"]['language'],
+                                                         movie_detail["data"]['rating'],
+                                                         "https://www.youtube.com/watch?v={}".format(movie_detail["data"]["yt_trailer_code"]),
+                                                         movie_detail["data"]["description_full"],))
+            for actor in movie_detail["data"]["actors"]:
                 try:
-                    row = connect.execute("INSERT INTO actors(name,actor_link) "+
-                                          'VALUES(?,?)',(actor["ActorName"], actor['ActorImdbLink'],))
+                    row = connect.execute("INSERT INTO actors(name) "+
+                                          'VALUES(?)',(actor["name"],))
                     connect.execute("INSERT INTO actors_movies(actor_id,movie_id) "+
                                     'VALUES(?,?)',(row.lastrowid, movie_id,))
-                    connect.commit()
-                    status =  "ok"
                 except sqlite3.IntegrityError:
                     logging.error("Actor already exists")
-                    cursor.execute("SELECT id from actors where name=?", (actor["ActorName"],))
+                    cursor.execute("SELECT id from actors where name=?", (actor["name"],))
                     (actor_id,) = cursor.fetchone()
                     connect.execute("INSERT INTO actors_movies(actor_id,movie_id) "+
-                                        'VALUES(?,?)', (actor_id,movie_id,))
+                                        'VALUES(?,?)', (actor_id, movie_id,))
                     logging.info("Movie Detail complete")
-                    status = "ok"
-                except sqlite3.OperationalError as e:
-                    logging.exception(e)
-                    status = "no detail"
                 finally:
                     connect.commit()
+                    status = "ok"
         except sqlite3.OperationalError as e:
             logging.exception(e)
-            return "no detail"
-            
+            status = "no detail"
+    else:
+        logging.error(movie_detail)
+        logging.error("No movie details at this time")
+        status = "no detail"
     connect.close()
     return status
-             
+
+
 class WorkerThread(Thread):
     def __init__(self,callback,movie_title):
         Thread.__init__(self)
