@@ -29,11 +29,12 @@ def start_threads():
 def update():
     "update movies and series"
     while 1:
-        logging.debug("Checking for new episodes and movies")
         connect = sqlite3.connect(settings.DATABASE_PATH)
         cursor = connect.cursor()
-        movie(connect, cursor)
+        logging.debug("Checking for new series episodes")
         series(connect, cursor)
+        logging.debug("Checking for new movies")
+        movie(connect, cursor)
         value = util.get_config_value(cursor, 'update_interval')
         connect.close()
         time.sleep(float(value)*3600)
