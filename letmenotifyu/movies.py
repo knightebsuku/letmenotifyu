@@ -54,24 +54,24 @@ def get_movie_details(yify_id):
 def insert_movie_details(q):
     connect = sqlite3.connect(settings.DATABASE_PATH)
     cursor = connect.cursor()
-    while not q.empty():
+    while True:
         [movie_id,yify_id] = q.get()
         movie_detail = get_movie_details(yify_id)
         if not movie_detail:
-            logging.warn("Unable to connect to site")
+            logging.warn("Unable to connect to site to fetch movie details")
             q.task_done()
         elif movie_detail["status"] == "ok":
             try:
                 connect.execute("INSERT INTO movie_details(movie_id,language,movie_rating,"+
                                     'youtube_url,description) '+
-                                    'VALUES(?,?,?,?,?)',(movie_id,movie_detail['Language'],
-                                                         movie_detail['data']["language"],
+                                    'VALUES(?,?,?,?,?)',(movie_id,movie_detail["data"]['language'],
+                                                         movie_detail['data']["rating"],
                                                          "https://www.youtube.com/watch?v={}".format(movie_detail["data"]["yt_trailer_code"]),
                                                          movie_detail["data"]["description_full"],))
                 for actor in movie_detail["data"]["actors"]:
                     try:
                         row = connect.execute("INSERT INTO actors(name) "+
-                                          'VALUES(?,?)',(actor["name"],))
+                                          'VALUES(?)',(actor["name"],))
                         connect.execute("INSERT INTO actors_movies(actor_id,movie_id) "+
                                     'VALUES(?,?)',(row.lastrowid, movie_id,))
                     except sqlite3.IntegrityError:
@@ -93,12 +93,14 @@ def insert_movie_details(q):
             logging.warn("Cant connect to movie_detail")
             q.task_done()
             
+            
+            
 
 def insert_released_movies(data, cursor, db):
     "insert new movies"
     if not data:
         return
-    elif data["status"] == "fail":
+    elif data["status"] == "error":
         return
     else:
         released_data = movie_compare(cursor, "movies", data["data"]["movies"])
