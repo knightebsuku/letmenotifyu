@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 from letmenotifyu import settings
-from migration.database import Database
+from litemigration.database import Database
 
 def database_init():
     db = Database(settings.DATABASE_PATH)
@@ -9,7 +9,7 @@ def database_init():
 
 def database_change():
     db = Database(settings.DATABASE_PATH)
-    db.add_change([
+    db.add_schema([
         [1, 'CREATE TABLE config(' +
                             'id INTEGER PRIMARY KEY, ' +
                             'key VARCHAR(20) NOT NULL,' +
