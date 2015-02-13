@@ -8,7 +8,7 @@ if __name__=='__main__':
           url='https://github.com/stucomplex/letmenotifyu',
           license='GPL',
           scripts=['letme'],
-          packages=['letmenotifyu','migration'],
+          packages=['letmenotifyu'],
           data_files=[('share/applications',
                        ['ui/letmenotifyu.desktop']),
                       ('share/letmenotifyu/ui',
