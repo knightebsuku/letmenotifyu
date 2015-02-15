@@ -1,0 +1,11 @@
+Package: letmenotifyu
+Version: 2.1.5-2
+Architecture: all
+Maintainer: lunga <lunga@debian>
+Installed-Size: 776
+Depends: python3 (>= 3.2), sqlite3 (>= 3.6), python3-notify2 (>= 0.2), python3-bs4 (>= 4.0), python3-requests (>= 2.4.3), python3-litemigration (>= 0.1.0)
+Section: x11
+Priority: optional
+Homepage: https://github.com/stucomplex/letmenotifyu
+Description: Movies and Series notification
+ Program to notifyu users of new episodes from primewire.ag and movies from https://yts.re/api
