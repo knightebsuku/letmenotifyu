@@ -1,7 +1,0 @@
-letmenotifyu (2.1.5-4) UNRELEASED; urgency=medium
-
-  * Fix add series
-  * Fix detect completed movies
-  * Fix kickass
-
- -- Lunga Mthembu <complexstu@gmail.com>  Tue, 17 Feb 2015 19:05:16 +0200
