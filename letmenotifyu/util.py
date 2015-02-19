@@ -17,6 +17,8 @@ def initialise():
     os.mkdir(settings.DIRECTORY_PATH)
     os.mkdir(settings.IMAGE_PATH)
     os.mkdir(settings.TORRENT_DIRECTORY)
+    os.mkdir(settings.INCOMPLETE_DIRECTORY)
+    os.mkdir(settings.COMPLETE_DIRECTORY)
     settings.create_ini_file()
     
 
