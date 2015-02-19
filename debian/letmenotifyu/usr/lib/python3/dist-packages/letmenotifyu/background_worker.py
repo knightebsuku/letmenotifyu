@@ -6,6 +6,7 @@ import time
 import gzip
 import os
 import urllib
+import glob
 from letmenotifyu import settings
 from letmenotifyu.movies import movie
 from letmenotifyu.series import series
@@ -29,12 +30,11 @@ def start_threads():
 def update():
     "update movies and series"
     while 1:
+        logging.debug("Checking for new episodes and movies")
         connect = sqlite3.connect(settings.DATABASE_PATH)
         cursor = connect.cursor()
-        logging.debug("Checking for new series episodes")
-        series(connect, cursor)
-        logging.debug("Checking for new movies")
         movie(connect, cursor)
+        series(connect, cursor)
         value = util.get_config_value(cursor, 'update_interval')
         connect.close()
         time.sleep(float(value)*3600)
@@ -115,7 +115,7 @@ def process_movie_queue():
                     except sqlite3.OperationalError as error:
                         logging.exception(error)
             elif watch_id == 2:
-                if os.path.isdir(settings.INCOMPLETE_DIRECTORY+movie_title):
+                if glob.glob("{}*".format(settings.INCOMPLETE_DIRECTORY+movie_title)):
                     try:
                         connect.execute("UPDATE movie_queue set watch_queue_status_id=3 where id=?",
                             (queue_id,))
@@ -123,7 +123,7 @@ def process_movie_queue():
                     except sqlite3.OperationalError as error:
                         logging.exception(error)
             elif watch_id == 3:
-                if os.path.isdir(settings.COMPLETE_DIRECTORY+movie_title):
+                if glob.glob("{}*".format(settings.COMPLETE_DIRECTORY+movie_title)):
                     try:
                         connect.execute("UPDATE movie_queue set watch_queue_status_id=4 where id=?",
                             (queue_id,))
