@@ -13,15 +13,6 @@ from bs4 import BeautifulSoup
 from letmenotifyu import settings
 
 
-def initialise():
-    os.mkdir(settings.DIRECTORY_PATH)
-    os.mkdir(settings.IMAGE_PATH)
-    os.mkdir(settings.TORRENT_DIRECTORY)
-    os.mkdir(settings.INCOMPLETE_DIRECTORY)
-    os.mkdir(settings.COMPLETE_DIRECTORY)
-    settings.create_ini_file()
-    
-
 def render_view(image, string, store_model, image_file="ui/movies.png"):
     "Render GtkIconView"
     image.set_from_file(image_file)

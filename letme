@@ -10,8 +10,6 @@ from letmenotifyu import util
 os.chdir(settings.DATA_FILES_PATH)
 
 if __name__ == "__main__":
-    if not os.path.isdir(settings.DIRECTORY_PATH):
-        util.initialise()
     util.start_logging()
     if  not os.path.isfile(settings.DATABASE_PATH):
         logging.info("no database file found")
