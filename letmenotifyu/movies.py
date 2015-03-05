@@ -94,7 +94,7 @@ def insert_movie_details(q):
                 logging.exception(e)
             finally:
                 q.task_done()
-        else
+        else:
             q.task_done()
             
             
