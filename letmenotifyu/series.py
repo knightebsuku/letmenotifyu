@@ -7,6 +7,8 @@ import logging
 import re
 import sqlite3
 
+
+
 def fetch_new_episdoes(series_link):
     "search for new episodes"
     return util.primewire(series_link)
@@ -23,11 +25,11 @@ def insert_records(connect, cursor,new_episodes, series_id, series_title):
     "inser new episodes"
     for (episode_link, episode_name) in new_episodes:
         try:
-            episode_row = cursor.execute("INSERT INTO episodes(" +
-                                    'series_id,' +
-                                    'episode_link,' +
-                                    'episode_name,' +
-                                    'Date) ' +
+            episode_row = cursor.execute("INSERT INTO episodes(" \
+                                    'series_id,' \
+                                    'episode_link,' \
+                                    'episode_name,' \
+                                    'Date) ' \
                                     'VALUES(?,?,?,?)'
                                     ,(series_id, episode_link, episode_name, datetime.now(),))
             row_id = episode_row.lastrowid
@@ -36,7 +38,7 @@ def insert_records(connect, cursor,new_episodes, series_id, series_title):
             announce("New Series Episode", series_title,
                          "www.primewire.ag" + episode_link)
         except sqlite3.IntegrityError:
-            logging.error("Series episode already exists")
+            logging.error("Series episode {} already exists".format(episode_link))
 
 def send_to_queue(series_id, episode_link, db, row_id):
     "parse episode link to send to queue"
@@ -49,7 +51,7 @@ def send_to_queue(series_id, episode_link, db, row_id):
     if int(episode_number) < 10:
         episode_number = "0{}".format(episode_number)
     try:
-        db.execute("INSERT INTO series_queue(series_id,episode_id, episode_name,watch_queue_status_id) "+
+        db.execute("INSERT INTO series_queue(series_id,episode_id, episode_name,watch_queue_status_id) "\
                    "VALUES(?,?,?,?)" ,(series_id,row_id,"S{}E{}".format(season_number,episode_number),1,))
         logging.debug("episode {} added to series queue".format(episode_link))
     except sqlite3.IntegrityError:
@@ -74,7 +76,7 @@ class Series(object):
                     new_list = series_compare(self.cursor, series_info, ids)
                     self.insert_new_epsiodes(new_list, episode_count, ids, season_count)
             except TypeError:
-                logging.error("unable to connect to primewire.ag")
+                pass
             
 
     def insert_new_epsiodes(self, all_eps, new_ep_number, series_id, no_seasons):
@@ -86,11 +88,11 @@ class Series(object):
         else:
             for (episode_link, episode_name) in all_eps:
                 try:
-                    self.cursor.execute("INSERT INTO episodes(" +
-                                    'series_id,' +
-                                    'episode_link,' +
-                                    'episode_name,' +
-                                    'Date) ' +
+                    self.cursor.execute("INSERT INTO episodes(" \
+                                    'series_id,' \
+                                    'episode_link,' \
+                                    'episode_name,' \
+                                    'Date) ' \
                                     'VALUES(?,?,?,?)'
                                     ,(series_id, episode_link, episode_name, datetime.now(),))
                     self.connect.commit()
@@ -98,7 +100,7 @@ class Series(object):
                              "www.primewire.ag" + episode_link)
                 except sqlite3.IntegrityError:
                     logging.error("Series episode already exists")
-        self.cursor.execute("UPDATE series set number_of_episodes=?,"+
+        self.cursor.execute("UPDATE series set number_of_episodes=?,"\
                                 'number_of_seasons=?,last_update=?  where id=?',
                                 (new_ep_number, no_seasons, datetime.now(), series_id,))
         self.connect.commit()
@@ -107,22 +109,21 @@ class Series(object):
         "new series"
         try:
             for (episode_link, episode_name) in all_episodes:
-                self.cursor.execute("INSERT INTO episodes("+
-                                    'series_id,'+
-                                    'episode_link,'+
-                                    'episode_name) ' +
+                self.cursor.execute("INSERT INTO episodes("\
+                                    'series_id,'\
+                                    'episode_link,'\
+                                    'episode_name) ' \
                                     'VALUES(?,?,?)',
                                     (series_id, episode_link, episode_name,))
-            self.cursor.execute("UPDATE series set number_of_episodes=?,"+
-                                'number_of_seasons=?,'+
-                                'last_update=?,'+
-                                'current_season=? '+
+            self.cursor.execute("UPDATE series set number_of_episodes=?,"\
+                                'number_of_seasons=?,'\
+                                'last_update=?,'\
+                                'current_season=? '\
                                 'where id=?',
                                  (new_ep_number, no_seasons, datetime.now(),
                                   no_seasons,  series_id,))
             util.series_poster(self.cursor, self.connect, series_id)
             self.connect.commit()
-            logging.info("new series has all episodes")
         except sqlite3.IntegrityError as e:
             logging.error("episode already exists")
             self.connect.rollback()

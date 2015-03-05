@@ -13,6 +13,7 @@ from threading import Thread
 from letmenotifyu.movies import get_movie_details
 
 
+
 class About(object):
     "Show about menu"
     def __init__(self):
@@ -45,22 +46,22 @@ class AddSeries(object):
             show_title = change_string.replace("-", " ")
             logging.info("Inserting new series {}".format(show_title))
             try:
-                self.cursor.execute('INSERT INTO series(title,' +
-                               'series_link,' +
-                               'number_of_episodes,' +
-                               'number_of_seasons,' +
-                               'status,' +
-                               'current_season,' +
-                               'last_update)' +
+                self.cursor.execute('INSERT INTO series(title,' \
+                               'series_link,' \
+                               'number_of_episodes,' \
+                               'number_of_seasons,' \
+                               'status,' \
+                               'current_season,' \
+                               'last_update)' \
                                ' VALUES(?,?,0,0,1,0,?)',
                                (show_title, text, datetime.now(),))
                 self.connection.commit()
-                logging.debug("Series Added: {}".format(show_title))
+                logging.info("Series Added: {}".format(show_title))
                 self.link_box.set_text('')
                 self.dialog.get_object('Dialog').destroy()
             except sqlite3.IntegrityError:
                 self.connection.rollback()
-                logging.error("Series already added")
+                logging.error("Series {} already exists".format(show_title))
                 self.notice.set_text("Series already added")
                 self.notice.set_visible(True)
                 self.dialog.get_object('imCheck').set_visible(True)
@@ -68,7 +69,7 @@ class AddSeries(object):
             self.notice.set_text("Not a valid link or link already exists")
             self.notice.set_visible(True)
             self.dialog.get_object('imCheck').set_visible(True)
-            logging.warn("Invalid link:"+text)
+            logging.error("Invalid link: {}".format(text))
 
 
     def cancel_clicked(self, widget):
@@ -292,15 +293,15 @@ class MovieDetails(object):
             self.details.get_object("lblActor3").set_property("visible", False)
             self.details.get_object("lblActor4").set_property("visible", False)
         else:
-            self.cursor.execute("SELECT movie_rating,youtube_url,description from movie_details "+
+            self.cursor.execute("SELECT movie_rating,youtube_url,description from movie_details "\
                             'WHERE movie_id=(SELECT id FROM movies where title=?)',(self.movie_title,))
             (r, yu, des,) = self.cursor.fetchone()
             rating.set_text(str(r))
             youtube_link.set_uri(yu)
             youtube_link.set_property('label',"Trailer")
             description.set_text(des)
-            self.cursor.execute("SELECT name FROM actors AS a JOIN actors_movies AS am "+
-                           'ON a.id=am.actor_id AND am.movie_id='+
+            self.cursor.execute("SELECT name FROM actors AS a JOIN actors_movies AS am "\
+                           'ON a.id=am.actor_id AND am.movie_id='\
                            '(SELECT id FROM movies WHERE title=?)',(self.movie_title,))
             cast_list = {1: self.details.get_object("lblActor1"), 2: self.details.get_object("lblActor2"),
                          3: self.details.get_object("lblActor3"),4: self.details.get_object("lblActor4")}
@@ -317,8 +318,8 @@ class MovieDetails(object):
         
     def watch_list(self, widget):
         "add to watch list"
-        self.cursor.execute("INSERT INTO movie_queue(movie_id,watch_queue_status_id) "+
-                                "SELECT movies.id,watch_queue_status.id FROM movies,watch_queue_status "+
+        self.cursor.execute("INSERT INTO movie_queue(movie_id,watch_queue_status_id) "\
+                                "SELECT movies.id,watch_queue_status.id FROM movies,watch_queue_status "\
                                 "WHERE movies.title=? and watch_queue_status.name='new'",(self.movie_title,))
         self.connect.commit()
         self.watch_list.set_text("Yes")
@@ -345,12 +346,12 @@ def details(movie_title):
     (movie_id, yify_id,) = cursor.fetchone()
     movie_detail = get_movie_details(yify_id)
     if not movie_detail:
-        logging.error("Unable to fetch movie details")
+        logging.error("Unable to fetch movie details for {}".format(movie_title))
         status = "no fetch"
     elif movie_detail["status"] == "ok":
         try:
-            connect.execute("INSERT INTO movie_details(movie_id,language,movie_rating,"+
-                                    'youtube_url,description) '+
+            connect.execute("INSERT INTO movie_details(movie_id,language,movie_rating,"\
+                                    'youtube_url,description) '\
                                     'VALUES(?,?,?,?,?)',(movie_id,movie_detail["data"]['language'],
                                                          movie_detail["data"]['rating'],
                                                          "https://www.youtube.com/watch?v={}".format(movie_detail["data"]["yt_trailer_code"]),
@@ -359,13 +360,13 @@ def details(movie_title):
                 try:
                     row = connect.execute("INSERT INTO actors(name) "+
                                           'VALUES(?)',(actor["name"],))
-                    connect.execute("INSERT INTO actors_movies(actor_id,movie_id) "+
+                    connect.execute("INSERT INTO actors_movies(actor_id,movie_id) "\
                                     'VALUES(?,?)',(row.lastrowid, movie_id,))
                 except sqlite3.IntegrityError:
                     logging.error("Actor already exists")
                     cursor.execute("SELECT id from actors where name=?", (actor["name"],))
                     (actor_id,) = cursor.fetchone()
-                    connect.execute("INSERT INTO actors_movies(actor_id,movie_id) "+
+                    connect.execute("INSERT INTO actors_movies(actor_id,movie_id) "\
                                         'VALUES(?,?)', (actor_id, movie_id,))
                     logging.info("Movie Detail complete")
                 finally:

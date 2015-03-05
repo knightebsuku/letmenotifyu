@@ -10,6 +10,8 @@ from letmenotifyu import util
 from letmenotifyu import settings
 from letmenotifyu import background_worker as bw
 
+
+
 class Main(object):
     "Main application"
     def __init__(self):
@@ -316,20 +318,20 @@ class Main(object):
 
     def upcoming_queue(self, widget):
         try:
-            self.cursor.execute("INSERT INTO upcoming_queue(title) "+
+            self.cursor.execute("INSERT INTO upcoming_queue(title) "\
                                 "SELECT title from upcoming_movies where title=?",(self.choice,))
             self.connect.commit()
             gui.Error("{} added to upcoming queue".format(self.choice))
         except sqlite3.IntegrityError:
-            gui.Error("record is already in upcoming queue")
-            logging.warn("record is already in upcoming_queue")
+            gui.Error("{} is already in upcoming queue".format(self.choice))
+            
 
     def search_changed(self, widget):
         "change search only for movies"
         if self.flag == 'upcoming movies':
             self.general_model.clear()
-            self.cursor.execute("SELECT upcoming_movies.title,path from upcoming_movies"+
-                            ",movie_images "+
+            self.cursor.execute("SELECT upcoming_movies.title,path from upcoming_movies"\
+                            ",movie_images "\
                             "where upcoming_movies.title=movie_images.title and upcoming_movies.title like ('%' || ? || '%')",
                                  (widget.get_text(),))
             movies = self.cursor.fetchall()
@@ -341,8 +343,8 @@ class Main(object):
             self.cursor.execute("SELECT id from genre where genre=?",
                                 (self.search_choice,))
             genre_key = self.cursor.fetchone()
-            self.cursor.execute("SELECT movies.title,path from movies,movie_images " +
-                                "WHERE movies.title=movie_images.title "+
+            self.cursor.execute("SELECT movies.title,path from movies,movie_images " \
+                                "WHERE movies.title=movie_images.title "\
                                 "and  movies.genre_id=? and movies.title like ('%' || ? || '%') ",
                                 (genre_key[0], widget.get_text(),))
             self.general_model.clear()

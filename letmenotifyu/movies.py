@@ -28,8 +28,10 @@ def get_upcoming_movies():
         yifi_url = urlopen("https://yts.re/api/v2/list_upcoming.json")
         json_data = json.loads(yifi_url.read().decode('utf-8'))
         return json_data
-    except Exception:
-        logging.error("Unable to connect to upcoming movies")
+    except (urllib.error.URLError, urllib.error.HTTPError):
+        logging.error("Unable to connect to upcoming movies api")
+    except Exception as error:
+        logging.exception(error)
 
 def get_released_movies(cursor):
     "Get list of movies released by yifi"
@@ -39,9 +41,10 @@ def get_released_movies(cursor):
         yifi_url = urlopen("https://yts.re/api/v2/list_movies.json?quality={}&limit={}".format(quality,limit))
         json_data = json.loads(yifi_url.read().decode('utf-8'))
         return json_data
-    except Exception as e:
-        logging.error("unable to fetch movie list")
-        logging.exception(e)
+    except (urllib.error.URLError, urllib.error.HTTPError) as e:
+        logging.error("unable to connect to released movies api")
+    except Exception as error:
+        logging.exception(error)
 
 def get_movie_details(yify_id):
     try:
@@ -49,7 +52,9 @@ def get_movie_details(yify_id):
         movie_detail = json.loads(yify_url.read().decode('utf-8'))
         return movie_detail
     except (urllib.error.URLError, urllib.error.HTTPError):
-        logging.warn("Unable to download movie detail")
+        logging.warn("Unable to connect to movie detail api")
+    except Exception as error:
+        logging.exception(error)
 
 def insert_movie_details(q):
     connect = sqlite3.connect(settings.DATABASE_PATH)
@@ -75,12 +80,12 @@ def insert_movie_details(q):
                         connect.execute("INSERT INTO actors_movies(actor_id,movie_id) "+
                                     'VALUES(?,?)',(row.lastrowid, movie_id,))
                     except sqlite3.IntegrityError:
-                        logging.error("record already exsists")
+                        logging.debug("{} already exsists".format(actor["name"]))
                         cursor.execute("SELECT id from actors where name=?", (actor["name"],))
                         (actor_id,) = cursor.fetchone()
                         connect.execute("INSERT INTO actors_movies(actor_id,movie_id) "+
                                         'VALUES(?,?)', (actor_id,movie_id,))
-                        logging.info("Movie Detail complete")
+                      
                     finally:
                         connect.commit()
             except sqlite3.IntegrityError:
@@ -89,8 +94,7 @@ def insert_movie_details(q):
                 logging.exception(e)
             finally:
                 q.task_done()
-        else:
-            logging.warn("Cant connect to movie_detail")
+        else
             q.task_done()
             
             
@@ -157,18 +161,18 @@ def insert_movie_image(movie_title, image_url, db):
             db.execute("INSERT INTO movie_images(title,path) VALUES(?,?)",
                    (movie_title, movie_title+".png",))
         except sqlite3.IntegrityError:
-            logging.info('image record already exists in database')
+            logging.info("image for {}  already exists in database".format(movie_title))
 
 def fetch_image(image_url, title,):
     "fetch image"
     if os.path.isfile(settings.IMAGE_PATH+title+".png"):
-        logging.debug("file already exists")
+        logging.debug("Image file for {} already downloaded".format(title))
         return True
     else:
         try:
             with open(settings.IMAGE_PATH+title+".png",'wb') as image_file:
                 image_file.write(urlopen(image_url).read())
-                logging.debug("imaged fetched")
+                logging.debug("imaged fetched for {}".format(title))
             return True
         except Exception as e:
             logging.exception(e)

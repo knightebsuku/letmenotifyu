@@ -3,6 +3,7 @@
 import logging
 import re
 
+
 def search_episode(kickass_file, title, episode_name, uploader):
     "search for episode"
     with open(kickass_file,'r') as f:

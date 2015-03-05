@@ -12,7 +12,6 @@ from urllib.request import Request, urlopen
 from bs4 import BeautifulSoup
 from letmenotifyu import settings
 
-
 def render_view(image, string, store_model, image_file="ui/movies.png"):
     "Render GtkIconView"
     image.set_from_file(image_file)
@@ -37,7 +36,7 @@ def open_page(cursor, title, option=None):
         webbrowser.open_new(link)
     else:
         webbrowser.open_new("http://www.primewire.ag"+title)
-    logging.info("Opening link" + title)
+    logging.info("Opening link {}".format(title))
 
 
 def primewire(episode_site):
@@ -67,7 +66,7 @@ def series_poster(cursor, connect, series_id):
                             (series_id, '{}.jpg'.format(title),))
         connect.commit()
     except sqlite3.IntegrityError:
-        logging.warn("File already exists")
+        logging.warn("Image for {} already exists".format(title))
 
 
 def correct_decode(title, series_link):
@@ -84,28 +83,28 @@ def correct_decode(title, series_link):
         meta = soup.find('meta', {'property': 'og:image'})
         save_image(title, meta)
     except urllib.error.URLError:
-        logging.warn("Unable to connect to image link")
+        logging.info("Unable to connect to image url".format(title))
     except TypeError:
-        logging.info("Cant find image link")
+        logging.info("Cant find image link for {}".format(title))
 
 
 def save_image(movie_link, meta):
     if os.path.isfile(settings.IMAGE_PATH+movie_link+".jpg"):
-        logging.info("File already exists")
+        pass
     else:
-        logging.info("fetching image "+movie_link)
+        logging.debug("fetching image {}".format(movie_link))
         with open("%s" % (settings.IMAGE_PATH+movie_link+".jpg"), 'wb') as image_file:
             full_image_url = "http:"+meta['content']
             image_request = Request(full_image_url,
                           headers={'User-Agent': 'Mozilla/5.0'})
             image_file.write(urlopen(image_request).read())
-            logging.info("Imaged fetched")
+            logging.debug("Imaged fetched")
 
 def start_logging():
     "Start logging"
     logging.basicConfig(filename=settings.LOG_FILE_PATH,
-                            format='%(asctime)s - %(message)s', filemode='w',
-                            level=logging.DEBUG)
+                            format='%(asctime)s - %(name)s-%(levelname)s:%(message)s', filemode='w',
+                            level=settings.LOG_LEVEL)
 
 
 def pre_populate_menu(builder):
@@ -125,17 +124,15 @@ def pre_populate_menu(builder):
 def fetch_torrent(torrent_url, title):
     "fetch torrent images"
     if os.path.isfile(settings.TORRENT_DIRECTORY+title+".torrent"):
-        logging.debug("torrent file already exists")
         return True
     else:
         try:
             r = requests.get(torrent_url)
             with open(settings.TORRENT_DIRECTORY+title+".torrent","wb") as torrent_file:
                 torrent_file.write(r.content)
-                logging.debug("torrent file downloded")
                 return True
         except Exception as e:
-            logging.error("unable to fetch torrent")
+            logging.error("unable to fetch torrent for {}".format(title))
             logging.exception(e)
             return False
 
