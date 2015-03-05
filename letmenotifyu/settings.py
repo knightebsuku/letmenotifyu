@@ -42,6 +42,7 @@ except KeyError:
     IMAGE_PATH = config['DIRECTORIES']['ImagesDirectory']
     COMPLETE_DIRECTORY = config['DIRECTORIES']['CompleteDownloads']
     INCOMPLETE_DIRECTORY = config['DIRECTORIES']['IncompleteDownloads']
+    LOG_LEVEL = logging_dict(config['LOGGING']['LoggingLevel'])
     os.mkdir(IMAGE_PATH)
     os.mkdir(TORRENT_DIRECTORY)
     os.mkdir(INCOMPLETE_DIRECTORY)
