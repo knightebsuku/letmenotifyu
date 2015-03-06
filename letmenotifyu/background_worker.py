@@ -163,7 +163,7 @@ def fetch_kickass_file(cursor):
     if cursor.fetchall():
         logging.debug("episode in status new, need to fetch kickass file")
         try:
-            kickass_file = urlopen("https://kickass.so/hourlydump.txt.gz")
+            kickass_file = urlopen("https://kickass.to/hourlydump.txt.gz")
             with gzip.open(kickass_file, 'r') as gzip_file:
                 with open(settings.KICKASS_FILE, 'wb') as dump_file:
                     for line in gzip_file:
