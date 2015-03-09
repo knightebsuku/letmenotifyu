@@ -159,18 +159,18 @@ def insert_movie_image(movie_title, image_url, db):
     if fetch_image(image_url, movie_title):
         try:
             db.execute("INSERT INTO movie_images(title,path) VALUES(?,?)",
-                   (movie_title, movie_title+".png",))
+                   (movie_title, movie_title+".jpg",))
         except sqlite3.IntegrityError:
             logging.info("image for {}  already exists in database".format(movie_title))
 
 def fetch_image(image_url, title,):
     "fetch image"
-    if os.path.isfile(settings.IMAGE_PATH+title+".png"):
+    if os.path.isfile(settings.IMAGE_PATH+title+".jpg"):
         logging.debug("Image file for {} already downloaded".format(title))
         return True
     else:
         try:
-            with open(settings.IMAGE_PATH+title+".png",'wb') as image_file:
+            with open(settings.IMAGE_PATH+title+".jpg",'wb') as image_file:
                 image_file.write(urlopen(image_url).read())
                 logging.debug("imaged fetched for {}".format(title))
             return True

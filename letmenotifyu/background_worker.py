@@ -105,9 +105,8 @@ def process_movie_queue():
                "movie_torrent_links as mtl "\
                " join movie_queue as mq "\
                "on mtl.movie_id=mq.movie_id "\
-               "join movies on mtl.movie_id=movies.id ")
-        new_queue = cursor.fetchall()
-        for (movie_title, queue_id, torrent_url, watch_id) in  new_queue:
+               "join movies on mtl.movie_id=movies.id order by mq.id ")
+        for (movie_title, queue_id, torrent_url, watch_id) in cursor.fetchall():
             if watch_id == 1:
                 logging.info("downloading torrent for {}".format(movie_title))
                 if util.fetch_torrent(torrent_url, movie_title):
@@ -120,6 +119,7 @@ def process_movie_queue():
             elif watch_id == 2:
                 if glob.glob("{}*".format(settings.INCOMPLETE_DIRECTORY+movie_title)):
                     try:
+                        logging.debug("{} on status 2, moving to status 3".format(movie_title))
                         connect.execute("UPDATE movie_queue set watch_queue_status_id=3 where id=?",
                             (queue_id,))
                         connect.commit()
@@ -128,6 +128,7 @@ def process_movie_queue():
             elif watch_id == 3:
                 if glob.glob("{}*".format(settings.COMPLETE_DIRECTORY+movie_title)):
                     try:
+                        logging.debug("{} on status 3, moving to status 4".format(movie_title))
                         connect.execute("UPDATE movie_queue set watch_queue_status_id=4 where id=?",
                             (queue_id,))
                         connect.commit()
