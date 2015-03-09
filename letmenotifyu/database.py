@@ -4,11 +4,11 @@ from letmenotifyu import settings
 from litemigration.database import Database
 
 def database_init():
-    db = Database(settings.DATABASE_PATH)
+    db = Database('sqlite',database=settings.DATABASE_PATH)
     db.initialise()
 
 def database_change():
-    db = Database(settings.DATABASE_PATH)
+    db = Database('sqlite',database=settings.DATABASE_PATH)
     db.add_schema([
         [1, 'CREATE TABLE config(' \
                             'id INTEGER PRIMARY KEY, ' \
