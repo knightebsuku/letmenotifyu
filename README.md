@@ -3,7 +3,7 @@ Letmenotifyu
 
 Application  to notify users of new episodes from [primewire.ag](http://primewire.ag) and movies from [YIFY](https://yts.re/api).
 
-Full application details on https://shellcomplex.github.io/letmenotifyu
+Full application details on the [wiki](https://github.com/stucomplex/letmenotifyu/wiki)
 
 
 Version: 2.1.5
