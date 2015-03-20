@@ -25,7 +25,7 @@ def movie(connect, cursor):
 def get_upcoming_movies():
     "Get list of upcoming movies by yifi"
     try:
-        yifi_url = urlopen("https://yts.re/api/v2/list_upcoming.json")
+        yifi_url = urlopen("https://yts.to/api/v2/list_upcoming.json")
         json_data = json.loads(yifi_url.read().decode('utf-8'))
         return json_data
     except (urllib.error.URLError, urllib.error.HTTPError):
@@ -38,7 +38,7 @@ def get_released_movies(cursor):
     try:
         quality = util.get_config_value(cursor,"movie_quality")
         limit = util.get_config_value(cursor,'max_movie_results')
-        yifi_url = urlopen("https://yts.re/api/v2/list_movies.json?quality={}&limit={}".format(quality,limit))
+        yifi_url = urlopen("https://yts.to/api/v2/list_movies.json?quality={}&limit={}".format(quality,limit))
         json_data = json.loads(yifi_url.read().decode('utf-8'))
         return json_data
     except (urllib.error.URLError, urllib.error.HTTPError) as e:
@@ -48,7 +48,7 @@ def get_released_movies(cursor):
 
 def get_movie_details(yify_id):
     try:
-        yify_url = urlopen("https://yts.re/api/v2/movie_details.json?movie_id={}&with_cast=true".format(yify_id))
+        yify_url = urlopen("https://yts.to/api/v2/movie_details.json?movie_id={}&with_cast=true".format(yify_id))
         movie_detail = json.loads(yify_url.read().decode('utf-8'))
         return movie_detail
     except (urllib.error.URLError, urllib.error.HTTPError):
