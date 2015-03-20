@@ -175,7 +175,8 @@ def database_change():
           'name VARCHAR(20) UNIQUE NOT NULL)'],
         [60, "INSERT INTO actors SELECT id,name from bk_actors"],
         [61, "DROP TABLE bk_actors"],
-        [62, "ALTER TABLE movies ADD COLUMN year INTEGER NOT NULL DEFAULT 0"]
+        [62, "ALTER TABLE movies ADD COLUMN year INTEGER NOT NULL DEFAULT 0"],
+        [63, "ALTER TABLE episodes ADD COLUMN episode_number VARCHAR(8) NOT NULL DEFAULT 0"]
     ])
 
 
