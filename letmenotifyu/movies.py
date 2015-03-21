@@ -62,7 +62,8 @@ def insert_movie_details(q):
     while True:
         [movie_id,yify_id] = q.get()
         movie_detail = get_movie_details(yify_id)
-        if not movie_detail:            
+        if not movie_detail:
+            logging.warn("Unable to connect to site to fetch movie details")
             q.task_done()
         elif movie_detail["status"] == "ok":
             try:
@@ -83,7 +84,8 @@ def insert_movie_details(q):
                         cursor.execute("SELECT id from actors where name=?", (actor["name"],))
                         (actor_id,) = cursor.fetchone()
                         connect.execute("INSERT INTO actors_movies(actor_id,movie_id) "+
-                                        'VALUES(?,?)', (actor_id,movie_id,))               
+                                        'VALUES(?,?)', (actor_id,movie_id,))
+                      
                     finally:
                         connect.commit()
             except sqlite3.IntegrityError:
@@ -94,6 +96,8 @@ def insert_movie_details(q):
                 q.task_done()
         else:
             q.task_done()
+            
+            
             
 
 def insert_released_movies(data, cursor, db):
@@ -187,10 +191,12 @@ def movie_compare(cursor, table, new_data):
 def get_movie_genre(genre, cursor, db):
     cursor.execute("SELECT Id FROM genre where genre=?", (genre,))
     if cursor.fetchone() is None:
+        logging.debug("genre does not exist yet")
         row = db.execute("INSERT INTO genre(genre) VALUES(?)", (genre,))
         genre_id = row.lastrowid
         return genre_id
     else:
+        logging.debug('genre exists')
         cursor.execute("SELECT Id FROM genre where genre=?", (genre,))
         (genre_id,) = cursor.fetchone()
         return int(genre_id)
