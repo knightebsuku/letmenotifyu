@@ -11,7 +11,6 @@ from letmenotifyu import settings
 from letmenotifyu import background_worker as bw
 
 
-
 class Main(object):
     "Main application"
     def __init__(self):
@@ -141,8 +140,8 @@ class Main(object):
                                 (choice,))
         self.search_choice = choice
         (genre_key,) = self.cursor.fetchone()
-        self.cursor.execute("SELECT movies.title,path from movies,movie_images " +
-                                "WHERE movies.title=movie_images.title "+
+        self.cursor.execute("SELECT movies.title,path from movies,movie_images " \
+                                "WHERE movies.title=movie_images.title "\
                                 "and  movies.genre_id=? order by movies.title",
                                 (genre_key,))
         movie_info = self.cursor.fetchall()
@@ -158,9 +157,9 @@ class Main(object):
         logging.debug(series_name)
         series_number = choice.split("Season ")[1]
         logging.debug(series_number)
-        self.cursor.execute("SELECT episode_name,episode_link " +
-                            "FROM episodes WHERE" +
-                            ' series_id=(SELECT id from series where title=?)' +
+        self.cursor.execute("SELECT episode_number || episode_name,episode_link " \
+                            "FROM episodes WHERE" \
+                            ' series_id=(SELECT id from series where title=?)' \
                             ' and episode_link LIKE ?',
                             (series_name, "%season-"+series_number+"%",))
         self.general_model.clear()
@@ -182,8 +181,8 @@ class Main(object):
 
     def upcoming_movies(self):
         self.general_model.clear()
-        self.cursor.execute("SELECT upcoming_movies.title,path from upcoming_movies"+
-                            ",movie_images "+
+        self.cursor.execute("SELECT upcoming_movies.title,path from upcoming_movies"\
+                            ",movie_images "\
                             "where upcoming_movies.title=movie_images.title ORDER BY upcoming_movies.id DESC")
         movies = self.cursor.fetchall()
         for movie in movies:
@@ -197,9 +196,9 @@ class Main(object):
         self.cursor.execute("SELECT value from config where key='series_duration'")
         duration = self.cursor.fetchone()
         week = datetime.now() - timedelta(days=float(duration[0]))
-        self.cursor.execute("SELECT episode_name,episode_link,path from episodes "+
-                            "join series_images "+
-                            "on episodes.series_id=series_images.series_id "+
+        self.cursor.execute("SELECT episode_number || episode_name,episode_link,path from episodes "\
+                            "join series_images "\
+                            "on episodes.series_id=series_images.series_id "\
                             "and episodes.Date BETWEEN ? AND ?",
                             (week, datetime.now(),))
         for (episode_name, episode_link, path) in self.cursor.fetchall():
@@ -210,8 +209,8 @@ class Main(object):
 
     def active_series(self):
         self.general_model.clear()
-        self.cursor.execute("SELECT title,current_season,path  from series "+
-                            "join series_images on series.id=series_images.series_id and "+
+        self.cursor.execute("SELECT title,current_season,path  from series "\
+                            "join series_images on series.id=series_images.series_id and "\
                             "series.status=1 order by title")
         for (title, current_season, path) in self.cursor.fetchall():
             util.render_view(self.image, title+" "+"Season"+" "+str(current_season),
@@ -242,23 +241,23 @@ class Main(object):
     def season_select(self,choice):
         self.archive_series_dict = {}
         no = choice.split("Season ")[1]
-        self.cursor.execute("SELECT episode_name,episode_link FROM episodes" +
-                            ' WHERE series_id=(SELECT id from series where title=?)' +
+        self.cursor.execute("SELECT episode_number || episode_name,episode_link FROM episodes" \
+                            ' WHERE series_id=(SELECT id from series where title=?)' \
                             ' and episode_link LIKE ?',
                             (self.series_name, "%season-" + no + "%",))
         self.general_model.clear()
-        for (episode_name,episode_link) in self.cursor.fetchall():
+        for (episode_name, episode_link) in self.cursor.fetchall():
             util.render_view(self.image, episode_name, self.general_model)
             self.archive_series_dict[episode_name] = episode_link
         self.flag = "season select"
 
     def watch_movies(self):
         self.general_model.clear()
-        self.cursor.execute("select mi.path,wqs.name from "+
-                            'movie_images as mi,'+
-                            'watch_queue_status as wqs,'+
-                            'movie_queue as mq '+
-                            'where mi.title=(select title from movies where id=mq.movie_id) '+
+        self.cursor.execute("select mi.path,wqs.name from "\
+                            'movie_images as mi,'\
+                            'watch_queue_status as wqs,'\
+                            'movie_queue as mq '\
+                            'where mi.title=(select title from movies where id=mq.movie_id) '\
                             'and wqs.id=mq.watch_queue_status_id')
         for (path, watch_name) in self.cursor.fetchall():
             util.render_view(self.image, watch_name, self.general_model,
@@ -267,11 +266,11 @@ class Main(object):
 
     def watch_series(self):
         self.general_model.clear()
-        self.cursor.execute("select si.path,wqs.name,sq.episode_name from "+
-                            'series_images as si,'+
-                            'watch_queue_status as wqs,'+
-                             'series_queue as sq '+
-                             'where wqs.id=sq.watch_queue_status_id '+
+        self.cursor.execute("select si.path,wqs.name,sq.episode_name from "\
+                            'series_images as si,'\
+                            'watch_queue_status as wqs,'\
+                             'series_queue as sq '\
+                             'where wqs.id=sq.watch_queue_status_id '\
                              'and sq.series_id=si.series_id')
         for (path, watch_name, episode_name) in self.cursor.fetchall():
             util.render_view(self.image, episode_name+":  "+watch_name, self.general_model,
@@ -366,8 +365,8 @@ class Main(object):
     def watch_list(self, widget):
         "add movie to watch queue"
         try:
-            self.cursor.execute("INSERT INTO movie_queue(movie_id,watch_queue_status_id) "+
-                                "SELECT movies.id,watch_queue_status.id FROM movies,watch_queue_status "+
+            self.cursor.execute("INSERT INTO movie_queue(movie_id,watch_queue_status_id) "\
+                                "SELECT movies.id,watch_queue_status.id FROM movies,watch_queue_status "\
                                 "WHERE movies.title=? and watch_queue_status.name='new'",(self.choice,))
             self.connect.commit()
             gui.Error("{} has been added to the watch list".format(self.choice))
