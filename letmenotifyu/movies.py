@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-from urllib.request import Request, urlopen
+from urllib.request import urlopen
 from letmenotifyu.notify import announce
 from letmenotifyu import settings
 from letmenotifyu import util
@@ -13,7 +13,6 @@ import os
 import urllib
 
 
-
 def movie(connect, cursor):
     upcoming_movie_data = get_upcoming_movies()
     if upcoming_movie_data:
@@ -21,6 +20,7 @@ def movie(connect, cursor):
     released_movie_data = get_released_movies(cursor)
     if released_movie_data:
         insert_released_movies(released_movie_data, cursor, connect)
+
 
 def get_upcoming_movies():
     "Get list of upcoming movies by yifi"
@@ -33,18 +33,20 @@ def get_upcoming_movies():
     except Exception as error:
         logging.exception(error)
 
+
 def get_released_movies(cursor):
     "Get list of movies released by yifi"
     try:
-        quality = util.get_config_value(cursor,"movie_quality")
-        limit = util.get_config_value(cursor,'max_movie_results')
+        quality = util.get_config_value(cursor, "movie_quality")
+        limit = util.get_config_value(cursor, 'max_movie_results')
         yifi_url = urlopen("https://yts.to/api/v2/list_movies.json?quality={}&limit={}".format(quality,limit))
         json_data = json.loads(yifi_url.read().decode('utf-8'))
         return json_data
-    except (urllib.error.URLError, urllib.error.HTTPError) as e:
+    except (urllib.error.URLError, urllib.error.HTTPError):
         logging.error("unable to connect to released movies api")
     except Exception as error:
         logging.exception(error)
+
 
 def get_movie_details(yify_id):
     try:
@@ -56,35 +58,36 @@ def get_movie_details(yify_id):
     except Exception as error:
         logging.exception(error)
 
+
 def insert_movie_details(q):
     connect = sqlite3.connect(settings.DATABASE_PATH)
     cursor = connect.cursor()
     while True:
-        [movie_id,yify_id] = q.get()
+        [movie_id, yify_id] = q.get()
         movie_detail = get_movie_details(yify_id)
         if not movie_detail:
             logging.warn("Unable to connect to site to fetch movie details")
             q.task_done()
         elif movie_detail["status"] == "ok":
             try:
-                connect.execute("INSERT INTO movie_details(movie_id,language,movie_rating,"+
-                                    'youtube_url,description) '+
-                                    'VALUES(?,?,?,?,?)',(movie_id,movie_detail["data"]['language'],
+                connect.execute("INSERT INTO movie_details(movie_id,language,movie_rating,"\
+                                    'youtube_url,description) '\
+                                    'VALUES(?,?,?,?,?)',(movie_id, movie_detail["data"]['language'],
                                                          movie_detail['data']["rating"],
                                                          "https://www.youtube.com/watch?v={}".format(movie_detail["data"]["yt_trailer_code"]),
                                                          movie_detail["data"]["description_full"],))
                 for actor in movie_detail["data"]["actors"]:
                     try:
-                        row = connect.execute("INSERT INTO actors(name) "+
+                        row = connect.execute("INSERT INTO actors(name) "\
                                           'VALUES(?)',(actor["name"],))
-                        connect.execute("INSERT INTO actors_movies(actor_id,movie_id) "+
+                        connect.execute("INSERT INTO actors_movies(actor_id,movie_id) "\
                                     'VALUES(?,?)',(row.lastrowid, movie_id,))
                     except sqlite3.IntegrityError:
                         logging.debug("{} already exsists".format(actor["name"]))
                         cursor.execute("SELECT id from actors where name=?", (actor["name"],))
                         (actor_id,) = cursor.fetchone()
-                        connect.execute("INSERT INTO actors_movies(actor_id,movie_id) "+
-                                        'VALUES(?,?)', (actor_id,movie_id,))
+                        connect.execute("INSERT INTO actors_movies(actor_id,movie_id) "\
+                                        'VALUES(?,?)', (actor_id, movie_id,))
                       
                     finally:
                         connect.commit()
@@ -96,9 +99,7 @@ def insert_movie_details(q):
                 q.task_done()
         else:
             q.task_done()
-            
-            
-            
+
 
 def insert_released_movies(data, cursor, db):
     "insert new movies"
@@ -115,7 +116,7 @@ def insert_released_movies(data, cursor, db):
         for movie_detail in released_data:
             try:
                 genre_id = get_movie_genre(movie_detail["genres"][0], cursor, db)
-                row = db.execute("INSERT INTO movies(genre_id,title,link,date_added,movie_id,year)"+
+                row = db.execute("INSERT INTO movies(genre_id,title,link,date_added,movie_id,year)"\
                                  'VALUES(?,?,?,?,?,?)',
                            (genre_id,
                             movie_detail['title'],
@@ -134,6 +135,7 @@ def insert_released_movies(data, cursor, db):
                 db.rollback()
                 logging.exception(e)
         q.join()
+
 
 def insert_upcoming_movies(movie_data, db,cursor):
     "insert upcoming new movies"
@@ -155,6 +157,7 @@ def insert_upcoming_movies(movie_data, db,cursor):
     else:
         logging.debug("no new upcoming movies")
 
+
 def insert_movie_image(movie_title, image_url, db):
     if fetch_image(image_url, movie_title):
         try:
@@ -162,6 +165,7 @@ def insert_movie_image(movie_title, image_url, db):
                    (movie_title, movie_title+".jpg",))
         except sqlite3.IntegrityError:
             logging.info("image for {}  already exists in database".format(movie_title))
+
 
 def fetch_image(image_url, title,):
     "fetch image"
@@ -177,16 +181,18 @@ def fetch_image(image_url, title,):
         except Exception as e:
             logging.exception(e)
             return False
-    
+
+
 def movie_compare(cursor, table, new_data):
     "compare new movie list to current database"
     new_movie_data = []
     cursor.execute("SELECT title from "+table)
     old_movie_data = [x[0] for x in cursor.fetchall()]
     for movie_data in new_data:
-        if movie_data["title"]  not in old_movie_data:
+        if movie_data["title"] not in old_movie_data:
             new_movie_data.append(movie_data)
     return new_movie_data
+
 
 def get_movie_genre(genre, cursor, db):
     cursor.execute("SELECT Id FROM genre where genre=?", (genre,))

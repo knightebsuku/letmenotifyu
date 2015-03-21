@@ -16,7 +16,6 @@ from threading import Thread
 from urllib.request import urlopen
 
 
-
 def start_threads():
     "start all threads"
     movie_process = Thread(target=process_movie_queue)
@@ -29,6 +28,7 @@ def start_threads():
     series_process.start()
     all_update.start()
 
+
 def update():
     "update movies and series"
     while 1:
@@ -40,6 +40,7 @@ def update():
         value = util.get_config_value(cursor, 'update_interval')
         connect.close()
         time.sleep(float(value)*3600)
+
 
 def process_series_queue():
     "handle the series queues"
@@ -95,6 +96,7 @@ def process_series_queue():
         value = util.get_config_value(cursor, 'series_process_interval')
         time.sleep(float(value)*3600)
 
+
 def process_movie_queue():
     "handle movie queues"
     connect = sqlite3.connect(settings.DATABASE_PATH)
@@ -136,11 +138,11 @@ def process_movie_queue():
                         logging.exception(error)
             else:
                 logging.debug('no movies in queues')
-        #connect.execute("DELETE from upcoming_movies where title=movies.title")
         value = util.get_config_value(cursor, 'movie_process_interval')
         time.sleep(float(value)*3600)
 
-def check_upcoming_queue(connect,cursor):
+
+def check_upcoming_queue(connect, cursor):
     "move upcoming queue movie to movie_queue"
     cursor.execute("SELECT title FROM upcoming_queue")
     data = cursor.fetchall()
@@ -157,6 +159,7 @@ def check_upcoming_queue(connect,cursor):
             except sqlite3.IntegrityError:
                 logging.info("{} already  exists in movie_queue".format(title))
                 connect.execute("DELETE FROM upcoming_queue WHERE title=?", (title,))
+
 
 def fetch_kickass_file(cursor):
     "fetch kickass dump file"

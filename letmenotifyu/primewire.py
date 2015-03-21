@@ -4,19 +4,20 @@ import requests
 import logging
 import re
 
-import sqlite3
-
 from bs4 import BeautifulSoup
+
 
 def check_episode_numbers(episode_number):
     "check if episode numbers are valid"
     if 0 < int(episode_number) <= 26:
         return True
 
+
 def check_season_number(season_number):
     "check if season number is valid"
     if int(season_number) > 0:
         return True
+
 
 def modify_episode_number(season_value, episode_value):
     "format episode number"
@@ -30,8 +31,6 @@ def modify_episode_number(season_value, episode_value):
 def primewire(episode_site):
     "process series page"
     try:
-        #req = Request(episode_site, headers={'User-Agent': 'Mozilla/5.0'})
-        #data = urlopen(req).read().decode('ISO-8859-1')
         series_page = requests.get(episode_site)
         series_page_data = BeautifulSoup(series_page.text)
         all_series_info = []

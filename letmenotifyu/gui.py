@@ -13,7 +13,6 @@ from threading import Thread
 from letmenotifyu.movies import get_movie_details
 
 
-
 class About(object):
     "Show about menu"
     def __init__(self):
@@ -38,7 +37,7 @@ class AddSeries(object):
         self.link_box = self.dialog.get_object('entLink')
         self.dialog.get_object('Dialog').show()
 
-    def check_url(self,text):
+    def check_url(self, text):
         "check adding new series"
         if re.search(r'http://www.primewire.ag/(.*)-\d+-(.*)-online-free', text):
             title = re.search(r"http://www.primewire.ag/(.*)-\d+-(.*)-online-free", text)
@@ -71,7 +70,6 @@ class AddSeries(object):
             self.dialog.get_object('imCheck').set_visible(True)
             logging.error("Invalid link: {}".format(text))
 
-
     def cancel_clicked(self, widget):
         self.dialog.get_object('Dialog').destroy()
 
@@ -82,7 +80,7 @@ class AddSeries(object):
 
 class Confirm(object):
     "Confirm menu"
-    def __init__(self,title, instruction, connect, cursor):
+    def __init__(self, title, instruction, connect, cursor):
         self.connect = connect
         self.cursor = cursor
         self.title = title
@@ -109,7 +107,6 @@ class Confirm(object):
             message = "Are you sure you want to delete"
         return message, use_sql
 
-
     def ok_clicked(self, widget):
         "confirm deletion"
         self.cursor.execute(self.sql, (self.title,))
@@ -119,6 +116,7 @@ class Confirm(object):
 
     def cancel_clicked(self, widget):
         self.confirm.get_object('msgdlg').destroy()
+
 
 class Preferences(object):
     "preference menu"
@@ -135,11 +133,11 @@ class Preferences(object):
 
     def populate_fields(self):
         "populate fields"
-        update_interval  = util.get_config_value(self.cursor,"update_interval")
-        movie_process = util.get_config_value(self.cursor,"movie_process_interval")
-        series_process = util.get_config_value(self.cursor,"series_process_interval")
-        series_duration = util.get_config_value(self.cursor,"series_duration")
-        max_movie_result = util.get_config_value(self.cursor,'max_movie_results')
+        update_interval = util.get_config_value(self.cursor, "update_interval")
+        movie_process = util.get_config_value(self.cursor, "movie_process_interval")
+        series_process = util.get_config_value(self.cursor, "series_process_interval")
+        series_duration = util.get_config_value(self.cursor, "series_duration")
+        max_movie_result = util.get_config_value(self.cursor, 'max_movie_results')
         self.pref.get_object("spUpdate").set_value(float(update_interval))
         self.pref.get_object("spMovieQueue").set_value(float(movie_process))
         self.pref.get_object("spSeriesQueue").set_value(float(series_process))
@@ -163,7 +161,7 @@ class Preferences(object):
                                  'IncompleteDownloads': incomplete+'/'}
         with open(settings.DIRECTORY_PATH+'/config.ini','w') as cfg_file:
             config.write(cfg_file)
-        
+
     def save_clicked(self, widget):
         try:
             update_interval = self.pref.get_object("spUpdate").get_value()
@@ -172,7 +170,7 @@ class Preferences(object):
             movie_results = self.pref.get_object("spMovieResults").get_value()
             series_duration = self.pref.get_object("spSeriesDuration").get_value()
             quality_iter = self.pref.get_object('cbMovieQuality').get_active_iter()
-            movie_quality = self.pref.get_object('lsMovieCombo').get_value(quality_iter,0)
+            movie_quality = self.pref.get_object('lsMovieCombo').get_value(quality_iter, 0)
             query = [(update_interval, 'update_interval'),
                      (movie_process, 'movie_process_interval'),
                      (series_process, 'series_process_interval'),
@@ -242,9 +240,10 @@ class SetSeason(object):
             logging.warn("Unable to set current season")
             logging.exception(e)
 
+
 class MovieDetails(object):
     "show movie details"
-    def __init__(self,cursor,connect,movie_title):
+    def __init__(self, cursor, connect, movie_title):
         self.cursor = cursor
         self.connect = connect
         self.movie_title = movie_title
@@ -265,23 +264,23 @@ class MovieDetails(object):
         youtube_link = self.details.get_object("lkYoutubeUrl")
         self.watch_list = self.details.get_object("lblWatchList")
         description = self.details.get_object("bufDescription")
-        self.cursor.execute("SELECT movies.title,movies.link,movie_images.path "+
-                            'FROM movies,movie_images where movies.title=? '+
-                            'AND movie_images.title=?',(self.movie_title,self.movie_title,))
-        (mt, ml, mi,)= self.cursor.fetchone()
+        self.cursor.execute("SELECT movies.title,movies.link,movie_images.path "\
+                            'FROM movies,movie_images where movies.title=? '\
+                            'AND movie_images.title=?',(self.movie_title, self.movie_title,))
+        (mt, ml, mi,) = self.cursor.fetchone()
         movie_title.set_text(mt)
         movie_link.set_uri(ml)
         movie_link.set_property('label',"Imdb")
         pb = Pixbuf.new_from_file(settings.IMAGE_PATH+mi)
         movie_image.set_from_pixbuf(pb)
-        self.cursor.execute("SELECT id from movie_queue where movie_id="+
+        self.cursor.execute("SELECT id from movie_queue where movie_id="\
                             '(SELECT id from movies where title=?)',(self.movie_title,))
         if self.cursor.fetchone():
             self.watch_list.set_text("Yes")
             self.details.get_object("btnWatchList").set_sensitive(False)
         else:
             self.watch_list.set_text("No")
-        self.cursor.execute("SELECT movie_rating,youtube_url,description from movie_details "+
+        self.cursor.execute("SELECT movie_rating,youtube_url,description from movie_details "\
                             'WHERE movie_id=(SELECT id FROM movies where title=?)',(self.movie_title,))
         if self.cursor.fetchone() is None:
             rating.set_text("")
@@ -298,7 +297,7 @@ class MovieDetails(object):
             (r, yu, des,) = self.cursor.fetchone()
             rating.set_text(str(r))
             youtube_link.set_uri(yu)
-            youtube_link.set_property('label',"Trailer")
+            youtube_link.set_property('label', "Trailer")
             description.set_text(des)
             self.cursor.execute("SELECT name FROM actors AS a JOIN actors_movies AS am "\
                            'ON a.id=am.actor_id AND am.movie_id='\
@@ -310,12 +309,13 @@ class MovieDetails(object):
                 cast_list[key].set_text(name)
                 key += 1
             self.details.get_object("btnFetchDetails").set_sensitive(False)
+            
     def fetch_details(self, widget):
         "fetch details if not present"
         self.details.get_object("spFetch").start()
-        fetch  = WorkerThread(self.stop_spin, self.movie_title)
+        fetch = WorkerThread(self.stop_spin, self.movie_title)
         fetch.start()
-        
+
     def watch_list(self, widget):
         "add to watch list"
         self.cursor.execute("INSERT INTO movie_queue(movie_id,watch_queue_status_id) "\
@@ -324,11 +324,12 @@ class MovieDetails(object):
         self.connect.commit()
         self.watch_list.set_text("Yes")
         self.details.get_object("btnWatchList").set_sensitive(False)
+
     def close(self, widget):
         "close widget"
         self.details.get_object("winMovieDetails").destroy()
 
-    def stop_spin(self,status):
+    def stop_spin(self, status):
         if status == 'no fetch':
             Error("Unable to connect to site")
         elif status == "no detail":
@@ -336,13 +337,13 @@ class MovieDetails(object):
         else:
             self.populate()
         self.details.get_object("spFetch").stop()
-        
+
 
 def details(movie_title):
     "fetching details"
     connect = sqlite3.connect(settings.DATABASE_PATH)
     cursor = connect.cursor()
-    cursor.execute("SELECT id,movie_id from movies where title=?",(movie_title,))
+    cursor.execute("SELECT id,movie_id from movies where title=?", (movie_title,))
     (movie_id, yify_id,) = cursor.fetchone()
     movie_detail = get_movie_details(yify_id)
     if not movie_detail:
@@ -352,7 +353,7 @@ def details(movie_title):
         try:
             connect.execute("INSERT INTO movie_details(movie_id,language,movie_rating,"\
                                     'youtube_url,description) '\
-                                    'VALUES(?,?,?,?,?)',(movie_id,movie_detail["data"]['language'],
+                                    'VALUES(?,?,?,?,?)',(movie_id, movie_detail["data"]['language'],
                                                          movie_detail["data"]['rating'],
                                                          "https://www.youtube.com/watch?v={}".format(movie_detail["data"]["yt_trailer_code"]),
                                                          movie_detail["data"]["description_full"],))
@@ -384,7 +385,7 @@ def details(movie_title):
 
 
 class WorkerThread(Thread):
-    def __init__(self,callback,movie_title):
+    def __init__(self, callback, movie_title):
         Thread.__init__(self)
         self.callback = callback
         self.movie_title = movie_title

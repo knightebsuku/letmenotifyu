@@ -5,14 +5,13 @@ from letmenotifyu.notify import announce
 from letmenotifyu import util
 from letmenotifyu.primewire import primewire
 import logging
-import re
 import sqlite3
-
 
 
 def fetch_new_episdoes(series_link):
     "search for new episodes"
     return primewire(series_link)
+
 
 def series_compare(cursor, new_list, series_id):
     "Compare db list with new series"
@@ -21,6 +20,7 @@ def series_compare(cursor, new_list, series_id):
     data = [x[0] for x in cursor.fetchall()]
     new_data = [link for link in new_list if link[0] not in data]
     return new_data
+
 
 def insert_records(connect, cursor, new_episodes, series_id, series_title):
     "inser new episodes"
@@ -72,7 +72,6 @@ class Series(object):
                     self.insert_new_epsiodes(new_list, episode_count, ids, season_count)
             except TypeError:
                 pass
-            
 
     def insert_new_epsiodes(self, all_eps, new_ep_number, series_id, no_seasons):
         self.cursor.execute("SELECT title,watch from series where id=?", (series_id,))
@@ -126,6 +125,7 @@ class Series(object):
             self.connect.rollback()
         except sqlite3.OperationalError as e:
             logging.exception(e)
+
 
 def series(connect, cursor):
     "Initialise series to update"

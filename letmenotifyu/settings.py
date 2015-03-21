@@ -16,7 +16,8 @@ def logging_dict(log_level):
     levels = {'Logging.DEBUG': logging.DEBUG,
               'Logging.INFO': logging.INFO}
     return levels[log_level]
-    
+
+
 def create_ini_file():
     config['DIRECTORIES'] = {'ImagesDIrectory': DIRECTORY_PATH+'/images/',
                              'TorrentsDirectory': DIRECTORY_PATH+'/torrents/',
@@ -25,8 +26,6 @@ def create_ini_file():
     config["LOGGING"] = {'LoggingLevel': "Logging.INFO"}
     with open(DIRECTORY_PATH+'/config.ini','w') as cfg_file:
         config.write(cfg_file)
-    
-
 
 try:
     config.read(DIRECTORY_PATH+'/config.ini')
@@ -47,4 +46,3 @@ except KeyError:
     os.mkdir(TORRENT_DIRECTORY)
     os.mkdir(INCOMPLETE_DIRECTORY)
     os.mkdir(COMPLETE_DIRECTORY)
-    

@@ -2,13 +2,12 @@ import logging
 import webbrowser
 
 
-
 class Torrent:
     def __init__(self, cursor):
         self.cursor = cursor
 
     def query(self, episode):
-        self.cursor.execute('SELECT title from series where id='+
+        self.cursor.execute('SELECT title from series where id='\
                     '(SELECT series_id from episodes where episode_name=?)', (episode,))
         self.title = self.cursor.fetchone()
 

@@ -12,6 +12,7 @@ from urllib.request import Request, urlopen
 from bs4 import BeautifulSoup
 from letmenotifyu import settings
 
+
 def render_view(image, string, store_model, image_file="ui/movies.png"):
     "Render GtkIconView"
     image.set_from_file(image_file)
@@ -38,23 +39,6 @@ def open_page(cursor, title, option=None):
         webbrowser.open_new("http://www.primewire.ag"+title)
     logging.info("Opening link {}".format(title))
 
-
-def primewire(episode_site):
-    "process series page"
-    try:
-        req = Request(episode_site, headers={'User-Agent': 'Mozilla/5.0'})
-        data = urlopen(req).read().decode('ISO-8859-1')
-        series_page_data = BeautifulSoup(data)
-        all_series_info = []
-        for episode_item in series_page_data.find_all('div', {'class': 'tv_episode_item'}):
-            link = episode_item.a['href']
-            ep_no = episode_item.find('a').contents[0]
-            ep_name = episode_item.find('a').contents[1].text
-            all_series_info.append((link, ep_no.replace(" ", "")+ep_name))
-            seasons = series_page_data.find_all('a', {'class': 'season-toggle'})
-        return all_series_info, len(all_series_info), len(seasons)
-    except Exception:
-        logging.warn("Unable to connect to {} ".format(episode_site))
 
 def series_poster(cursor, connect, series_id):
     "fetch series JPEG"
@@ -100,6 +84,7 @@ def save_image(movie_link, meta):
             image_file.write(urlopen(image_request).read())
             logging.debug("Imaged fetched")
 
+
 def start_logging():
     "Start logging"
     logging.basicConfig(filename=settings.LOG_FILE_PATH,
@@ -135,6 +120,7 @@ def fetch_torrent(torrent_url, title):
             logging.error("unable to fetch torrent for {}".format(title))
             logging.exception(e)
             return False
+
 
 def get_config_value(cursor, key):
     cursor.execute("SELECT value FROM config WHERE key=?", (key,))

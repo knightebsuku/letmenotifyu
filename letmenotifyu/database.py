@@ -3,9 +3,11 @@
 from letmenotifyu import settings
 from litemigration.database import Database
 
+
 def database_init():
     db = Database('sqlite',database=settings.DATABASE_PATH)
     db.initialise()
+
 
 def database_change():
     db = Database('sqlite',database=settings.DATABASE_PATH)
@@ -178,7 +180,3 @@ def database_change():
         [62, "ALTER TABLE movies ADD COLUMN year INTEGER NOT NULL DEFAULT 0"],
         [63, "ALTER TABLE episodes ADD COLUMN episode_number VARCHAR(8) NOT NULL DEFAULT 0"]
     ])
-
-
-
-

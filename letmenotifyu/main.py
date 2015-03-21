@@ -323,7 +323,6 @@ class Main(object):
             gui.Error("{} added to upcoming queue".format(self.choice))
         except sqlite3.IntegrityError:
             gui.Error("{} is already in upcoming queue".format(self.choice))
-            
 
     def search_changed(self, widget):
         "change search only for movies"
