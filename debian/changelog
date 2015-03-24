@@ -1,0 +1,6 @@
+letmenotifyu (2.2.1-1) unstable; urgency=low
+
+  * Fix fetching movie images
+  * clean up
+
+ -- Lunga Mthembu <complexstu@gmail.com>  Tue, 24 Mar 2015 18:50:12 +0200
