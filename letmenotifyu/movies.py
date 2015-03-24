@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-from urllib.request import urlopen
+from urllib.request import Request, urlopen, urlretrieve
 from letmenotifyu.notify import announce
 from letmenotifyu import settings
 from letmenotifyu import util
@@ -11,6 +11,7 @@ import sqlite3
 import json
 import os
 import urllib
+
 
 
 def movie(connect, cursor):
@@ -37,8 +38,8 @@ def get_upcoming_movies():
 def get_released_movies(cursor):
     "Get list of movies released by yifi"
     try:
-        quality = util.get_config_value(cursor, "movie_quality")
-        limit = util.get_config_value(cursor, 'max_movie_results')
+        quality = util.get_config_value(cursor,"movie_quality")
+        limit = util.get_config_value(cursor,'max_movie_results')
         yifi_url = urlopen("https://yts.to/api/v2/list_movies.json?quality={}&limit={}".format(quality,limit))
         json_data = json.loads(yifi_url.read().decode('utf-8'))
         return json_data
@@ -63,10 +64,9 @@ def insert_movie_details(q):
     connect = sqlite3.connect(settings.DATABASE_PATH)
     cursor = connect.cursor()
     while True:
-        [movie_id, yify_id] = q.get()
+        [movie_id,yify_id] = q.get()
         movie_detail = get_movie_details(yify_id)
-        if not movie_detail:
-            logging.warn("Unable to connect to site to fetch movie details")
+        if not movie_detail:            
             q.task_done()
         elif movie_detail["status"] == "ok":
             try:
@@ -114,9 +114,10 @@ def insert_released_movies(data, cursor, db):
         details_worker.setDaemon(True)
         details_worker.start()
         for movie_detail in released_data:
-            try:
-                genre_id = get_movie_genre(movie_detail["genres"][0], cursor, db)
-                row = db.execute("INSERT INTO movies(genre_id,title,link,date_added,movie_id,year)"\
+            if fetch_image(movie_detail["medium_cover_image"], movie_detail['title']):
+                try:
+                    genre_id = get_movie_genre(movie_detail["genres"][0], cursor, db)
+                    row = db.execute("INSERT INTO movies(genre_id,title,link,date_added,movie_id,year)"+
                                  'VALUES(?,?,?,?,?,?)',
                            (genre_id,
                             movie_detail['title'],
@@ -124,47 +125,45 @@ def insert_released_movies(data, cursor, db):
                             movie_detail["date_uploaded"],
                             movie_detail["id"],
                            movie_detail["year"],))
-                db.execute("INSERT INTO movie_torrent_links(movie_id,link,hash_sum) VALUES(?,?,?)",
+                    db.execute("INSERT INTO movie_torrent_links(movie_id,link,hash_sum) VALUES(?,?,?)",
                            (row.lastrowid, movie_detail["torrents"][0]["url"], movie_detail["torrents"][0]["hash"],))
-                insert_movie_image(movie_detail["title"], movie_detail["medium_cover_image"], db)
-                q.put([row.lastrowid, movie_detail["id"]])
-                db.commit()
-                announce('Newly Released Movie', movie_detail["title"],
+                    db.execute("INSERT INTO movie_images(title,path) VALUES(?,?)",
+                               (movie_detail['title'], movie_detail['title']+".jpg",))
+                    q.put([row.lastrowid, movie_detail["id"]])
+                    db.execute("DELETE from upcoming_movies where title=?",(movie_detail['title'],))
+                    db.commit()
+                    announce('Newly Released Movie', movie_detail["title"],
                          "http://www.imdb.com/title/{}".format(movie_detail["imdb_code"]))
-            except Exception as e:
-                db.rollback()
-                logging.exception(e)
+                except sqlite3.IntegrityError:
+                    logging.info("image for {}  already exists in database".format(movie_detail['title']))
+                except Exception as e:
+                    db.rollback()
+                    logging.exception(e)
         q.join()
 
 
-def insert_upcoming_movies(movie_data, db,cursor):
+def insert_upcoming_movies(movie_data, db, cursor):
     "insert upcoming new movies"
     new_movie_data = movie_compare(cursor, "upcoming_movies", movie_data["data"]["upcoming_movies"])
     if new_movie_data:
         for movie_detail in new_movie_data:
-            try:
-                db.execute("INSERT INTO upcoming_movies(title,link) VALUES(?,?)",
+            if fetch_image(movie_detail["medium_cover_image"], movie_detail["title"]):
+                try:
+                    db.execute("INSERT INTO movie_images(title,path) VALUES(?,?)",
+                               (movie_detail['title'], movie_detail['title']+".jpg",))
+                    db.execute("INSERT INTO upcoming_movies(title,link) VALUES(?,?)",
                        (movie_detail["title"],
                         "http://www.imdb.com/title/{}".format(movie_detail["imdb_code"]),))
-                insert_movie_image(movie_detail["title"],
-                                    movie_detail["medium_cover_image"], db)
-                db.commit()
-                announce('Upcoming Movie', movie_detail["title"],
+                    db.commit()
+                    announce('Upcoming Movie', movie_detail["title"],
                          "http://www.imdb.com/title/{}".format(movie_detail["imdb_code"]))
-            except Exception as e:
-                db.rollback()
-                logging.exception(e)
+                except sqlite3.IntegrityError:
+                    logging.info("image for {}  already exists in database".format(movie_detail['title']))
+                except Exception as error:
+                    db.rollback()
+                    logging.exception(error)
     else:
         logging.debug("no new upcoming movies")
-
-
-def insert_movie_image(movie_title, image_url, db):
-    if fetch_image(image_url, movie_title):
-        try:
-            db.execute("INSERT INTO movie_images(title,path) VALUES(?,?)",
-                   (movie_title, movie_title+".jpg",))
-        except sqlite3.IntegrityError:
-            logging.info("image for {}  already exists in database".format(movie_title))
 
 
 def fetch_image(image_url, title,):
@@ -174,15 +173,13 @@ def fetch_image(image_url, title,):
         return True
     else:
         try:
-            with open(settings.IMAGE_PATH+title+".jpg",'wb') as image_file:
-                image_file.write(urlopen(image_url).read())
-                logging.debug("imaged fetched for {}".format(title))
+            urlretrieve(image_url, settings.IMAGE_PATH+title+".jpg")
+            logging.debug("imaged fetched for {}".format(title))
             return True
         except Exception as e:
             logging.exception(e)
             return False
-
-
+    
 def movie_compare(cursor, table, new_data):
     "compare new movie list to current database"
     new_movie_data = []
