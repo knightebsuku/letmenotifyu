@@ -1,1 +1,1 @@
-3709726799c48c28ffa0012fea5bc23c  letmenotifyu_2.2.0-2_amd64.deb
+0a3d80bde1ce8153eabef0a03fe9f3e2  letmenotifyu_2.2.1-1_all.deb
