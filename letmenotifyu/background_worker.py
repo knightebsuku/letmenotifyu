@@ -141,8 +141,7 @@ def process_movie_queue():
         value = util.get_config_value(cursor, 'movie_process_interval')
         time.sleep(float(value)*3600)
 
-
-def check_upcoming_queue(connect, cursor):
+def check_upcoming_queue(connect,cursor):
     "move upcoming queue movie to movie_queue"
     cursor.execute("SELECT title FROM upcoming_queue")
     data = cursor.fetchall()
