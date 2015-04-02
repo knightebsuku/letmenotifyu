@@ -25,8 +25,8 @@ def modify_episode_number(season_value, episode_value):
         season_value = "0{}".format(season_value)
     if int(episode_value) < 10:
         episode_value = "0{}".format(episode_value)
-    return''.join(('S',season_value,'E',episode_value))
-        
+    return''.join(('S', season_value, 'E', episode_value))
+
 
 def primewire(episode_site):
     "process series page"
