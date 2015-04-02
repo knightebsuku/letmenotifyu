@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-from urllib.request import Request, urlopen, urlretrieve
+from urllib.request import urlopen, urlretrieve
 from letmenotifyu.notify import announce
 from letmenotifyu import settings
 from letmenotifyu import util
@@ -11,7 +11,6 @@ import sqlite3
 import json
 import os
 import urllib
-
 
 
 def movie(connect, cursor):
@@ -38,9 +37,9 @@ def get_upcoming_movies():
 def get_released_movies(cursor):
     "Get list of movies released by yifi"
     try:
-        quality = util.get_config_value(cursor,"movie_quality")
-        limit = util.get_config_value(cursor,'max_movie_results')
-        yifi_url = urlopen("https://yts.to/api/v2/list_movies.json?quality={}&limit={}".format(quality,limit))
+        quality = util.get_config_value(cursor, "movie_quality")
+        limit = util.get_config_value(cursor, 'max_movie_results')
+        yifi_url = urlopen("https://yts.to/api/v2/list_movies.json?quality={}&limit={}".format(quality, limit))
         json_data = json.loads(yifi_url.read().decode('utf-8'))
         return json_data
     except (urllib.error.URLError, urllib.error.HTTPError):
@@ -64,9 +63,9 @@ def insert_movie_details(q):
     connect = sqlite3.connect(settings.DATABASE_PATH)
     cursor = connect.cursor()
     while True:
-        [movie_id,yify_id] = q.get()
+        [movie_id, yify_id] = q.get()
         movie_detail = get_movie_details(yify_id)
-        if not movie_detail:            
+        if not movie_detail:
             q.task_done()
         elif movie_detail["status"] == "ok":
             try:
@@ -88,13 +87,13 @@ def insert_movie_details(q):
                         (actor_id,) = cursor.fetchone()
                         connect.execute("INSERT INTO actors_movies(actor_id,movie_id) "\
                                         'VALUES(?,?)', (actor_id, movie_id,))
-                      
                     finally:
                         connect.commit()
             except sqlite3.IntegrityError:
                 logging.warn("Movie Detail already exists")
             except sqlite3.OperationalError as e:
                 logging.exception(e)
+                connect.rollback()
             finally:
                 q.task_done()
         else:
@@ -130,7 +129,7 @@ def insert_released_movies(data, cursor, db):
                     db.execute("INSERT INTO movie_images(title,path) VALUES(?,?)",
                                (movie_detail['title'], movie_detail['title']+".jpg",))
                     q.put([row.lastrowid, movie_detail["id"]])
-                    db.execute("DELETE from upcoming_movies where title=?",(movie_detail['title'],))
+                    db.execute("DELETE FROM upcoming_movies WHERE title IN (SELECT title FROM movies")
                     db.commit()
                     announce('Newly Released Movie', movie_detail["title"],
                          "http://www.imdb.com/title/{}".format(movie_detail["imdb_code"]))
@@ -179,7 +178,8 @@ def fetch_image(image_url, title,):
         except Exception as e:
             logging.exception(e)
             return False
-    
+
+
 def movie_compare(cursor, table, new_data):
     "compare new movie list to current database"
     new_movie_data = []
