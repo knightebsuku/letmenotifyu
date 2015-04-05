@@ -129,7 +129,7 @@ def insert_released_movies(data, cursor, db):
                     db.execute("INSERT INTO movie_images(title,path) VALUES(?,?)",
                                (movie_detail['title'], movie_detail['title']+".jpg",))
                     q.put([row.lastrowid, movie_detail["id"]])
-                    db.execute("DELETE FROM upcoming_movies WHERE title IN (SELECT title FROM movies")
+                    db.execute("DELETE FROM upcoming_movies WHERE title IN (SELECT title FROM movies)")
                     db.commit()
                     announce('Newly Released Movie', movie_detail["title"],
                          "http://www.imdb.com/title/{}".format(movie_detail["imdb_code"]))
