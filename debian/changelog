@@ -1,8 +1,9 @@
-letmenotifyu (2.2.1-2) UNRELEASED; urgency=medium
+letmenotifyu (2.2.1-3) UNRELEASED; urgency=medium
 
   * Delete upcoming movies if released
+  * fix
 
- -- Lunga Mthembu <complexstu@gmail.com>  Thu, 02 Apr 2015 20:02:47 +0200
+ -- Lunga Mthembu <complexstu@gmail.com>  Sun, 05 Apr 2015 08:03:41 +0200
 
 letmenotifyu (2.2.1-1) unstable; urgency=low
 
