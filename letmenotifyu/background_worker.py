@@ -7,6 +7,7 @@ import gzip
 import os
 import urllib
 import glob
+
 from letmenotifyu import settings
 from letmenotifyu.movies import movie
 from letmenotifyu.series import series
