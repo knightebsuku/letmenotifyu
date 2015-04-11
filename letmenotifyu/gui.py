@@ -159,6 +159,7 @@ class Preferences(object):
                              'TorrentsDirectory': torrents+os.sep,
                              'CompleteDownloads': complete+os.sep,
                                  'IncompleteDownloads': incomplete+os.sep}
+        config["LOGGING"] = {'LoggingLevel': "Logging.INFO"}
         with open(settings.DIRECTORY_PATH+'/config.ini','w') as cfg_file:
             config.write(cfg_file)
 
