@@ -131,7 +131,7 @@ def insert_released_movies(data, cursor, db):
                     q.put([row.lastrowid, movie_detail["id"]])
                     db.execute("DELETE FROM upcoming_movies WHERE title IN (SELECT title FROM movies)")
                     db.commit()
-                    announce('Newly Released Movie', movie_detail["title"],
+                    announce('Newly Released Movie', "{} ({})".format(movie_detail["title"], movie_detail["genres"][0]),
                          "http://www.imdb.com/title/{}".format(movie_detail["imdb_code"]))
                 except sqlite3.IntegrityError:
                     logging.info("image for {}  already exists in database".format(movie_detail['title']))
