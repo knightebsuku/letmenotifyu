@@ -15,7 +15,7 @@ def fetch_new_episdoes(series_link):
 
 def series_compare(cursor, new_list, series_id):
     "Compare db list with new series"
-    cursor.execute("SELECT episode_link from episodes where series_id=?",
+    cursor.execute("SELECT episode_link FROM episodes WHERE series_id=?",
                    (series_id,))
     data = [x[0] for x in cursor.fetchall()]
     new_data = [link for link in new_list if link[0] not in data]
@@ -58,7 +58,7 @@ class Series(object):
         self.connect = connect
 
     def update_series(self):
-        self.cursor.execute('SELECT id,series_link,number_of_episodes from series where status=1')
+        self.cursor.execute('SELECT id,series_link,number_of_episodes FROM series WHERE status=1')
         for (ids, series_link, number_eps,) in self.cursor.fetchall():
             try:
                 series_info, episode_count, season_count = fetch_new_episdoes(series_link)
@@ -74,7 +74,7 @@ class Series(object):
                 pass
 
     def insert_new_epsiodes(self, all_eps, new_ep_number, series_id, no_seasons):
-        self.cursor.execute("SELECT title,watch from series where id=?", (series_id,))
+        self.cursor.execute("SELECT title,watch FROM series WHERE id=?", (series_id,))
         (series_detail, watch_status) = self.cursor.fetchone()
         if watch_status == 1:
             logging.debug('episodes will be added to watch list')
@@ -95,8 +95,8 @@ class Series(object):
                              "www.primewire.ag" + episode_link)
                 except sqlite3.IntegrityError:
                     logging.error("Series episode already exists")
-        self.cursor.execute("UPDATE series set number_of_episodes=?,"\
-                                'number_of_seasons=?,last_update=?  where id=?',
+        self.cursor.execute("UPDATE series SET number_of_episodes=?,"\
+                                'number_of_seasons=?,last_update=?  WHERE id=?',
                                 (new_ep_number, no_seasons, datetime.now(), series_id,))
         self.connect.commit()
 
@@ -111,11 +111,11 @@ class Series(object):
                                     'episode_number) '\
                                     'VALUES(?,?,?,?)',
                                     (series_id, episode_link, episode_name, episode_number,))
-            self.cursor.execute("UPDATE series set number_of_episodes=?,"\
+            self.cursor.execute("UPDATE series SET number_of_episodes=?,"\
                                 'number_of_seasons=?,'\
                                 'last_update=?,'\
                                 'current_season=? '\
-                                'where id=?',
+                                'WHERE id=?',
                                  (new_ep_number, no_seasons, datetime.now(),
                                   no_seasons,  series_id,))
             util.series_poster(self.cursor, self.connect, series_id)
