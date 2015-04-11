@@ -1,1 +1,1 @@
-42dc218532a32925a28e921534498389  letmenotifyu_2.2.1-2_all.deb
+bc1037de5e2555bf72bec7c15b0ca967  letmenotifyu_2.3.0-1_all.deb
