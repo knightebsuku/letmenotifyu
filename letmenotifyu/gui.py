@@ -4,11 +4,11 @@ import logging
 import configparser
 import sqlite3
 import re
+import os
 from datetime import datetime
 from gi.repository import Gtk, GObject
 from gi.repository.GdkPixbuf import Pixbuf
-from letmenotifyu import util
-from letmenotifyu import settings
+from letmenotifyu import util, settings
 from threading import Thread
 from letmenotifyu.movies import get_movie_details
 
@@ -97,10 +97,10 @@ class Confirm(object):
 
     def which_sql_message(self):
         if self.instruction == "start":
-            use_sql = "UPDATE series SET status=1 where title=?"
+            use_sql = "UPDATE series SET status=1 WHERE title=?"
             message = "Are you sure you want to start updating"
         elif self.instruction == "stop":
-            use_sql = "UPDATE series SET status=0 where title=?"
+            use_sql = "UPDATE series SET status=0 WHERE title=?"
             message = "Are you sure you want to stop updating"
         elif self.instruction == "delete":
             use_sql = "DELETE FROM series WHERE title=?"
@@ -112,7 +112,7 @@ class Confirm(object):
         self.cursor.execute(self.sql, (self.title,))
         self.connect.commit()
         self.confirm.get_object('msgDialog').destroy()
-        logging.warn("Deleting: "+self.title)
+        logging.warn("Deleting: {}".format(self.title))
 
     def cancel_clicked(self, widget):
         self.confirm.get_object('msgdlg').destroy()
@@ -155,10 +155,10 @@ class Preferences(object):
         torrents = self.pref.get_object("fcbTorrents").get_current_folder()
         complete = self.pref.get_object("fcbComplete").get_current_folder()
         incomplete = self.pref.get_object("fcbIncomplete").get_current_folder()
-        config['DIRECTORIES'] = {'ImagesDIrectory': images+'/',
-                             'TorrentsDirectory': torrents+'/',
-                             'CompleteDownloads': complete+'/',
-                                 'IncompleteDownloads': incomplete+'/'}
+        config['DIRECTORIES'] = {'ImagesDIrectory': images+os.sep,
+                             'TorrentsDirectory': torrents+os.sep,
+                             'CompleteDownloads': complete+os.sep,
+                                 'IncompleteDownloads': incomplete+os.sep}
         with open(settings.DIRECTORY_PATH+'/config.ini','w') as cfg_file:
             config.write(cfg_file)
 
@@ -177,7 +177,7 @@ class Preferences(object):
                      (movie_results, 'max_movie_results'),
                      (movie_quality, 'movie_quality'),
                      (series_duration, 'series_duration')]
-            self.cursor.executemany("UPDATE config set value=? where key=?", query)
+            self.cursor.executemany("UPDATE config SET value=? WHERE key=?", query)
             self.connect.commit()
             self.write_to_config()
             self.pref.get_object('Preference').destroy()
@@ -222,7 +222,7 @@ class SetSeason(object):
         self.current_season.get_object("CurrentSeason").show()
 
     def fetch_current_season(self, series_title):
-        self.cursor.execute('SELECT current_season from series where title=?', (series_title,))
+        self.cursor.execute('SELECT current_season FROM series WHERE title=?', (series_title,))
         (no_season,) = self.cursor.fetchone()
         return no_season
 
@@ -232,7 +232,7 @@ class SetSeason(object):
     def apply_clicked(self, widget):
         try:
             cur_season = self.current_season.get_object('txtCurrent').get_text()
-            self.cursor.execute('UPDATE series set current_season = ? where title=?',
+            self.cursor.execute('UPDATE series SET current_season = ? WHERE title=?',
                            (cur_season, self.series_title,))
             self.connection.commit()
             self.current_season.get_object("CurrentSeason").destroy()
@@ -265,7 +265,7 @@ class MovieDetails(object):
         self.watch_list = self.details.get_object("lblWatchList")
         description = self.details.get_object("bufDescription")
         self.cursor.execute("SELECT movies.title,movies.link,movie_images.path "\
-                            'FROM movies,movie_images where movies.title=? '\
+                            'FROM movies,movie_images WHERE movies.title=? '\
                             'AND movie_images.title=?',(self.movie_title, self.movie_title,))
         (mt, ml, mi,) = self.cursor.fetchone()
         movie_title.set_text(mt)
@@ -273,15 +273,15 @@ class MovieDetails(object):
         movie_link.set_property('label',"Imdb")
         pb = Pixbuf.new_from_file(settings.IMAGE_PATH+mi)
         movie_image.set_from_pixbuf(pb)
-        self.cursor.execute("SELECT id from movie_queue where movie_id="\
-                            '(SELECT id from movies where title=?)',(self.movie_title,))
+        self.cursor.execute("SELECT id FROM movie_queue WHERE movie_id="\
+                            '(SELECT id FROM movies WHERE title=?)',(self.movie_title,))
         if self.cursor.fetchone():
             self.watch_list.set_text("Yes")
             self.details.get_object("btnWatchList").set_sensitive(False)
         else:
             self.watch_list.set_text("No")
-        self.cursor.execute("SELECT movie_rating,youtube_url,description from movie_details "\
-                            'WHERE movie_id=(SELECT id FROM movies where title=?)',(self.movie_title,))
+        self.cursor.execute("SELECT movie_rating,youtube_url,description FROM movie_details "\
+                            'WHERE movie_id=(SELECT id FROM movies WHERE title=?)',(self.movie_title,))
         if self.cursor.fetchone() is None:
             rating.set_text("")
             youtube_link.set_uri("")
@@ -293,7 +293,7 @@ class MovieDetails(object):
             self.details.get_object("lblActor4").set_property("visible", False)
         else:
             self.cursor.execute("SELECT movie_rating,youtube_url,description from movie_details "\
-                            'WHERE movie_id=(SELECT id FROM movies where title=?)',(self.movie_title,))
+                            'WHERE movie_id=(SELECT id FROM movies WHERE title=?)',(self.movie_title,))
             (r, yu, des,) = self.cursor.fetchone()
             rating.set_text(str(r))
             youtube_link.set_uri(yu)
@@ -320,7 +320,7 @@ class MovieDetails(object):
         "add to watch list"
         self.cursor.execute("INSERT INTO movie_queue(movie_id,watch_queue_status_id) "\
                                 "SELECT movies.id,watch_queue_status.id FROM movies,watch_queue_status "\
-                                "WHERE movies.title=? and watch_queue_status.name='new'",(self.movie_title,))
+                                "WHERE movies.title=? AND watch_queue_status.name='new'",(self.movie_title,))
         self.connect.commit()
         self.watch_list.set_text("Yes")
         self.details.get_object("btnWatchList").set_sensitive(False)
@@ -365,7 +365,7 @@ def details(movie_title):
                                     'VALUES(?,?)',(row.lastrowid, movie_id,))
                 except sqlite3.IntegrityError:
                     logging.error("Actor already exists")
-                    cursor.execute("SELECT id from actors where name=?", (actor["name"],))
+                    cursor.execute("SELECT id FROM actors WHERE name=?", (actor["name"],))
                     (actor_id,) = cursor.fetchone()
                     connect.execute("INSERT INTO actors_movies(actor_id,movie_id) "\
                                         'VALUES(?,?)', (actor_id, movie_id,))
