@@ -16,13 +16,14 @@
   </object>
   <object class="GtkAdjustment" id="adjUpdate">
     <property name="lower">1</property>
-    <property name="upper">24</property>
+    <property name="upper">1440</property>
     <property name="step_increment">1</property>
     <property name="page_increment">10</property>
   </object>
   <object class="GtkAdjustment" id="adjustment1">
-    <property name="upper">100</property>
-    <property name="step_increment">0.10000000000000001</property>
+    <property name="lower">1</property>
+    <property name="upper">60</property>
+    <property name="step_increment">1</property>
     <property name="page_increment">10</property>
   </object>
   <object class="GtkListStore" id="lsMovieCombo">
@@ -70,7 +71,7 @@
                       <object class="GtkLabel" id="label4">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="label" translatable="yes">Intervals (hrs)</property>
+                        <property name="label" translatable="yes">Intervals (min)</property>
                         <attributes>
                           <attribute name="weight" value="bold"/>
                         </attributes>
@@ -160,7 +161,6 @@
                         <property name="can_focus">True</property>
                         <property name="input_purpose">number</property>
                         <property name="adjustment">adjustment1</property>
-                        <property name="digits">2</property>
                         <property name="numeric">True</property>
                       </object>
                       <packing>
@@ -172,8 +172,8 @@
                       <object class="GtkSpinButton" id="spSeriesQueue">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
+                        <property name="input_purpose">number</property>
                         <property name="adjustment">adjustment1</property>
-                        <property name="digits">2</property>
                         <property name="numeric">True</property>
                       </object>
                       <packing>
