@@ -6,7 +6,7 @@ Application  to notify users of new episodes from [primewire.ag](http://primewir
 Full application details on the [wiki](https://github.com/stucomplex/letmenotifyu/wiki)
 
 
-Version: 2.2.1
+Version: 2.3.0
 -------------------
 
 Program Features
