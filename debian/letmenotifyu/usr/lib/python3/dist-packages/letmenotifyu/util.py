@@ -32,7 +32,7 @@ def get_selection(view, store_model):
 def open_page(cursor, title, option=None):
     "open webbrowser page"
     if option == 'upcoming':
-        cursor.execute("SELECT link FROM upcoming_movies where title=?", (title,))
+        cursor.execute("SELECT link FROM upcoming_movies WHERE title=?", (title,))
         (link,) = cursor.fetchone()
         webbrowser.open_new(link)
     else:
@@ -42,7 +42,7 @@ def open_page(cursor, title, option=None):
 
 def series_poster(cursor, connect, series_id):
     "fetch series JPEG"
-    cursor.execute("SELECT title,series_link from series where id=?", (series_id,))
+    cursor.execute("SELECT title,series_link FROM series WHERE id=?", (series_id,))
     (title, series_link) = cursor.fetchone()
     try:
         correct_decode(title, series_link)
