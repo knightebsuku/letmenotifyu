@@ -26,8 +26,7 @@ def get_upcoming_movies():
     "Get list of upcoming movies by yifi"
     try:
         yifi_url = urlopen("https://yts.to/api/v2/list_upcoming.json")
-        json_data = json.loads(yifi_url.read().decode('utf-8'))
-        return json_data
+        return json.loads(yifi_url.read().decode('utf-8'))
     except (urllib.error.URLError, urllib.error.HTTPError):
         logging.error("Unable to connect to upcoming movies api")
     except Exception as error:
@@ -40,8 +39,7 @@ def get_released_movies(cursor):
         quality = util.get_config_value(cursor, "movie_quality")
         limit = util.get_config_value(cursor, 'max_movie_results')
         yifi_url = urlopen("https://yts.to/api/v2/list_movies.json?quality={}&limit={}".format(quality, limit))
-        json_data = json.loads(yifi_url.read().decode('utf-8'))
-        return json_data
+        return json.loads(yifi_url.read().decode('utf-8'))
     except (urllib.error.URLError, urllib.error.HTTPError):
         logging.error("unable to connect to released movies api")
     except Exception as error:
@@ -51,8 +49,7 @@ def get_released_movies(cursor):
 def get_movie_details(yify_id):
     try:
         yify_url = urlopen("https://yts.to/api/v2/movie_details.json?movie_id={}&with_cast=true".format(yify_id))
-        movie_detail = json.loads(yify_url.read().decode('utf-8'))
-        return movie_detail
+        return json.loads(yify_url.read().decode('utf-8'))
     except (urllib.error.URLError, urllib.error.HTTPError):
         logging.warn("Unable to connect to movie detail api")
     except Exception as error:
@@ -83,7 +80,7 @@ def insert_movie_details(q):
                                     'VALUES(?,?)',(row.lastrowid, movie_id,))
                     except sqlite3.IntegrityError:
                         logging.debug("{} already exsists".format(actor["name"]))
-                        cursor.execute("SELECT id from actors where name=?", (actor["name"],))
+                        cursor.execute("SELECT id FROM actors WHERE name=?", (actor["name"],))
                         (actor_id,) = cursor.fetchone()
                         connect.execute("INSERT INTO actors_movies(actor_id,movie_id) "\
                                         'VALUES(?,?)', (actor_id, movie_id,))
@@ -183,7 +180,7 @@ def fetch_image(image_url, title,):
 def movie_compare(cursor, table, new_data):
     "compare new movie list to current database"
     new_movie_data = []
-    cursor.execute("SELECT title from "+table)
+    cursor.execute("SELECT title FROM "+table)
     old_movie_data = [x[0] for x in cursor.fetchall()]
     for movie_data in new_data:
         if movie_data["title"] not in old_movie_data:
@@ -192,7 +189,7 @@ def movie_compare(cursor, table, new_data):
 
 
 def get_movie_genre(genre, cursor, db):
-    cursor.execute("SELECT Id FROM genre where genre=?", (genre,))
+    cursor.execute("SELECT Id FROM genre WHERE genre=?", (genre,))
     if cursor.fetchone() is None:
         logging.debug("genre does not exist yet")
         row = db.execute("INSERT INTO genre(genre) VALUES(?)", (genre,))
