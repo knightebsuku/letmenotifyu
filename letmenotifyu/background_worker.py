@@ -32,7 +32,7 @@ def start_threads():
 
 def update():
     "update movies and series"
-    while 1:
+    while True:
         logging.debug("Checking for new episodes and new movie releases")
         connect = sqlite3.connect(settings.DATABASE_PATH)
         cursor = connect.cursor()
@@ -40,29 +40,29 @@ def update():
         series(connect, cursor)
         value = util.get_config_value(cursor, 'update_interval')
         connect.close()
-        time.sleep(float(value)*3600)
+        time.sleep(float(value)*60)
 
 
 def process_series_queue():
     "handle the series queues"
     connect = sqlite3.connect(settings.DATABASE_PATH)
     cursor = connect.cursor()
-    while 1:
-        api_file = fetch_kickass_file(cursor)
-        cursor.execute("SELECT title, series_queue.id, episode_name,watch_queue_status_id "\
+    while True:
+        kickass_file = fetch_kickass_file(cursor)
+        cursor.execute("SELECT title, series_queue.id, episode_name, watch_queue_status_id "\
                        'FROM  series_queue join series ON series_id=series.id')
-        queues = cursor.fetchall()
-        for (title, queue_id, ep_name, watch_id) in queues:
+        for (title, queue_id, ep_name, watch_id) in cursor.fetchall():
+            series_titles = title.replace(" ", ".")
             if watch_id == 1:
                 logging.info("fetching episode torrent for {}".format(title))
                 try:
-                    (_, series_title, _, _, episode_link) = kickass.search_episode(api_file, title, ep_name,
+                    (_, series_title, _, _, episode_link) = kickass.search_episode(kickass_file, title, ep_name,
                                                                                    "HDTV x264-(LOL|KILLERS|ASAP)")
-                    if util.fetch_torrent(episode_link.replace("\n",""), series_title):
+                    if util.fetch_torrent(episode_link.replace("\n", ""), series_title):
                         try:
-                            connect.execute("INSERT INTO series_torrent_links(series_queue_id,link) VALUES(?,?)",
+                            connect.execute("INSERT INTO series_torrent_links(series_queue_id, link) VALUES(?,?)",
                                 (queue_id, episode_link,))
-                            connect.execute("UPDATE series_queue set watch_queue_status_id=2 where id=?",
+                            connect.execute("UPDATE series_queue SET watch_queue_status_id=2 WHERE id=?",
                                 (queue_id,))
                             connect.commit()
                         except sqlite3.IntegrityError:
@@ -70,9 +70,8 @@ def process_series_queue():
                 except TypeError:
                     pass
             elif watch_id == 2:
-                series_title = title.replace(" ", ".")
                 for dirs in os.listdir(settings.INCOMPLETE_DIRECTORY):
-                    if dirs.startswith(series_title):
+                    if dirs.startswith(series_titles):
                         try:
                             connect.execute("UPDATE series_queue SET watch_queue_status_id=3 WHERE id=?",
                                         (queue_id,))
@@ -82,11 +81,10 @@ def process_series_queue():
                             logging.exception(error)
                             break
             elif watch_id == 3:
-                series_title = title.replace(" ", ".")
                 for dirs in os.listdir(settings.COMPLETE_DIRECTORY):
-                    if dirs.startswith(series_title):
+                    if dirs.startswith(series_titles):
                         try:
-                            connect.execute("UPDATE series_queue set watch_queue_status_id=4 where id=?",
+                            connect.execute("UPDATE series_queue SET watch_queue_status_id=4 WHERE id=?",
                                             (queue_id,))
                             connect.commit()
                             break
@@ -95,7 +93,7 @@ def process_series_queue():
                             break
         cursor.execute("PRAGMA wal_checkpoint(PASSIVE)")
         value = util.get_config_value(cursor, 'series_process_interval')
-        time.sleep(float(value)*3600)
+        time.sleep(float(value)*60)
 
 
 def process_movie_queue():
@@ -114,7 +112,7 @@ def process_movie_queue():
                 logging.info("downloading torrent for {}".format(movie_title))
                 if util.fetch_torrent(torrent_url, movie_title):
                     try:
-                        connect.execute("UPDATE movie_queue set watch_queue_status_id=2 where id=?",
+                        connect.execute("UPDATE movie_queue SET watch_queue_status_id=2 WHERE id=?",
                             (queue_id,))
                         connect.commit()
                     except sqlite3.OperationalError as error:
@@ -123,7 +121,7 @@ def process_movie_queue():
                 if glob.glob("{}*".format(settings.INCOMPLETE_DIRECTORY+movie_title)):
                     try:
                         logging.debug("{} on status 2, moving to status 3".format(movie_title))
-                        connect.execute("UPDATE movie_queue set watch_queue_status_id=3 where id=?",
+                        connect.execute("UPDATE movie_queue SET watch_queue_status_id=3 WHERE id=?",
                             (queue_id,))
                         connect.commit()
                     except sqlite3.OperationalError as error:
@@ -132,7 +130,7 @@ def process_movie_queue():
                 if glob.glob("{}*".format(settings.COMPLETE_DIRECTORY+movie_title)):
                     try:
                         logging.debug("{} on status 3, moving to status 4".format(movie_title))
-                        connect.execute("UPDATE movie_queue set watch_queue_status_id=4 where id=?",
+                        connect.execute("UPDATE movie_queue SET watch_queue_status_id=4 WHERE id=?",
                             (queue_id,))
                         connect.commit()
                     except sqlite3.OperationalError as error:
@@ -140,9 +138,10 @@ def process_movie_queue():
             else:
                 logging.debug('no movies in queues')
         value = util.get_config_value(cursor, 'movie_process_interval')
-        time.sleep(float(value)*3600)
+        time.sleep(float(value)*60)
 
-def check_upcoming_queue(connect,cursor):
+
+def check_upcoming_queue(connect, cursor):
     "move upcoming queue movie to movie_queue"
     cursor.execute("SELECT title FROM upcoming_queue")
     data = cursor.fetchall()
@@ -163,7 +162,7 @@ def check_upcoming_queue(connect,cursor):
 
 def fetch_kickass_file(cursor):
     "fetch kickass dump file"
-    cursor.execute("SELECT * FROM series_queue where watch_queue_status_id=1")
+    cursor.execute("SELECT * FROM series_queue WHERE watch_queue_status_id=1")
     if cursor.fetchall():
         logging.debug("episode in status new, need to fetch kickass file")
         try:
