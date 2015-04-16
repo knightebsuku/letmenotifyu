@@ -56,7 +56,7 @@ def process_series_queue():
             if watch_id == 1:
                 logging.info("fetching episode torrent for {}".format(title))
                 try:
-                    (_, series_title, _, _, episode_link) = kickass.search_episode(kickass_file, title, ep_name,
+                    (_, series_title, _, _, episode_link, _, _, _, _, _, _,) = kickass.search_episode(kickass_file, title, ep_name,
                                                                                    "HDTV x264-(LOL|KILLERS|ASAP)")
                     if util.fetch_torrent(episode_link.replace("\n", ""), series_title):
                         try:
@@ -67,7 +67,8 @@ def process_series_queue():
                             connect.commit()
                         except sqlite3.IntegrityError:
                             logging.warn("torrent link for {} already exists".format(title))
-                except TypeError:
+                except TypeError as e:
+                    logging.exception(e)
                     pass
             elif watch_id == 2:
                 for dirs in os.listdir(settings.INCOMPLETE_DIRECTORY):
