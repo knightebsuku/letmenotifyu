@@ -91,6 +91,7 @@ def insert_movie_details(q):
             except sqlite3.OperationalError as e:
                 logging.exception(e)
                 connect.rollback()
+                q.put([movie_id, yify_id])
             finally:
                 q.task_done()
         else:
@@ -130,8 +131,8 @@ def insert_released_movies(data, cursor, db):
                     db.commit()
                     announce('Newly Released Movie', "{} ({})".format(movie_detail["title"], movie_detail["genres"][0]),
                          "http://www.imdb.com/title/{}".format(movie_detail["imdb_code"]))
-                except sqlite3.IntegrityError:
-                    logging.info("image for {}  already exists in database".format(movie_detail['title']))
+                except sqlite3.IntegrityError as e:
+                    logging.exception(e)
                 except Exception as e:
                     db.rollback()
                     logging.exception(e)
@@ -153,8 +154,8 @@ def insert_upcoming_movies(movie_data, db, cursor):
                     db.commit()
                     announce('Upcoming Movie', movie_detail["title"],
                          "http://www.imdb.com/title/{}".format(movie_detail["imdb_code"]))
-                except sqlite3.IntegrityError:
-                    logging.info("image for {}  already exists in database".format(movie_detail['title']))
+                except sqlite3.IntegrityError as e:
+                    logging.exception(e)
                 except Exception as error:
                     db.rollback()
                     logging.exception(error)

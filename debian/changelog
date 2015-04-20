@@ -1,4 +1,4 @@
-letmenotifyu (2.3.1-1) UNRELEASED; urgency=medium
+letmenotifyu (2.3.1-2) UNRELEASED; urgency=medium
 
   * Delete upcoming movies if released
   * fix
@@ -6,8 +6,9 @@ letmenotifyu (2.3.1-1) UNRELEASED; urgency=medium
   * fix paths
   * change interval to minutes
   * Fix kickass dump tuple
+  * Re-Queue if movie detail unsucssesful
 
- -- Lunga Mthembu <complexstu@gmail.com>  Thu, 16 Apr 2015 11:57:41 +0200
+ -- Lunga Mthembu <complexstu@gmail.com>  Mon, 20 Apr 2015 20:14:36 +0200
 
 letmenotifyu (2.2.1-1) unstable; urgency=low
 
