@@ -41,6 +41,8 @@ def insert_records(connect, cursor, new_episodes, series_id, series_title):
                          "www.primewire.ag" + episode_link)
         except sqlite3.IntegrityError:
             logging.error("Series episode {} already exists".format(episode_link))
+        except sqlite3.OperationalError as e:
+            logging.exception(e)
 
 
 def send_to_queue(series_id, episode_number, db, row_id):
@@ -90,15 +92,16 @@ class Series(object):
                                     'Date) ' \
                                         'VALUES(?,?,?,?,?)'
                                     ,(series_id, episode_link, episode_name, episode_number, datetime.now(),))
+                    self.cursor.execute("UPDATE series SET number_of_episodes=?,"\
+                                'number_of_seasons=?,last_update=?  WHERE id=?',
+                                (new_ep_number, no_seasons, datetime.now(), series_id,))
                     self.connect.commit()
                     announce("New Series Episode", series_detail,
                              "www.primewire.ag" + episode_link)
                 except sqlite3.IntegrityError:
                     logging.error("Series episode already exists")
-        self.cursor.execute("UPDATE series SET number_of_episodes=?,"\
-                                'number_of_seasons=?,last_update=?  WHERE id=?',
-                                (new_ep_number, no_seasons, datetime.now(), series_id,))
-        self.connect.commit()
+                except sqlite3.OperationalError as e:
+                    logging.exception(e)
 
     def new_series_episodes(self, all_episodes, new_ep_number, series_id, no_seasons):
         "new series"
