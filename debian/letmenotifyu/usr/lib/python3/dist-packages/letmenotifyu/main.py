@@ -316,6 +316,7 @@ class Main(object):
         gui.SetSeason(self.cursor, self.connect, self.striped_name)
 
     def upcoming_queue(self, widget):
+        print("DOING STUFFFFFFFFFFFFFFFFFFFF")
         try:
             self.cursor.execute("INSERT INTO upcoming_queue(title) "\
                                 "SELECT title from upcoming_movies where title=?",(self.choice,))
@@ -323,6 +324,8 @@ class Main(object):
             gui.Error("{} added to upcoming queue".format(self.choice))
         except sqlite3.IntegrityError:
             gui.Error("{} is already in upcoming queue".format(self.choice))
+        except Exception as e:
+            logging.exception(e)
 
     def search_changed(self, widget):
         "change search only for movies"
