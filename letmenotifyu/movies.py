@@ -91,7 +91,7 @@ def insert_movie_details(q):
             except sqlite3.OperationalError as e:
                 logging.exception(e)
                 connect.rollback()
-                q.put([movie_id, yify_id])
+                #q.put([movie_id, yify_id])
             finally:
                 q.task_done()
         else:
