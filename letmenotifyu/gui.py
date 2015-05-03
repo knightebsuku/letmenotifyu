@@ -367,26 +367,8 @@ def details(movie_title, connect, cursor):
                              movie_detail["data"]['rating'],
                              "https://www.youtube.com/watch?v={}".format(movie_detail["data"]["yt_trailer_code"]),
                              movie_detail["data"]["description_full"],))
-            for actor in movie_detail["data"]["actors"]:
-                try:
-                    cursor.execute("INSERT INTO actors(name) "\
-                                          'VALUES(%s) RETURNING id',(actor["name"],))
-                    lastrowid = cursor.fetchone()[0]
-                    cursor.execute("INSERT INTO actors_movies(actor_id,movie_id) "\
-                                    'VALUES(%s,%s)',(lastrowid, movie_id,))
-                except (psycopg2.IntegrityError):
-                    connect.rollback()
-                    cursor.execute("SELECT id FROM actors WHERE name=%s", (actor["name"],))
-                    (actor_id,) = cursor.fetchone()
-                    cursor.execute("INSERT INTO actors_movies(actor_id,movie_id) "\
-                                        'VALUES(%s,%s)', (actor_id, movie_id,))
-                    logging.debug("movie detail for {} complete".format(movie_id))
-                except psycopg2.ProgrammingError as e:
-                    connect.rollback()
-                    logging.exception(e)
-                finally:
-                    connect.commit()
-                    status = "ok"
+            check_actors(movie_detail['data']['actors'], movie_id, cursor)
+            connect.commit()
         except psycopg2.IntegrityError as e:
             connect.rollback()
             status = 'no detail'
@@ -402,6 +384,28 @@ def details(movie_title, connect, cursor):
     return status
 
 
+def check_actors(actor_details, movie_id, cursor):
+    "Check if actor exists or not"
+    for actor in actor_details:
+        cursor.execute("SELECT id from actors WHERE name=%s", (actor['name'],))
+        if cursor.fetchone():
+            cursor.execute("SELECT id from actors WHERE name=%s", (actor['name'],))
+            (actor_id,) = cursor.fetchone()
+            cursor.execute("INSERT INTO actors_movies(actor_id,movie_id) "\
+                                        'VALUES(%s,%s)', (actor_id, movie_id,))
+        else:
+            cursor.execute("INSERT INTO actors(name) "\
+                                          'VALUES(%s) RETURNING id',(actor["name"],))
+            lastrowid = cursor.fetchone()[0]
+            cursor.execute("INSERT INTO actors_movies(actor_id,movie_id) "\
+                                    'VALUES(%s,%s)',(lastrowid, movie_id,))
+            
+            
+            
+            
+            
+            
+    
 class WorkerThread(Thread):
     def __init__(self, callback, movie_title):
         Thread.__init__(self)
