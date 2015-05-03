@@ -6,7 +6,7 @@ Application  to notify users of new episodes from [primewire.ag](http://primewir
 Full application details on the [wiki](https://github.com/stucomplex/letmenotifyu/wiki)
 
 
-Version: 2.3.0
+Version: 3.0.0
 -------------------
 
 Program Features
@@ -40,6 +40,8 @@ Dependencies
 * GTK +3
 
 * Python3-litemigration [Litemigration](https://github.com/stucomplex/python3-litemigration)
+
+* Python3-psycopg2
 
 
 

@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-import sqlite3
+import psycopg2
 import logging
 import time
 import gzip
@@ -34,7 +34,11 @@ def update():
     "update movies and series"
     while True:
         logging.debug("Checking for new episodes and new movie releases")
-        connect = sqlite3.connect(settings.DATABASE_PATH)
+        connect = psycopg2.connect(host=settings.DB_HOST,
+                                        database=settings.DB_NAME,
+                                        port=settings.DB_PORT,
+                                        user=settings.DB_USER,
+                                        password=settings.DB_PASSWORD)
         cursor = connect.cursor()
         movie(connect, cursor)
         series(connect, cursor)
@@ -45,7 +49,11 @@ def update():
 
 def process_series_queue():
     "handle the series queues"
-    connect = sqlite3.connect(settings.DATABASE_PATH)
+    connect = psycopg2.connect(host=settings.DB_HOST,
+                                        database=settings.DB_NAME,
+                                        port=settings.DB_PORT,
+                                        user=settings.DB_USER,
+                                        password=settings.DB_PASSWORD)
     cursor = connect.cursor()
     while True:
         kickass_file = fetch_kickass_file(cursor)
@@ -60,12 +68,13 @@ def process_series_queue():
                                                                                                       "HDTV x264-(LOL|KILLERS|ASAP|2HD)")
                     if util.fetch_torrent(episode_link.replace("\n", ""), series_title):
                         try:
-                            connect.execute("INSERT INTO series_torrent_links(series_queue_id, link) VALUES(?,?)",
+                            cursor.execute("INSERT INTO series_torrent_links(series_queue_id, link) VALUES(%s,%s)",
                                 (queue_id, episode_link,))
-                            connect.execute("UPDATE series_queue SET watch_queue_status_id=2 WHERE id=?",
+                            cursor.execute("UPDATE series_queue SET watch_queue_status_id=2 WHERE id=%s",
                                 (queue_id,))
                             connect.commit()
-                        except sqlite3.IntegrityError:
+                        except psycopg2.IntegrityError:
+                            connect.rollback()
                             logging.warn("torrent link for {} already exists".format(title))
                 except TypeError as e:
                     logging.exception(e)
@@ -74,32 +83,37 @@ def process_series_queue():
                 for dirs in os.listdir(settings.INCOMPLETE_DIRECTORY):
                     if dirs.startswith(series_titles):
                         try:
-                            connect.execute("UPDATE series_queue SET watch_queue_status_id=3 WHERE id=?",
+                            cursor.execute("UPDATE series_queue SET watch_queue_status_id=3 WHERE id=%s",
                                         (queue_id,))
                             connect.commit()
                             break
-                        except sqlite3.OperationalError as error:
+                        except psycopg2.OperationalError as error:
+                            connect.rollback()
                             logging.exception(error)
                             break
             elif watch_id == 3:
                 for dirs in os.listdir(settings.COMPLETE_DIRECTORY):
                     if dirs.startswith(series_titles):
                         try:
-                            connect.execute("UPDATE series_queue SET watch_queue_status_id=4 WHERE id=?",
+                            cursor.execute("UPDATE series_queue SET watch_queue_status_id=4 WHERE id=%s",
                                             (queue_id,))
                             connect.commit()
                             break
-                        except sqlite3.OperationalError as e:
+                        except psycopg2.OperationalError as e:
+                            connect.rollback()
                             logging.exception(e)
                             break
-        cursor.execute("PRAGMA wal_checkpoint(PASSIVE)")
         value = util.get_config_value(cursor, 'series_process_interval')
         time.sleep(float(value)*60)
 
 
 def process_movie_queue():
     "handle movie queues"
-    connect = sqlite3.connect(settings.DATABASE_PATH)
+    connect = psycopg2.connect(host=settings.DB_HOST,
+                                        database=settings.DB_NAME,
+                                        port=settings.DB_PORT,
+                                        user=settings.DB_USER,
+                                        password=settings.DB_PASSWORD)
     cursor = connect.cursor()
     while 1:
         check_upcoming_queue(connect, cursor)
@@ -113,28 +127,31 @@ def process_movie_queue():
                 logging.info("downloading torrent for {}".format(movie_title))
                 if util.fetch_torrent(torrent_url, movie_title):
                     try:
-                        connect.execute("UPDATE movie_queue SET watch_queue_status_id=2 WHERE id=?",
+                        cursor.execute("UPDATE movie_queue SET watch_queue_status_id=2 WHERE id=%s",
                             (queue_id,))
-                        connect.commit()
-                    except sqlite3.OperationalError as error:
+                        cursor.commit()
+                    except psycopg2.OperationalError as error:
+                        connect.rollback()
                         logging.exception(error)
             elif watch_id == 2:
                 if glob.glob("{}*".format(settings.INCOMPLETE_DIRECTORY+movie_title)):
                     try:
                         logging.debug("{} on status 2, moving to status 3".format(movie_title))
-                        connect.execute("UPDATE movie_queue SET watch_queue_status_id=3 WHERE id=?",
+                        cursor.execute("UPDATE movie_queue SET watch_queue_status_id=3 WHERE id=%s",
                             (queue_id,))
                         connect.commit()
-                    except sqlite3.OperationalError as error:
+                    except psycopg2.OperationalError as error:
+                        connect.rollback()
                         logging.exception(error)
             elif watch_id == 3:
                 if glob.glob("{}*".format(settings.COMPLETE_DIRECTORY+movie_title)):
                     try:
                         logging.debug("{} on status 3, moving to status 4".format(movie_title))
-                        connect.execute("UPDATE movie_queue SET watch_queue_status_id=4 WHERE id=?",
+                        cursor.execute("UPDATE movie_queue SET watch_queue_status_id=4 WHERE id=%s",
                             (queue_id,))
                         connect.commit()
-                    except sqlite3.OperationalError as error:
+                    except psycopg2.OperationalError as error:
+                        connect.rollback()
                         logging.exception(error)
             else:
                 logging.debug('no movies in queues')
@@ -147,18 +164,19 @@ def check_upcoming_queue(connect, cursor):
     cursor.execute("SELECT title FROM upcoming_queue")
     data = cursor.fetchall()
     for (title,) in data:
-        cursor.execute("SELECT id FROM movies WHERE title=?", (title,))
+        cursor.execute("SELECT id FROM movies WHERE title=%s", (title,))
         if cursor.fetchone():
             try:
                 cursor.execute("INSERT INTO movie_queue(movie_id,watch_queue_status_id) "\
                             "SELECT movies.id,watch_queue_status.id FROM movies,watch_queue_status "\
-                            "WHERE movies.title=? AND watch_queue_status.name='new'", (title,))
-                connect.execute("DELETE FROM upcoming_queue WHERE title=?", (title,))
+                            "WHERE movies.title=%s AND watch_queue_status.name='new'", (title,))
+                cursor.execute("DELETE FROM upcoming_queue WHERE title=%s", (title,))
                 connect.commit()
                 logging.info("moved {} to movie_queue".format(title))
-            except sqlite3.IntegrityError:
+            except psycopg2.IntegrityError:
+                connect.rollback()
                 logging.info("{} already  exists in movie_queue".format(title))
-                connect.execute("DELETE FROM upcoming_queue WHERE title=?", (title,))
+                cursor.execute("DELETE FROM upcoming_queue WHERE title=%s", (title,))
 
 
 def fetch_kickass_file(cursor):
