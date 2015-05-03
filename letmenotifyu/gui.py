@@ -98,10 +98,10 @@ class Confirm(object):
 
     def which_sql_message(self):
         if self.instruction == "start":
-            use_sql = "UPDATE series SET status=1 WHERE title=%s"
+            use_sql = "UPDATE series SET status='1' WHERE title=%s"
             message = "Are you sure you want to start updating"
         elif self.instruction == "stop":
-            use_sql = "UPDATE series SET status=0 WHERE title=%s"
+            use_sql = "UPDATE series SET status='0' WHERE title=%s"
             message = "Are you sure you want to stop updating"
         elif self.instruction == "delete":
             use_sql = "DELETE FROM series WHERE title=%s"
