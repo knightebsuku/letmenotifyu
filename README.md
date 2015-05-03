@@ -48,6 +48,8 @@ Dependencies
 Installation
 ----------------------------
 
+You need to first create a database and make sure the database settings are reflected in the config.ini file
+
 I've included a releases folder which will have the latest .deb file
 
 [deb](https://github.com/stucomplex/letmenotifyu/blob/master/releases/letmenotifyu_2.1.5-8_all.deb)

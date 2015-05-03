@@ -5,20 +5,20 @@ from litemigration.database import Database
 
 
 def database_init():
-    db = Database('postgresql',database='letmedev',
-                  user='letmenotifyu',
-                  password='letmenotifyu',
-                  host='10.42.0.62',
-                  port='5876')
+    db = Database('postgresql', database=settings.DB_NAME,
+                  user=settings.DB_USER,
+                  password=settings.DB_PASSWORD,
+                  host=settings.DB_HOST,
+                  port=settings.DB_PORT)
     db.initialise()
 
 
 def database_change():
-    db = Database('postgresql',database='letmedev',
-                  user='letmenotifyu',
-                  password='letmenotifyu',
-                  host='10.42.0.62',
-                  port='5876')
+    db = Database('postgresql', database=settings.DB_NAME,
+                  user=settings.DB_USER,
+                  password=settings.DB_PASSWORD,
+                  host=settings.DB_HOST,
+                  port=settings.DB_PORT)
     db.add_schema([
         [1, 'CREATE TABLE config(' \
                             'id SERIAL PRIMARY KEY, ' \

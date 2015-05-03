@@ -3,6 +3,7 @@
 import os
 import configparser
 import logging
+import psycopg2
 
 DIRECTORY_PATH = os.getcwd()+"/data"
 DATABASE_PATH = DIRECTORY_PATH+'/dev.sqlite'
@@ -27,11 +28,30 @@ def create_ini_file():
                           'Port': '5432',
                           'User': 'letmenotifyu',
                           'Password': 'letmenotifyu',
-                          'Database': 'letmedev'
+                          'Database': 'letmedevq'
     } 
     config["LOGGING"] = {'LoggingLevel': "Logging.INFO"}
     with open(DIRECTORY_PATH+'/config.ini','w') as cfg_file:
         config.write(cfg_file)
+
+
+def check_db():
+    try:
+        connect = psycopg2.connect(host=DB_HOST,
+                                        database=DB_NAME,
+                                        port=DB_PORT,
+                                        user=DB_USER,
+                                        password=DB_PASSWORD)
+        try:
+            cursor = connect.cursor()
+            cursor.execute("SELECT max(id) from migration")
+        except Exception as e:
+            logging.exception(e)
+            return 'migration'
+    except psycopg2.OperationalError as e:
+        logging.exception(e)
+        return 'connect'
+
 
 try:
     config.read(DIRECTORY_PATH+'/config.ini')
@@ -52,6 +72,7 @@ except KeyError:
     IMAGE_PATH = config['DIRECTORIES']['ImagesDirectory']
     COMPLETE_DIRECTORY = config['DIRECTORIES']['CompleteDownloads']
     INCOMPLETE_DIRECTORY = config['DIRECTORIES']['IncompleteDownloads']
+    LOG_LEVEL = logging_dict(config['LOGGING']['LoggingLevel'])
     DB_NAME = config['DATABASE']['Database']
     DB_HOST = config['DATABASE']['Host']
     DB_PORT = config['DATABASE']['Port']
