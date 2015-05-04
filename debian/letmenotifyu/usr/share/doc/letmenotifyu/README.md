@@ -6,7 +6,7 @@ Application  to notify users of new episodes from [primewire.ag](http://primewir
 Full application details on the [wiki](https://github.com/stucomplex/letmenotifyu/wiki)
 
 
-Version: 2.3.0
+Version: 3.0.0
 -------------------
 
 Program Features
@@ -41,10 +41,14 @@ Dependencies
 
 * Python3-litemigration [Litemigration](https://github.com/stucomplex/python3-litemigration)
 
+* Python3-psycopg2
+
 
 
 Installation
 ----------------------------
+
+You need to first create a database and make sure the database settings are reflected in the config.ini file
 
 I've included a releases folder which will have the latest .deb file
 

@@ -7,7 +7,7 @@ from letmenotifyu import util
 from threading import Thread
 from queue import Queue
 import logging
-import sqlite3
+import psycopg2
 import json
 import os
 import urllib
@@ -57,7 +57,11 @@ def get_movie_details(yify_id):
 
 
 def insert_movie_details(q):
-    connect = sqlite3.connect(settings.DATABASE_PATH)
+    connect = psycopg2.connect(host=settings.DB_HOST,
+                                        database=settings.DB_NAME,
+                                        port=settings.DB_PORT,
+                                        user=settings.DB_USER,
+                                        password=settings.DB_PASSWORD)
     cursor = connect.cursor()
     while True:
         [movie_id, yify_id] = q.get()
@@ -66,31 +70,21 @@ def insert_movie_details(q):
             q.task_done()
         elif movie_detail["status"] == "ok":
             try:
-                connect.execute("INSERT INTO movie_details(movie_id,language,movie_rating,"\
+                cursor.execute("INSERT INTO movie_details(movie_id,language,movie_rating,"\
                                     'youtube_url,description) '\
-                                    'VALUES(?,?,?,?,?)',(movie_id, movie_detail["data"]['language'],
+                                    'VALUES(%s,%s,%s,%s,%s)',
+                                (movie_id, movie_detail["data"]['language'],
                                                          movie_detail['data']["rating"],
                                                          "https://www.youtube.com/watch?v={}".format(movie_detail["data"]["yt_trailer_code"]),
                                                          movie_detail["data"]["description_full"],))
-                for actor in movie_detail["data"]["actors"]:
-                    try:
-                        row = connect.execute("INSERT INTO actors(name) "\
-                                          'VALUES(?)',(actor["name"],))
-                        connect.execute("INSERT INTO actors_movies(actor_id,movie_id) "\
-                                    'VALUES(?,?)',(row.lastrowid, movie_id,))
-                    except sqlite3.IntegrityError:
-                        logging.debug("{} already exsists".format(actor["name"]))
-                        cursor.execute("SELECT id FROM actors WHERE name=?", (actor["name"],))
-                        (actor_id,) = cursor.fetchone()
-                        connect.execute("INSERT INTO actors_movies(actor_id,movie_id) "\
-                                        'VALUES(?,?)', (actor_id, movie_id,))
-                    finally:
-                        connect.commit()
-            except sqlite3.IntegrityError:
-                logging.warn("Movie Detail already exists")
-            except sqlite3.OperationalError as e:
-                logging.exception(e)
+                check_actors(movie_detail['data']['actors'], movie_id, cursor)
+                connect.commit()
+            except psycopg2.IntegrityError:
                 connect.rollback()
+                logging.warn("Movie Detail already exists")
+            except psycopg2.OperationalError as e:
+                connect.rollback()
+                logging.exception(e)
                 q.put([movie_id, yify_id])
             finally:
                 q.task_done()
@@ -114,24 +108,29 @@ def insert_released_movies(data, cursor, db):
             if fetch_image(movie_detail["medium_cover_image"], movie_detail['title']):
                 try:
                     genre_id = get_movie_genre(movie_detail["genres"][0], cursor, db)
-                    row = db.execute("INSERT INTO movies(genre_id,title,link,date_added,movie_id,year)"+
-                                 'VALUES(?,?,?,?,?,?)',
+                    cursor.execute("INSERT INTO movies(genre_id,title,link,date_added,yify_id,year)"+
+                                 'VALUES(%s,%s,%s,%s,%s,%s) RETURNING id',
                            (genre_id,
                             movie_detail['title'],
                             "http://www.imdb.com/title/{}".format(movie_detail["imdb_code"]),
                             movie_detail["date_uploaded"],
                             movie_detail["id"],
                            movie_detail["year"],))
-                    db.execute("INSERT INTO movie_torrent_links(movie_id,link,hash_sum) VALUES(?,?,?)",
-                           (row.lastrowid, movie_detail["torrents"][0]["url"], movie_detail["torrents"][0]["hash"],))
-                    db.execute("INSERT INTO movie_images(title,path) VALUES(?,?)",
+                    row_id = cursor.fetchone()[0]
+                    cursor.execute("INSERT INTO movie_torrent_links(movie_id,link,hash_sum) VALUES(%s,%s,%s)",
+                           (row_id, movie_detail["torrents"][0]["url"], movie_detail["torrents"][0]["hash"],))
+                    if image_record_exists(movie_detail['title'],cursor):
+                        pass
+                    else:
+                        cursor.execute("INSERT INTO movie_images(title,path) VALUES(%s,%s)",
                                (movie_detail['title'], movie_detail['title']+".jpg",))
-                    q.put([row.lastrowid, movie_detail["id"]])
-                    db.execute("DELETE FROM upcoming_movies WHERE title IN (SELECT title FROM movies)")
+                    q.put([row_id, movie_detail["id"]])
+                    cursor.execute("DELETE FROM upcoming_movies WHERE title IN (SELECT title FROM movies)")
                     db.commit()
                     announce('Newly Released Movie', "{} ({})".format(movie_detail["title"], movie_detail["genres"][0]),
                          "http://www.imdb.com/title/{}".format(movie_detail["imdb_code"]))
-                except sqlite3.IntegrityError as e:
+                except psycopg2.IntegrityError as e:
+                    db.rollback()
                     logging.exception(e)
                 except Exception as e:
                     db.rollback()
@@ -146,15 +145,16 @@ def insert_upcoming_movies(movie_data, db, cursor):
         for movie_detail in new_movie_data:
             if fetch_image(movie_detail["medium_cover_image"], movie_detail["title"]):
                 try:
-                    db.execute("INSERT INTO movie_images(title,path) VALUES(?,?)",
+                    cursor.execute("INSERT INTO movie_images(title,path) VALUES(%s,%s)",
                                (movie_detail['title'], movie_detail['title']+".jpg",))
-                    db.execute("INSERT INTO upcoming_movies(title,link) VALUES(?,?)",
+                    cursor.execute("INSERT INTO upcoming_movies(title,link) VALUES(%s,%s)",
                        (movie_detail["title"],
                         "http://www.imdb.com/title/{}".format(movie_detail["imdb_code"]),))
                     db.commit()
                     announce('Upcoming Movie', movie_detail["title"],
                          "http://www.imdb.com/title/{}".format(movie_detail["imdb_code"]))
-                except sqlite3.IntegrityError as e:
+                except psycopg2.IntegrityError as e:
+                    db.rollback()
                     logging.exception(e)
                 except Exception as error:
                     db.rollback()
@@ -190,14 +190,37 @@ def movie_compare(cursor, table, new_data):
 
 
 def get_movie_genre(genre, cursor, db):
-    cursor.execute("SELECT Id FROM genre WHERE genre=?", (genre,))
+    cursor.execute("SELECT id FROM genre WHERE genre=%s", (genre,))
     if cursor.fetchone() is None:
         logging.debug("genre does not exist yet")
-        row = db.execute("INSERT INTO genre(genre) VALUES(?)", (genre,))
-        genre_id = row.lastrowid
+        cursor.execute("INSERT INTO genre(genre) VALUES(%s) RETURNING id", (genre,))
+        genre_id = cursor.fetchone()[0]
         return genre_id
     else:
         logging.debug('genre exists')
-        cursor.execute("SELECT Id FROM genre where genre=?", (genre,))
+        cursor.execute("SELECT id FROM genre WHERE genre=%s", (genre,))
         (genre_id,) = cursor.fetchone()
         return int(genre_id)
+
+
+def image_record_exists(movie_title, cursor):
+    cursor.execute("SELECT id from movie_images WHERE title=%s",(movie_title,))
+    if cursor.fetchone():
+        return True
+
+
+def check_actors(actor_details, movie_id, cursor):
+    "Check if actor exists or not"
+    for actor in actor_details:
+        cursor.execute("SELECT id from actors WHERE name=%s", (actor['name'],))
+        if cursor.fetchone():
+            cursor.execute("SELECT id from actors WHERE name=%s", (actor['name'],))
+            (actor_id,) = cursor.fetchone()
+            cursor.execute("INSERT INTO actors_movies(actor_id,movie_id) "\
+                                        'VALUES(%s,%s)', (actor_id, movie_id,))
+        else:
+            cursor.execute("INSERT INTO actors(name) "\
+                                          'VALUES(%s) RETURNING id',(actor["name"],))
+            lastrowid = cursor.fetchone()[0]
+            cursor.execute("INSERT INTO actors_movies(actor_id,movie_id) "\
+                                    'VALUES(%s,%s)',(lastrowid, movie_id,))

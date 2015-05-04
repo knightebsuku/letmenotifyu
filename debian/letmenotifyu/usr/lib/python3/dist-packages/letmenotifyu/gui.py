@@ -2,7 +2,7 @@
 
 import logging
 import configparser
-import sqlite3
+import psycopg2
 import re
 import os
 from datetime import datetime
@@ -50,15 +50,16 @@ class AddSeries(object):
                                'number_of_episodes,' \
                                'number_of_seasons,' \
                                'status,' \
+                               'watch,'\
                                'current_season,' \
                                'last_update)' \
-                               ' VALUES(?,?,0,0,1,0,?)',
+                                    " VALUES(%s,%s,0,0,'1','0',0,%s)",
                                (show_title, text, datetime.now(),))
                 self.connection.commit()
                 logging.info("Series Added: {}".format(show_title))
                 self.link_box.set_text('')
                 self.dialog.get_object('Dialog').destroy()
-            except sqlite3.IntegrityError:
+            except psycopg2.IntegrityError:
                 self.connection.rollback()
                 logging.error("Series {} already exists".format(show_title))
                 self.notice.set_text("Series already added")
@@ -97,13 +98,13 @@ class Confirm(object):
 
     def which_sql_message(self):
         if self.instruction == "start":
-            use_sql = "UPDATE series SET status=1 WHERE title=?"
+            use_sql = "UPDATE series SET status='1' WHERE title=%s"
             message = "Are you sure you want to start updating"
         elif self.instruction == "stop":
-            use_sql = "UPDATE series SET status=0 WHERE title=?"
+            use_sql = "UPDATE series SET status='0' WHERE title=%s"
             message = "Are you sure you want to stop updating"
         elif self.instruction == "delete":
-            use_sql = "DELETE FROM series WHERE title=?"
+            use_sql = "DELETE FROM series WHERE title=%s"
             message = "Are you sure you want to delete"
         return message, use_sql
 
@@ -158,8 +159,16 @@ class Preferences(object):
         config['DIRECTORIES'] = {'ImagesDIrectory': images+os.sep,
                              'TorrentsDirectory': torrents+os.sep,
                              'CompleteDownloads': complete+os.sep,
-                                 'IncompleteDownloads': incomplete+os.sep}
-        config["LOGGING"] = {'LoggingLevel': "Logging.INFO"}
+                                 'IncompleteDownloads': incomplete+os.sep
+        }
+        config["LOGGING"] = {'LoggingLevel': "Logging.DEBUG"
+        }
+        config['DATABASE'] = {'Host': settings.DB_HOST,
+                          'Port': settings.DB_PORT,
+                          'User': settings.DB_USER,
+                          'Password': settings.DB_PASSWORD,
+                          'Database': settings.DB_NAME
+    }
         with open(settings.DIRECTORY_PATH+'/config.ini','w') as cfg_file:
             config.write(cfg_file)
 
@@ -178,7 +187,7 @@ class Preferences(object):
                      (movie_results, 'max_movie_results'),
                      (movie_quality, 'movie_quality'),
                      (series_duration, 'series_duration')]
-            self.cursor.executemany("UPDATE config SET value=? WHERE key=?", query)
+            self.cursor.executemany("UPDATE config SET value=%s WHERE key=%s", query)
             self.connect.commit()
             self.write_to_config()
             self.pref.get_object('Preference').destroy()
@@ -223,7 +232,7 @@ class SetSeason(object):
         self.current_season.get_object("CurrentSeason").show()
 
     def fetch_current_season(self, series_title):
-        self.cursor.execute('SELECT current_season FROM series WHERE title=?', (series_title,))
+        self.cursor.execute('SELECT current_season FROM series WHERE title=%s', (series_title,))
         (no_season,) = self.cursor.fetchone()
         return no_season
 
@@ -233,7 +242,7 @@ class SetSeason(object):
     def apply_clicked(self, widget):
         try:
             cur_season = self.current_season.get_object('txtCurrent').get_text()
-            self.cursor.execute('UPDATE series SET current_season = ? WHERE title=?',
+            self.cursor.execute('UPDATE series SET current_season = %s WHERE title=%s',
                            (cur_season, self.series_title,))
             self.connection.commit()
             self.current_season.get_object("CurrentSeason").destroy()
@@ -266,8 +275,8 @@ class MovieDetails(object):
         self.watch_list = self.details.get_object("lblWatchList")
         description = self.details.get_object("bufDescription")
         self.cursor.execute("SELECT movies.title,movies.link,movie_images.path "\
-                            'FROM movies,movie_images WHERE movies.title=? '\
-                            'AND movie_images.title=?',(self.movie_title, self.movie_title,))
+                            'FROM movies,movie_images WHERE movies.title=%s '\
+                            'AND movie_images.title=%s',(self.movie_title, self.movie_title,))
         (mt, ml, mi,) = self.cursor.fetchone()
         movie_title.set_text(mt)
         movie_link.set_uri(ml)
@@ -275,14 +284,14 @@ class MovieDetails(object):
         pb = Pixbuf.new_from_file(settings.IMAGE_PATH+mi)
         movie_image.set_from_pixbuf(pb)
         self.cursor.execute("SELECT id FROM movie_queue WHERE movie_id="\
-                            '(SELECT id FROM movies WHERE title=?)',(self.movie_title,))
+                            '(SELECT id FROM movies WHERE title=%s)',(self.movie_title,))
         if self.cursor.fetchone():
             self.watch_list.set_text("Yes")
             self.details.get_object("btnWatchList").set_sensitive(False)
         else:
             self.watch_list.set_text("No")
         self.cursor.execute("SELECT movie_rating,youtube_url,description FROM movie_details "\
-                            'WHERE movie_id=(SELECT id FROM movies WHERE title=?)',(self.movie_title,))
+                            'WHERE movie_id=(SELECT id FROM movies WHERE title=%s)',(self.movie_title,))
         if self.cursor.fetchone() is None:
             rating.set_text("")
             youtube_link.set_uri("")
@@ -294,7 +303,7 @@ class MovieDetails(object):
             self.details.get_object("lblActor4").set_property("visible", False)
         else:
             self.cursor.execute("SELECT movie_rating,youtube_url,description from movie_details "\
-                            'WHERE movie_id=(SELECT id FROM movies WHERE title=?)',(self.movie_title,))
+                                'WHERE movie_id=(SELECT id FROM movies WHERE title=%s)',(self.movie_title,))
             (r, yu, des,) = self.cursor.fetchone()
             rating.set_text(str(r))
             youtube_link.set_uri(yu)
@@ -302,7 +311,7 @@ class MovieDetails(object):
             description.set_text(des)
             self.cursor.execute("SELECT name FROM actors AS a JOIN actors_movies AS am "\
                            'ON a.id=am.actor_id AND am.movie_id='\
-                           '(SELECT id FROM movies WHERE title=?)',(self.movie_title,))
+                                '(SELECT id FROM movies WHERE title=%s)',(self.movie_title,))
             cast_list = {1: self.details.get_object("lblActor1"), 2: self.details.get_object("lblActor2"),
                          3: self.details.get_object("lblActor3"),4: self.details.get_object("lblActor4")}
             key = 1
@@ -321,7 +330,7 @@ class MovieDetails(object):
         "add to watch list"
         self.cursor.execute("INSERT INTO movie_queue(movie_id,watch_queue_status_id) "\
                                 "SELECT movies.id,watch_queue_status.id FROM movies,watch_queue_status "\
-                                "WHERE movies.title=? AND watch_queue_status.name='new'",(self.movie_title,))
+                                "WHERE movies.title=%s AND watch_queue_status.name='new'",(self.movie_title,))
         self.connect.commit()
         self.watch_list.set_text("Yes")
         self.details.get_object("btnWatchList").set_sensitive(False)
@@ -340,11 +349,9 @@ class MovieDetails(object):
         self.details.get_object("spFetch").stop()
 
 
-def details(movie_title):
+def details(movie_title, connect, cursor):
     "fetching details"
-    connect = sqlite3.connect(settings.DATABASE_PATH)
-    cursor = connect.cursor()
-    cursor.execute("SELECT id,movie_id from movies where title=?", (movie_title,))
+    cursor.execute("SELECT id,yify_id FROM movies WHERE title=%s", (movie_title,))
     (movie_id, yify_id,) = cursor.fetchone()
     movie_detail = get_movie_details(yify_id)
     if not movie_detail:
@@ -352,45 +359,66 @@ def details(movie_title):
         status = "no fetch"
     elif movie_detail["status"] == "ok":
         try:
-            connect.execute("INSERT INTO movie_details(movie_id,language,movie_rating,"\
+            cursor.execute("INSERT INTO movie_details(movie_id,language,movie_rating,"\
                                     'youtube_url,description) '\
-                                    'VALUES(?,?,?,?,?)',(movie_id, movie_detail["data"]['language'],
-                                                         movie_detail["data"]['rating'],
-                                                         "https://www.youtube.com/watch?v={}".format(movie_detail["data"]["yt_trailer_code"]),
-                                                         movie_detail["data"]["description_full"],))
-            for actor in movie_detail["data"]["actors"]:
-                try:
-                    row = connect.execute("INSERT INTO actors(name) "+
-                                          'VALUES(?)',(actor["name"],))
-                    connect.execute("INSERT INTO actors_movies(actor_id,movie_id) "\
-                                    'VALUES(?,?)',(row.lastrowid, movie_id,))
-                except sqlite3.IntegrityError:
-                    logging.error("Actor already exists")
-                    cursor.execute("SELECT id FROM actors WHERE name=?", (actor["name"],))
-                    (actor_id,) = cursor.fetchone()
-                    connect.execute("INSERT INTO actors_movies(actor_id,movie_id) "\
-                                        'VALUES(?,?)', (actor_id, movie_id,))
-                    logging.info("Movie Detail complete")
-                finally:
-                    connect.commit()
-                    status = "ok"
-        except sqlite3.OperationalError as e:
+                                    'VALUES(%s,%s,%s,%s,%s)',
+                            (movie_id,
+                             movie_detail["data"]['language'],
+                             movie_detail["data"]['rating'],
+                             "https://www.youtube.com/watch?v={}".format(movie_detail["data"]["yt_trailer_code"]),
+                             movie_detail["data"]["description_full"],))
+            check_actors(movie_detail['data']['actors'], movie_id, cursor)
+            connect.commit()
+        except psycopg2.IntegrityError as e:
+            connect.rollback()
+            status = 'no detail'
+            logging.exception(e)
+        except (psycopg2.OperationalError, psycopg2.ProgrammingError) as e:
+            connect.rollback()
             logging.exception(e)
             status = "no detail"
     else:
         logging.error(movie_detail)
         logging.error("No movie details at this time")
         status = "no detail"
-    connect.close()
     return status
 
 
+def check_actors(actor_details, movie_id, cursor):
+    "Check if actor exists or not"
+    for actor in actor_details:
+        cursor.execute("SELECT id from actors WHERE name=%s", (actor['name'],))
+        if cursor.fetchone():
+            cursor.execute("SELECT id from actors WHERE name=%s", (actor['name'],))
+            (actor_id,) = cursor.fetchone()
+            cursor.execute("INSERT INTO actors_movies(actor_id,movie_id) "\
+                                        'VALUES(%s,%s)', (actor_id, movie_id,))
+        else:
+            cursor.execute("INSERT INTO actors(name) "\
+                                          'VALUES(%s) RETURNING id',(actor["name"],))
+            lastrowid = cursor.fetchone()[0]
+            cursor.execute("INSERT INTO actors_movies(actor_id,movie_id) "\
+                                    'VALUES(%s,%s)',(lastrowid, movie_id,))
+            
+            
+            
+            
+            
+            
+    
 class WorkerThread(Thread):
     def __init__(self, callback, movie_title):
         Thread.__init__(self)
         self.callback = callback
         self.movie_title = movie_title
-
+        
     def run(self):
-        status = details(self.movie_title)
+        connect = psycopg2.connect(host=settings.DB_HOST,
+                                        database=settings.DB_NAME,
+                                        port=settings.DB_PORT,
+                                        user=settings.DB_USER,
+                                        password=settings.DB_PASSWORD)
+        cursor = connect.cursor()
+        status = details(self.movie_title, connect, cursor)
         GObject.idle_add(self.callback, status)
+        connect.close()

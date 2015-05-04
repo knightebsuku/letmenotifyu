@@ -32,7 +32,7 @@ def get_selection(view, store_model):
 def open_page(cursor, title, option=None):
     "open webbrowser page"
     if option == 'upcoming':
-        cursor.execute("SELECT link FROM upcoming_movies WHERE title=?", (title,))
+        cursor.execute("SELECT link FROM upcoming_movies WHERE title=%s", (title,))
         (link,) = cursor.fetchone()
         webbrowser.open_new(link)
     else:
@@ -42,11 +42,11 @@ def open_page(cursor, title, option=None):
 
 def series_poster(cursor, connect, series_id):
     "fetch series JPEG"
-    cursor.execute("SELECT title,series_link FROM series WHERE id=?", (series_id,))
+    cursor.execute("SELECT title,series_link FROM series WHERE id=%s", (series_id,))
     (title, series_link) = cursor.fetchone()
     try:
         correct_decode(title, series_link)
-        cursor.execute("INSERT INTO series_images(series_id,path) VALUES(?,?)",
+        cursor.execute("INSERT INTO series_images(series_id,path) VALUES(%s,%s)",
                             (series_id, '{}.jpg'.format(title),))
         connect.commit()
     except sqlite3.IntegrityError:
@@ -123,6 +123,6 @@ def fetch_torrent(torrent_url, title):
 
 
 def get_config_value(cursor, key):
-    cursor.execute("SELECT value FROM config WHERE key=?", (key,))
+    cursor.execute("SELECT value FROM config WHERE key=%s", (key,))
     (value,) = cursor.fetchone()
     return value
