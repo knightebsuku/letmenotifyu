@@ -129,7 +129,7 @@ def process_movie_queue():
                     try:
                         cursor.execute("UPDATE movie_queue SET watch_queue_status_id=2 WHERE id=%s",
                             (queue_id,))
-                        cursor.commit()
+                        connect.commit()
                     except psycopg2.OperationalError as error:
                         connect.rollback()
                         logging.exception(error)
