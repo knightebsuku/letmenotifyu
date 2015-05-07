@@ -272,7 +272,7 @@ class Main(object):
                             'watch_queue_status AS wqs,'\
                              'series_queue AS sq '\
                              'WHERE wqs.id=sq.watch_queue_status_id '\
-                             'AND sq.series_id=si.series_id')
+                             'AND sq.series_id=si.series_id ORDER BY sq.id')
         for (path, watch_name, episode_name) in self.cursor.fetchall():
             util.render_view(self.image, episode_name+":  "+watch_name, self.general_model,
                              settings.IMAGE_PATH+path)
