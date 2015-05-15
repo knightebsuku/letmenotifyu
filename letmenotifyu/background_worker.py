@@ -32,18 +32,17 @@ def start_threads():
 
 def update():
     "update movies and series"
-    while True:
-        logging.debug("Checking for new episodes and new movie releases")
-        connect = psycopg2.connect(host=settings.DB_HOST,
+    connect = psycopg2.connect(host=settings.DB_HOST,
                                         database=settings.DB_NAME,
                                         port=settings.DB_PORT,
                                         user=settings.DB_USER,
                                         password=settings.DB_PASSWORD)
-        cursor = connect.cursor()
+    cursor = connect.cursor()
+    while True:
+        logging.debug("Checking for new episodes and new movie releases")
         movie(connect, cursor)
         series(connect, cursor)
         value = util.get_config_value(cursor, 'update_interval')
-        connect.close()
         time.sleep(float(value)*60)
 
 
@@ -65,7 +64,7 @@ def process_series_queue():
                 logging.info("fetching episode torrent for {}".format(title))
                 try:
                     (_, series_title, _, _, episode_link, _, _, _, _, _, _,) = kickass.search_episode(kickass_file, title, ep_name,
-                                                                                                      "HDTV x264-(LOL|KILLERS|ASAP|2HD)")
+                                                                                                      "HDTV x264-(LOL|KILLERS|ASAP|2HD|FUM)")
                     if util.fetch_torrent(episode_link.replace("\n", ""), series_title):
                         try:
                             cursor.execute("INSERT INTO series_torrent_links(series_queue_id, link) VALUES(%s,%s)",
