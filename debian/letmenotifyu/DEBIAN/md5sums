@@ -1,7 +1,7 @@
 5f797e3e2d661688439f8b528d2f9923  usr/bin/letme
-36d27181fcacf074919a281394832996  usr/lib/python3/dist-packages/letmenotifyu-3.0.1.egg-info
+4889b076c79f83d046be0690b93c3070  usr/lib/python3/dist-packages/letmenotifyu-3.1_3.egg-info
 d41d8cd98f00b204e9800998ecf8427e  usr/lib/python3/dist-packages/letmenotifyu/__init__.py
-cc21f334abbca98e913fb883e4feb5bd  usr/lib/python3/dist-packages/letmenotifyu/background_worker.py
+250baf75e4ffe38c4f36fcc6556fcb06  usr/lib/python3/dist-packages/letmenotifyu/background_worker.py
 efcc32c39bffeda7aad54622eed7df9a  usr/lib/python3/dist-packages/letmenotifyu/database.py
 bd97e5b443f21eec6af7742c069e70b6  usr/lib/python3/dist-packages/letmenotifyu/gui.py
 6df7fa57cb13e72fb09b3cf732995847  usr/lib/python3/dist-packages/letmenotifyu/kickass.py
@@ -16,7 +16,7 @@ f17786486826aace7eba6a864fd8a105  usr/lib/python3/dist-packages/letmenotifyu/uti
 ebd63dd34ef8daa5314bfca6cc7384f3  usr/share/applications/letmenotifyu.desktop
 ac036608c5c402f92926505d0f0ab0e4  usr/share/doc/letmenotifyu/README.Debian
 82b070c88b14723b64a05f3d3d53c14c  usr/share/doc/letmenotifyu/README.md
-cd25647805c2bb5a48bae2696f2c7538  usr/share/doc/letmenotifyu/changelog.Debian.gz
+50643ea25f1b5716eb012bcad16191cf  usr/share/doc/letmenotifyu/changelog.Debian.gz
 9b44b304ea8ea602066981c458463801  usr/share/doc/letmenotifyu/copyright
 8bcc029b0391f68efc29dd7cc0aabe26  usr/share/letmenotifyu/icons/Action.png
 753149684e899b298ab0dd4d4aed1d7e  usr/share/letmenotifyu/icons/Adventure.png
@@ -40,7 +40,7 @@ f948e328d922ce5a102aab8abd2ff886  usr/share/letmenotifyu/icons/Romance.png
 2b803f1a227e27d0c0e35633e35f9095  usr/share/letmenotifyu/icons/Thriller.png
 abfca07d5a92f752e25b16c77654639a  usr/share/letmenotifyu/icons/War.png
 0dabe619e921de52936c08d429443376  usr/share/letmenotifyu/icons/Western.png
-5e601791105efa4bc1fb676bd0e214b0  usr/share/letmenotifyu/ui/About.glade
+fbdbd05bfb3ed3744f6d4fe7d20cb322  usr/share/letmenotifyu/ui/About.glade
 a73b07a1b4b0d7fba71f606bc6a4f0ab  usr/share/letmenotifyu/ui/AddSeries.glade
 4331d67cb1ca3025978e8b1ccab273c1  usr/share/letmenotifyu/ui/Confirm.glade
 e1379f4747598227712d28a2637c6ecd  usr/share/letmenotifyu/ui/Error.glade
