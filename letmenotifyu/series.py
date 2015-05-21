@@ -84,6 +84,10 @@ class Series(object):
         if watch_status == 1:
             logging.debug('episodes will be added to watch list')
             insert_records(self.connect, self.cursor, all_eps, series_id, series_detail)
+            self.cursor.execute("UPDATE series SET number_of_episodes=%s,"\
+                                'number_of_seasons=%s,last_update=%s  WHERE id=%s',
+                                (new_ep_number, no_seasons, datetime.now(), series_id,))
+            self.connect.commit()
         else:
             for (episode_link, episode_number, episode_name) in all_eps:
                 try:
