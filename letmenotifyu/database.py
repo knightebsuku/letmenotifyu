@@ -136,4 +136,6 @@ def database_change():
                                  'movie_id INTEGER NOT NULL,'\
                                  'UNIQUE(actor_id,movie_id),'\
                                  'FOREIGN KEY(movie_id) REFERENCES movies(id))'],
+        [31, "INSERT INTO config(key,value) VALUES('imdb_url','http://www.imdb.com/title/')"],
+        [32, "INSERT INTO config(key,value) VALUES('youtube_url','https://www.youtube.com/watch?v=')"],
     ])
