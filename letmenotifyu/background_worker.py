@@ -31,33 +31,34 @@ def start_threads():
 
 
 def update():
-    "update movies and series"
-    connect = psycopg2.connect(host=settings.DB_HOST,
+    "check for updates for movies and series"
+    while True:
+        connect = psycopg2.connect(host=settings.DB_HOST,
                                         database=settings.DB_NAME,
                                         port=settings.DB_PORT,
                                         user=settings.DB_USER,
                                         password=settings.DB_PASSWORD)
-    cursor = connect.cursor()
-    while True:
+        cursor = connect.cursor()
         logging.debug("Checking for new episodes and new movie releases")
         movie(connect, cursor)
         series(connect, cursor)
+        connect.close()
         value = util.get_config_value(cursor, 'update_interval')
         time.sleep(float(value)*60)
 
 
 def process_series_queue():
     "handle the series queues"
-    connect = psycopg2.connect(host=settings.DB_HOST,
+    while True:
+        connect = psycopg2.connect(host=settings.DB_HOST,
                                         database=settings.DB_NAME,
                                         port=settings.DB_PORT,
                                         user=settings.DB_USER,
                                         password=settings.DB_PASSWORD)
-    cursor = connect.cursor()
-    while True:
+        cursor = connect.cursor()
         kickass_file = fetch_kickass_file(cursor)
         cursor.execute("SELECT title, series_queue.id, episode_name, watch_queue_status_id "\
-                       'FROM  series_queue join series ON series_id=series.id')
+                       'FROM  series_queue join series ON series_id=series.id and watch_queue_status_id <> 4')
         for (title, queue_id, ep_name, watch_id) in cursor.fetchall():
             series_titles = title.replace(" ", ".")
             if watch_id == 1:
@@ -102,25 +103,26 @@ def process_series_queue():
                             connect.rollback()
                             logging.exception(e)
                             break
+        connect.close()
         value = util.get_config_value(cursor, 'series_process_interval')
         time.sleep(float(value)*60)
 
 
 def process_movie_queue():
     "handle movie queues"
-    connect = psycopg2.connect(host=settings.DB_HOST,
+    while True:
+        connect = psycopg2.connect(host=settings.DB_HOST,
                                         database=settings.DB_NAME,
                                         port=settings.DB_PORT,
                                         user=settings.DB_USER,
                                         password=settings.DB_PASSWORD)
-    cursor = connect.cursor()
-    while 1:
+        cursor = connect.cursor()
         check_upcoming_queue(connect, cursor)
         cursor.execute("SELECT title,mq.id,mtl.link,watch_queue_status_id FROM "\
                "movie_torrent_links as mtl "\
                " join movie_queue as mq "\
                "on mtl.movie_id=mq.movie_id "\
-               "join movies on mtl.movie_id=movies.id order by mq.id ")
+               "join movies on mtl.movie_id=movies.id and watch_queue_status_id <> 4 order by mq.id ")
         for (movie_title, queue_id, torrent_url, watch_id) in cursor.fetchall():
             if watch_id == 1:
                 logging.info("downloading torrent for {}".format(movie_title))
@@ -154,6 +156,7 @@ def process_movie_queue():
                         logging.exception(error)
             else:
                 logging.debug('no movies in queues')
+        connect.close()
         value = util.get_config_value(cursor, 'movie_process_interval')
         time.sleep(float(value)*60)
 
