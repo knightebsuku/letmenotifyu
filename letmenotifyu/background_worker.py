@@ -7,25 +7,13 @@ import gzip
 import os
 import urllib
 import glob
+from multiprocessing import Process
 
 from . import settings, util, kickass, yify
 from .movies import movie
 from .series import series
 from threading import Thread
 from urllib.request import urlopen
-
-
-def start_threads():
-    "start all threads"
-    movie_process = Thread(target=process_movie_queue)
-    movie_process.setDaemon(True)
-    series_process = Thread(target=process_series_queue)
-    series_process.setDaemon(True)
-    all_update = Thread(target=update)
-    all_update.setDaemon(True)
-    movie_process.start()
-    series_process.start()
-    all_update.start()
 
 
 def update():
@@ -40,8 +28,8 @@ def update():
         logging.debug("Checking for new episodes and new movie releases")
         movie(connect, cursor)
         series(connect, cursor)
-        connect.close()
         value = util.get_config_value(cursor, 'update_interval')
+        connect.close()
         time.sleep(float(value)*60)
 
 
@@ -101,8 +89,8 @@ def process_series_queue():
                             connect.rollback()
                             logging.exception(e)
                             break
-        connect.close()
         value = util.get_config_value(cursor, 'series_process_interval')
+        connect.close()
         time.sleep(float(value)*60)
 
 
@@ -154,8 +142,8 @@ def process_movie_queue():
                         logging.exception(error)
             else:
                 logging.debug('no movies in queues')
-        connect.close()
         value = util.get_config_value(cursor, 'movie_process_interval')
+        connect.close()
         time.sleep(float(value)*60)
 
 
@@ -174,7 +162,7 @@ def movie_details_process():
             logging.debug("getting movie details for {}".format(movie_id))
             movie_detail = yify.get_movie_details(yify_id)
             if not movie_detail:
-                connect.close()
+                pass
             elif movie_detail["status"] == "ok":
                 try:
                     cursor.execute("INSERT INTO movie_details(movie_id,language,movie_rating,"\
@@ -186,17 +174,15 @@ def movie_details_process():
                                                          movie_detail["data"]["description_full"],))
                     check_actors(movie_detail['data']['actors'], movie_id, cursor)
                     connect.commit()
-                except psycopg2.IntegrityError:
+                except psycopg2.IntegrityError as e:
                     connect.rollback()
                     logging.warn("Movie Detail already exists")
+                    logging.exception(e)
                 except psycopg2.OperationalError as e:
                     connect.rollback()
                     logging.exception(e)
-                finally:
-                    connect.close()
-            else:
-                connect.close()
-        time.sleep(50)
+        connect.close()
+        time.sleep(600)
 
 
 def check_upcoming_queue(connect, cursor):
@@ -225,7 +211,7 @@ def fetch_kickass_file(cursor):
     if cursor.fetchall():
         logging.debug("episode in status new, need to fetch kickass file")
         try:
-            kickass_file = urlopen("https://kickass.to/hourlydump.txt.gz")
+            kickass_file = urlopen("https://kat.cr/hourlydump.txt.gz")
             with gzip.open(kickass_file, 'r') as gzip_file:
                 with open(settings.KICKASS_FILE, 'wb') as dump_file:
                     for line in gzip_file:
@@ -254,3 +240,27 @@ def check_actors(actor_details, movie_id, cursor):
             lastrowid = cursor.fetchone()[0]
             cursor.execute("INSERT INTO actors_movies(actor_id,movie_id) "\
                                     'VALUES(%s,%s)',(lastrowid, movie_id,))
+
+
+def start_threads():
+    "start all threads and processes"
+    series_process = Process(name='series_process', target=process_series_queue)
+    movie_process = Process(name='movie_process', target=process_movie_queue)
+    movie_details = Process(name='movie_details', target=movie_details_process)
+
+    series_process.deamon = True
+    movie_process.daemon = True
+    movie_details.daemon = True
+
+    series_process.start()
+    movie_process.start()
+    movie_details.start()
+    #movie_process = Thread(target=process_movie_queue)
+    #movie_process.setDaemon(True)
+    #series_process = Thread(target=process_series_queue)
+    #series_process.setDaemon(True)
+    all_update = Thread(target=update)
+    all_update.setDaemon(True)
+    #movie_process.start()
+    #series_process.start()
+    all_update.start()
