@@ -29,7 +29,7 @@ def modify_episode_number(season_value, episode_value):
 
 
 def primewire(episode_site):
-    "process series page"
+    "process series html page"
     try:
         series_page = requests.get(episode_site)
         series_page_data = BeautifulSoup(series_page.text)
