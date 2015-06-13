@@ -8,11 +8,9 @@ import os
 import urllib
 import glob
 
-from letmenotifyu import settings
-from letmenotifyu.movies import movie
-from letmenotifyu.series import series
-from letmenotifyu import util
-from letmenotifyu import kickass
+from . import settings, util, kickass, yify
+from .movies import movie
+from .series import series
 from threading import Thread
 from urllib.request import urlopen
 
@@ -161,6 +159,46 @@ def process_movie_queue():
         time.sleep(float(value)*60)
 
 
+def movie_details_process():
+    "add movie details"
+    while True:
+        connect = psycopg2.connect(host=settings.DB_HOST,
+                                        database=settings.DB_NAME,
+                                        port=settings.DB_PORT,
+                                        user=settings.DB_USER,
+                                        password=settings.DB_PASSWORD)
+        cursor = connect.cursor()
+        cursor.execute('SELECT movies.id,yify_id FROM movies LEFT OUTER JOIN  movie_details '\
+                       'ON movies.id=movie_details.movie_id WHERE movie_details.movie_id is NULL')
+        for (movie_id, yify_id) in cursor.fetchall():
+            logging.debug("getting movie details for {}".format(movie_id))
+            movie_detail = yify.get_movie_details(yify_id)
+            if not movie_detail:
+                connect.close()
+            elif movie_detail["status"] == "ok":
+                try:
+                    cursor.execute("INSERT INTO movie_details(movie_id,language,movie_rating,"\
+                                    'youtube_url,description) '\
+                                    'VALUES(%s,%s,%s,%s,%s)',
+                                (movie_id, movie_detail["data"]['language'],
+                                                         movie_detail['data']["rating"],
+                                                         movie_detail["data"]["yt_trailer_code"],
+                                                         movie_detail["data"]["description_full"],))
+                    check_actors(movie_detail['data']['actors'], movie_id, cursor)
+                    connect.commit()
+                except psycopg2.IntegrityError:
+                    connect.rollback()
+                    logging.warn("Movie Detail already exists")
+                except psycopg2.OperationalError as e:
+                    connect.rollback()
+                    logging.exception(e)
+                finally:
+                    connect.close()
+            else:
+                connect.close()
+        time.sleep(50)
+
+
 def check_upcoming_queue(connect, cursor):
     "move upcoming queue movie to movie_queue"
     cursor.execute("SELECT title FROM upcoming_queue")
@@ -199,3 +237,20 @@ def fetch_kickass_file(cursor):
     else:
         logging.debug("no episodes in new status")
         return settings.KICKASS_FILE
+
+
+def check_actors(actor_details, movie_id, cursor):
+    "Check if actor exists or not"
+    for actor in actor_details:
+        cursor.execute("SELECT id from actors WHERE name=%s", (actor['name'],))
+        if cursor.fetchone():
+            cursor.execute("SELECT id from actors WHERE name=%s", (actor['name'],))
+            (actor_id,) = cursor.fetchone()
+            cursor.execute("INSERT INTO actors_movies(actor_id,movie_id) "\
+                                        'VALUES(%s,%s)', (actor_id, movie_id,))
+        else:
+            cursor.execute("INSERT INTO actors(name) "\
+                                          'VALUES(%s) RETURNING id',(actor["name"],))
+            lastrowid = cursor.fetchone()[0]
+            cursor.execute("INSERT INTO actors_movies(actor_id,movie_id) "\
+                                    'VALUES(%s,%s)',(lastrowid, movie_id,))
