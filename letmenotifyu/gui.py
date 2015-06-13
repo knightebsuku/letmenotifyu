@@ -8,9 +8,8 @@ import os
 from datetime import datetime
 from gi.repository import Gtk, GObject
 from gi.repository.GdkPixbuf import Pixbuf
-from letmenotifyu import util, settings
+from .  import util, settings, yify
 from threading import Thread
-from letmenotifyu.movies import get_movie_details
 
 
 class About(object):
@@ -353,7 +352,7 @@ def details(movie_title, connect, cursor):
     "fetching details"
     cursor.execute("SELECT id,yify_id FROM movies WHERE title=%s", (movie_title,))
     (movie_id, yify_id,) = cursor.fetchone()
-    movie_detail = get_movie_details(yify_id)
+    movie_detail = yify.get_movie_details(yify_id)
     if not movie_detail:
         logging.error("Unable to fetch movie details for {}".format(movie_title))
         status = "no fetch"
