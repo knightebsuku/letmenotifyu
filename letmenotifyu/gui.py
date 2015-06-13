@@ -279,7 +279,7 @@ class MovieDetails(object):
                             'AND movie_images.title=%s',(self.movie_title, self.movie_title,))
         (mt, ml, mi,) = self.cursor.fetchone()
         movie_title.set_text(mt)
-        movie_link.set_uri(ml)
+        movie_link.set_uri("http://www.imdb.com/title/{}".format(ml))
         movie_link.set_property('label',"Imdb")
         pb = Pixbuf.new_from_file(settings.IMAGE_PATH+mi)
         movie_image.set_from_pixbuf(pb)
@@ -306,7 +306,7 @@ class MovieDetails(object):
                                 'WHERE movie_id=(SELECT id FROM movies WHERE title=%s)',(self.movie_title,))
             (r, yu, des,) = self.cursor.fetchone()
             rating.set_text(str(r))
-            youtube_link.set_uri(yu)
+            youtube_link.set_uri("https://www.youtube.com/watch?v={}".format(yu))
             youtube_link.set_property('label', "Trailer")
             description.set_text(des)
             self.cursor.execute("SELECT name FROM actors AS a JOIN actors_movies AS am "\
