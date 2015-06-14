@@ -6,10 +6,9 @@ import psycopg2
 import re
 import os
 from datetime import datetime
-from gi.repository import Gtk, GObject
+from gi.repository import Gtk
 from gi.repository.GdkPixbuf import Pixbuf
-from .  import util, settings, yify
-from threading import Thread
+from . import util, settings
 
 
 class About(object):
@@ -258,8 +257,7 @@ class MovieDetails(object):
         self.movie_title = movie_title
         self.details = Gtk.Builder()
         self.details.add_from_file("ui/MovieDetails.glade")
-        signals = {'on_btnFetchDetails_clicked': self.fetch_details,
-                   'on_btnWatchList_clicked': self.watch_list,
+        signals = {'on_btnWatchList_clicked': self.watch_list,
                    'on_btnClose_clicked': self.close}
         self.details.connect_signals(signals)
         self.populate()
@@ -318,12 +316,6 @@ class MovieDetails(object):
                 cast_list[key].set_text(name)
                 key += 1
             self.details.get_object("btnFetchDetails").set_sensitive(False)
-            
-    def fetch_details(self, widget):
-        "fetch details if not present"
-        self.details.get_object("spFetch").start()
-        fetch = WorkerThread(self.stop_spin, self.movie_title)
-        fetch.start()
 
     def watch_list(self, widget):
         "add to watch list"
@@ -337,87 +329,3 @@ class MovieDetails(object):
     def close(self, widget):
         "close widget"
         self.details.get_object("winMovieDetails").destroy()
-
-    def stop_spin(self, status):
-        if status == 'no fetch':
-            Error("Unable to connect to site")
-        elif status == "no detail":
-            Error("No movie details at this moment")
-        else:
-            self.populate()
-        self.details.get_object("spFetch").stop()
-
-
-def details(movie_title, connect, cursor):
-    "fetching details"
-    cursor.execute("SELECT id,yify_id FROM movies WHERE title=%s", (movie_title,))
-    (movie_id, yify_id,) = cursor.fetchone()
-    movie_detail = yify.get_movie_details(yify_id)
-    if not movie_detail:
-        logging.error("Unable to fetch movie details for {}".format(movie_title))
-        status = "no fetch"
-    elif movie_detail["status"] == "ok":
-        try:
-            cursor.execute("INSERT INTO movie_details(movie_id,language,movie_rating,"\
-                                    'youtube_url,description) '\
-                                    'VALUES(%s,%s,%s,%s,%s)',
-                            (movie_id,
-                             movie_detail["data"]['language'],
-                             movie_detail["data"]['rating'],
-                             "https://www.youtube.com/watch?v={}".format(movie_detail["data"]["yt_trailer_code"]),
-                             movie_detail["data"]["description_full"],))
-            check_actors(movie_detail['data']['actors'], movie_id, cursor)
-            connect.commit()
-        except psycopg2.IntegrityError as e:
-            connect.rollback()
-            status = 'no detail'
-            logging.exception(e)
-        except (psycopg2.OperationalError, psycopg2.ProgrammingError) as e:
-            connect.rollback()
-            logging.exception(e)
-            status = "no detail"
-    else:
-        logging.error(movie_detail)
-        logging.error("No movie details at this time")
-        status = "no detail"
-    return status
-
-
-def check_actors(actor_details, movie_id, cursor):
-    "Check if actor exists or not"
-    for actor in actor_details:
-        cursor.execute("SELECT id from actors WHERE name=%s", (actor['name'],))
-        if cursor.fetchone():
-            cursor.execute("SELECT id from actors WHERE name=%s", (actor['name'],))
-            (actor_id,) = cursor.fetchone()
-            cursor.execute("INSERT INTO actors_movies(actor_id,movie_id) "\
-                                        'VALUES(%s,%s)', (actor_id, movie_id,))
-        else:
-            cursor.execute("INSERT INTO actors(name) "\
-                                          'VALUES(%s) RETURNING id',(actor["name"],))
-            lastrowid = cursor.fetchone()[0]
-            cursor.execute("INSERT INTO actors_movies(actor_id,movie_id) "\
-                                    'VALUES(%s,%s)',(lastrowid, movie_id,))
-            
-            
-            
-            
-            
-            
-    
-class WorkerThread(Thread):
-    def __init__(self, callback, movie_title):
-        Thread.__init__(self)
-        self.callback = callback
-        self.movie_title = movie_title
-        
-    def run(self):
-        connect = psycopg2.connect(host=settings.DB_HOST,
-                                        database=settings.DB_NAME,
-                                        port=settings.DB_PORT,
-                                        user=settings.DB_USER,
-                                        password=settings.DB_PASSWORD)
-        cursor = connect.cursor()
-        status = details(self.movie_title, connect, cursor)
-        GObject.idle_add(self.callback, status)
-        connect.close()
