@@ -1,4 +1,4 @@
-letmenotifyu (3.1-3) UNRELEASED; urgency=medium
+letmenotifyu (3.2.0-1) UNRELEASED; urgency=medium
 
   * Delete upcoming movies if released
   * fix
@@ -12,8 +12,10 @@ letmenotifyu (3.1-3) UNRELEASED; urgency=medium
   * fix movie details
   * fix uncaught exeption in postgresql
   * keep pg connection open
+  * open and close postgresql connection is loops
+  * move background tasks to multiprocessing
 
- -- Lunga Mthembu <complexstu@gmail.com>  Fri, 15 May 2015 21:02:31 +0200
+ -- Lunga Mthembu <complexstu@gmail.com>  Sun, 14 Jun 2015 00:02:40 +0200
 
 letmenotifyu (2.2.1-1) unstable; urgency=low
 

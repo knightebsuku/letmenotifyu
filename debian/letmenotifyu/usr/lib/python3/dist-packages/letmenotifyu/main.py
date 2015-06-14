@@ -66,6 +66,12 @@ class Main(object):
 
     def on_quit(self, widget):
         self.connect.close()
+        bw.start_threads.series_process.terminate()
+        bw.start_threads.movie_process.terminate()
+        bw.start_threads.movie_details.terminate()
+        bw.start_threads.series_process.join()
+        bw.start_threads.movie_process.join()
+        bw.start_threads.movie_details.join()
         Gtk.main_quit()
 
     def general_view_activate(self, widget, choice):
@@ -272,7 +278,7 @@ class Main(object):
                             'watch_queue_status AS wqs,'\
                              'series_queue AS sq '\
                              'WHERE wqs.id=sq.watch_queue_status_id '\
-                             'AND sq.series_id=si.series_id ORDER BY sq.id')
+                             'AND sq.series_id=si.series_id ORDER BY sq.id DESC')
         for (path, watch_name, episode_name) in self.cursor.fetchall():
             util.render_view(self.image, episode_name+":  "+watch_name, self.general_model,
                              settings.IMAGE_PATH+path)
