@@ -34,7 +34,7 @@ def open_page(cursor, title, option=None):
     if option == 'upcoming':
         cursor.execute("SELECT link FROM upcoming_movies WHERE title=%s", (title,))
         (link,) = cursor.fetchone()
-        webbrowser.open_new("http://www.imdb.com/title/{}".format(link))
+        webbrowser.open_new(link)
     else:
         webbrowser.open_new("http://www.primewire.ag"+title)
     logging.info("Opening link {}".format(title))
