@@ -7,7 +7,6 @@ import gzip
 import os
 import urllib
 import glob
-from multiprocessing import Process
 
 from . import settings, util, kickass, yify
 from .movies import movie
@@ -244,23 +243,6 @@ def check_actors(actor_details, movie_id, cursor):
 
 def start_threads():
     "start all threads and processes"
-    series_process = Process(name='series_process', target=process_series_queue)
-    movie_process = Process(name='movie_process', target=process_movie_queue)
-    movie_details = Process(name='movie_details', target=movie_details_process)
-
-    series_process.deamon = True
-    movie_process.daemon = True
-    movie_details.daemon = True
-
-    series_process.start()
-    movie_process.start()
-    movie_details.start()
-    #movie_process = Thread(target=process_movie_queue)
-    #movie_process.setDaemon(True)
-    #series_process = Thread(target=process_series_queue)
-    #series_process.setDaemon(True)
     all_update = Thread(target=update)
     all_update.setDaemon(True)
-    #movie_process.start()
-    #series_process.start()
     all_update.start()
