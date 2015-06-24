@@ -307,13 +307,12 @@ class MovieDetails(object):
             self.cursor.execute("SELECT name FROM actors AS a JOIN actors_movies AS am "\
                            'ON a.id=am.actor_id AND am.movie_id='\
                                 '(SELECT id FROM movies WHERE title=%s)',(self.movie_title,))
-            cast_list = {1: self.details.get_object("lblActor1"), 2: self.details.get_object("lblActor2"),
-                         3: self.details.get_object("lblActor3"),4: self.details.get_object("lblActor4")}
-            key = 1
-            for (name,) in self.cursor.fetchall():
-                cast_list[key].set_text(name)
-                key += 1
-            self.details.get_object("btnFetchDetails").set_sensitive(False)
+            cast_list = {1: self.details.get_object("lblActor1"),
+                         2: self.details.get_object("lblActor2"),
+                         3: self.details.get_object("lblActor3"),
+                         4: self.details.get_object("lblActor4")}
+            for num,name in enumerate(self.cursor.fetchall(), start=1):
+                cast_list[num].set_text(name[0])
 
     def watch_list(self, widget):
         "add to watch list"
