@@ -14,7 +14,7 @@ from letmenotifyu import background_worker as bw
 
 class Main(object):
     "Main application"
-    def __init__(self):
+    def __init__(self,sp, mp, mdp):
         self.connect = psycopg2.connect(host=settings.DB_HOST,
                                         database=settings.DB_NAME,
                                         port=settings.DB_PORT,
@@ -26,7 +26,7 @@ class Main(object):
         self.torrent = Torrent(self.cursor)
         self.flag = ""
         self.builder.add_from_file("ui/Main.glade")
-        signals = {'on_AppWindow_destroy': Gtk.main_quit,
+        signals = {'on_AppWindow_destroy': self.on_quit,
                    'on_HeaderView_event': self.header_view_event,
                    'on_GeneralIconView_activated': self.general_view_activate,
                    'on_GeneralIconView_event': self.general_view_event,
@@ -61,17 +61,18 @@ class Main(object):
         self.button_level_2 = self.builder.get_object("BtnLevel2")
         util.pre_populate_menu(self.builder)
         self.builder.get_object('AppWindow').show()
-        bw.start_threads()
+        self.sp = sp
+        self.mp = mp
+        self.mdp = mdp
+        #bw.start_threads()
         Gtk.main()
 
     def on_quit(self, widget):
         self.connect.close()
-        bw.start_threads.series_process.terminate()
-        bw.start_threads.movie_process.terminate()
-        bw.start_threads.movie_details.terminate()
-        bw.start_threads.series_process.join()
-        bw.start_threads.movie_process.join()
-        bw.start_threads.movie_details.join()
+        logging.debug("Shutting down processes")
+        self.sp.terminate()
+        self.mp.terminate()
+        self.mdp.terminate()
         Gtk.main_quit()
 
     def general_view_activate(self, widget, choice):
@@ -351,11 +352,11 @@ class Main(object):
         elif self.flag == 'genre select':
             self.cursor.execute("SELECT id FROM genre WHERE genre=%s",
                                 (self.search_choice,))
-            genre_key = self.cursor.fetchone()
+            (genre_key,) = self.cursor.fetchone()
             self.cursor.execute("SELECT movies.title,path FROM movies,movie_images " \
                                 "WHERE movies.title=movie_images.title "\
                                 "AND movies.genre_id=%s and movies.title like ('%' || %s || '%') ",
-                                (genre_key[0], widget.get_text(),))
+                                (genre_key, widget.get_text(),))
             self.general_model.clear()
             for (title, path) in self.cursor.fetchall():
                 util.render_view(self.image, title,
