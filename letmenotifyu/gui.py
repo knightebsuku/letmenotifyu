@@ -51,7 +51,7 @@ class AddSeries(object):
                                'watch,'\
                                'current_season,' \
                                'last_update)' \
-                                    " VALUES(%s,%s,0,0,'1','0',0,%s)",
+                               " VALUES(%s,%s,0,0,'1','0',0,%s)",
                                (show_title, text, datetime.now(),))
                 self.connection.commit()
                 logging.info("Series Added: {}".format(show_title))
@@ -148,7 +148,7 @@ class Preferences(object):
         self.pref.get_object("fcbIncomplete").set_current_folder(settings.INCOMPLETE_DIRECTORY)
 
     def write_to_config(self):
-        "save to file"
+        "save to configurations to file"
         config = configparser.ConfigParser()
         images = self.pref.get_object("fcbImages").get_current_folder()
         torrents = self.pref.get_object("fcbTorrents").get_current_folder()
@@ -159,14 +159,12 @@ class Preferences(object):
                              'CompleteDownloads': complete+os.sep,
                                  'IncompleteDownloads': incomplete+os.sep
         }
-        config["LOGGING"] = {'LoggingLevel': "Logging.DEBUG"
-        }
+        config["LOGGING"] = {'LoggingLevel': "Logging.DEBUG"}
         config['DATABASE'] = {'Host': settings.DB_HOST,
                           'Port': settings.DB_PORT,
                           'User': settings.DB_USER,
                           'Password': settings.DB_PASSWORD,
-                          'Database': settings.DB_NAME
-    }
+                          'Database': settings.DB_NAME}
         with open(settings.DIRECTORY_PATH+'/config.ini','w') as cfg_file:
             config.write(cfg_file)
 
@@ -309,13 +307,12 @@ class MovieDetails(object):
             self.cursor.execute("SELECT name FROM actors AS a JOIN actors_movies AS am "\
                            'ON a.id=am.actor_id AND am.movie_id='\
                                 '(SELECT id FROM movies WHERE title=%s)',(self.movie_title,))
-            cast_list = {1: self.details.get_object("lblActor1"), 2: self.details.get_object("lblActor2"),
-                         3: self.details.get_object("lblActor3"),4: self.details.get_object("lblActor4")}
-            key = 1
-            for (name,) in self.cursor.fetchall():
-                cast_list[key].set_text(name)
-                key += 1
-            self.details.get_object("btnFetchDetails").set_sensitive(False)
+            cast_list = {1: self.details.get_object("lblActor1"),
+                         2: self.details.get_object("lblActor2"),
+                         3: self.details.get_object("lblActor3"),
+                         4: self.details.get_object("lblActor4")}
+            for num,name in enumerate(self.cursor.fetchall(), start=1):
+                cast_list[num].set_text(name[0])
 
     def watch_list(self, widget):
         "add to watch list"

@@ -34,7 +34,7 @@ def open_page(cursor, title, option=None):
     if option == 'upcoming':
         cursor.execute("SELECT link FROM upcoming_movies WHERE title=%s", (title,))
         (link,) = cursor.fetchone()
-        webbrowser.open_new(link)
+        webbrowser.open_new("http://www.imdb.com/title/{}".format(link))
     else:
         webbrowser.open_new("http://www.primewire.ag"+title)
     logging.info("Opening link {}".format(title))
@@ -97,9 +97,10 @@ def pre_populate_menu(builder):
     header = header_list.append(None, ["Movies"])
     header_list.append(header, ["Upcoming Movies"])
     header_list.append(header, ["Released Movies"])
+    header_list.append(header, ["Movie Archive"])
     header = header_list.append(None, ["Series"])
     header_list.append(header, ["Latest Episodes"])
-    header_list.append(header, ["Active Series"])
+    header_list.append(header, ["Series on Air"])
     header_list.append(header, ["Series Archive"])
     header = header_list.append(None, ['Watch Queue'])
     header_list.append(header, ["Movie Queue"])

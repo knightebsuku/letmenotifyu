@@ -26,7 +26,7 @@ class Main(object):
         self.torrent = Torrent(self.cursor)
         self.flag = ""
         self.builder.add_from_file("ui/Main.glade")
-        signals = {'on_AppWindow_destroy': Gtk.main_quit,
+        signals = {'on_AppWindow_destroy': self.on_quit,
                    'on_HeaderView_event': self.header_view_event,
                    'on_GeneralIconView_activated': self.general_view_activate,
                    'on_GeneralIconView_event': self.general_view_event,
@@ -48,42 +48,48 @@ class Main(object):
                    'on_watchlist_activate': self.watch_list}
 
         self.builder.connect_signals(signals)
-        self.header_dic = {'Released Movies': self.released_movies,
-                      'Upcoming Movies': self.upcoming_movies,
-                      'Latest Episodes': self.latest_episodes,
-                      'Active Series': self.active_series,
-                      'Series Archive': self.series_archive,
-                      'Movie Queue': self.watch_movies,
-                      'Series Queue': self.watch_series}
+        self.header_dic = {
+            'Upcoming Movies': self.upcoming_movies_view_selected,
+            'Released Movies': self.released_movies_view_selected,
+            'Movie Archive': self.movie_archive_view_selected,
+            'Latest Episodes': self.latest_episodes,
+            'Series on Air': self.active_series,
+            'Series Archive': self.series_archive,
+            'Movie Queue': self.watch_movies,
+            'Series Queue': self.watch_series}
         self.general_model = self.builder.get_object("General")
         self.general_icon_view = self.builder.get_object('GeneralIconView')
         self.button_level_1 = self.builder.get_object("BtnLevel1")
         self.button_level_2 = self.builder.get_object("BtnLevel2")
         util.pre_populate_menu(self.builder)
         self.builder.get_object('AppWindow').show()
-        bw.start_threads()
+        #self.sp = sp
+        #self.mp = mp
+        #self.mdp = mdp
+        #bw.start_threads()
         Gtk.main()
 
     def on_quit(self, widget):
         self.connect.close()
-        bw.start_threads.series_process.terminate()
-        bw.start_threads.movie_process.terminate()
-        bw.start_threads.movie_details.terminate()
-        bw.start_threads.series_process.join()
-        bw.start_threads.movie_process.join()
-        bw.start_threads.movie_details.join()
+        logging.debug("Shutting down processes")
+        #self.sp.terminate()
+        #self.mp.terminate()
+        #self.mdp.terminate()
         Gtk.main_quit()
 
     def general_view_activate(self, widget, choice):
-        if self.flag == "upcoming movies":
+        if self.flag == "upcoming_movies_view_selected":
             util.open_page(self.cursor, choice, "upcoming")
         elif self.flag == "latest episodes":
             util.open_page(self.cursor, self.latest_dict[choice])
-        elif self.flag == "released movies":
-            self.released_movies_select(choice)
+        elif self.flag == "released_movies_view_selected":
+            self.released_movies_view_selected()
+        elif self.flag == "movie_archive_view_selected":
+            self.movie_archive_view_selected(choice)
             self.button_level_1.set_property("visible", True)
             self.button_level_1.set_property("label", choice)
-        elif self.flag == "genre select":
+            
+        elif self.flag == "movie_archive_view_genre_selected":
             gui.MovieDetails(self.cursor, self.connect, choice)
         elif self.flag == "active series":
             self.active_series_select(choice)
@@ -121,7 +127,7 @@ class Main(object):
                     self.torrent.query(self.choice)
                     self.builder.get_object("torrents").popup(None, None, None, None,
                                                        event.button, event.time)
-                elif event.button == 3 and self.flag == "upcoming movies":
+                elif event.button == 3 and self.flag == "upcoming_movies_view_selected":
                     self.builder.get_object("upcoming").popup(None, None, None, None,
                                                               event.button, event.time)
                 elif event.button == 3 and self.flag == "watch series":
@@ -143,7 +149,27 @@ class Main(object):
             except KeyError:
                 pass
 
-    def released_movies_select(self, choice):
+    def released_movies_view_selected(self, choice):
+        "show movies which have just been released"
+        self.general_model.clear()
+        self.cursor.execute("SELECT value FROM config WHERE key='movie_duration'")
+        duration = self.cursor.fetchone()
+        week = datetime.now() - timedelta(days=float(duration[0]))
+        self.cursor.execute("SELECT episode_number || episode_name,episode_link,path FROM episodes "\
+                            "JOIN series_images "\
+                            "ON episodes.series_id=series_images.series_id "\
+                            "AND date BETWEEN %s AND %s",
+                            (week, datetime.now(),))
+        self.cursor.execute("SELECT movies.title")
+        for (episode_name, episode_link, path) in self.cursor.fetchall():
+            util.render_view(self.image, episode_name, self.general_model,
+                             settings.IMAGE_PATH+path)
+            self.latest_dict[episode_name] = episode_link
+        self.flag = 'latest episodes'
+        self.flag = "released_movies_view_selected"
+
+    def movie_archive_view_genre_selected(self, choice):
+        "show all movies from a particular genre"
         self.cursor.execute("SELECT id FROM genre WHERE genre=%s",
                                 (choice,))
         self.search_choice = choice
@@ -156,9 +182,10 @@ class Main(object):
         for (movie_title, path) in movie_info:
             util.render_view(self.image, movie_title,
                                  self.general_model, settings.IMAGE_PATH+path)
-        self.flag = "genre select"
+        self.flag = "movie_archive_view_genre_selected"
+        
 
-    def active_series_select(self, choice):
+    def series_on_air_view_selected(self, choice):
         self.active_series_dic = {}
         series_name = choice.split(" Season")[0]
         logging.debug(series_name)
@@ -176,7 +203,8 @@ class Main(object):
         self.flag = "select series"
         
 
-    def released_movies(self):
+    def movie_archive_view_selected(self):
+        "show all movie genres"
         self.general_model.clear()
         self.cursor.execute("SELECT genre FROM genre ORDER BY genre")
         result = self.cursor.fetchall()
@@ -184,9 +212,9 @@ class Main(object):
             self.image.set_from_file("icons/"+genre[0]+'.png')
             pixbuf = self.image.get_pixbuf()
             self.general_model.append([pixbuf, genre[0]])
-        self.flag = "released movies"
-
-    def upcoming_movies(self):
+        self.flag = "movie_archive_view_selected"
+    
+    def upcoming_movies_view_selected(self):
         self.general_model.clear()
         self.cursor.execute("SELECT upcoming_movies.title,path FROM upcoming_movies"\
                             ",movie_images "\
@@ -195,7 +223,7 @@ class Main(object):
         for movie in movies:
             util.render_view(self.image, movie[0], self.general_model,
                              settings.IMAGE_PATH+movie[1])
-        self.flag = "upcoming movies"
+        self.flag = "upcoming_movies_view_selected"
 
     def latest_episodes(self):
         self.latest_dict = {}
@@ -288,7 +316,8 @@ class Main(object):
         self.header_dic[widget.get_label()]()
 
     def button_one_clicked(self, widget):
-        if self.flag in ("released movies", "genre select"):
+        if self.flag in ("released_movies_view_selected",
+                         "movie_archive_view_genre_selected"):
             self.released_movies_select(widget.get_label())
         elif self.flag in ("active series", "select series"):
             self.active_series_select(widget.get_label())
@@ -336,7 +365,7 @@ class Main(object):
 
     def search_changed(self, widget):
         "change search only for movies"
-        if self.flag == 'upcoming movies':
+        if self.flag == 'upcoming_movies_view_selected':
             self.general_model.clear()
             self.cursor.execute("SELECT upcoming_movies.title,path FROM upcoming_movies"\
                             ",movie_images "\
@@ -347,15 +376,15 @@ class Main(object):
             for movie in movies:
                 util.render_view(self.image, movie[0], self.general_model,
                              settings.IMAGE_PATH+movie[1])
-            self.flag = 'upcoming movies'
+            self.flag = 'upcoming_movies_view_selected'
         elif self.flag == 'genre select':
             self.cursor.execute("SELECT id FROM genre WHERE genre=%s",
                                 (self.search_choice,))
-            genre_key = self.cursor.fetchone()
+            (genre_key,) = self.cursor.fetchone()
             self.cursor.execute("SELECT movies.title,path FROM movies,movie_images " \
                                 "WHERE movies.title=movie_images.title "\
                                 "AND movies.genre_id=%s and movies.title like ('%' || %s || '%') ",
-                                (genre_key[0], widget.get_text(),))
+                                (genre_key, widget.get_text(),))
             self.general_model.clear()
             for (title, path) in self.cursor.fetchall():
                 util.render_view(self.image, title,
