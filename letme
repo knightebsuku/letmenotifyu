@@ -7,7 +7,7 @@ from letmenotifyu.main import Main
 from letmenotifyu import settings
 from letmenotifyu import util
 
-os.chdir(settings.DATA_FILES_PATH)
+#os.chdir(settings.DATA_FILES_PATH)
 
 if __name__ == "__main__":
     util.start_logging()

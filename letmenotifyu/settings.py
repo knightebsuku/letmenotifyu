@@ -5,10 +5,10 @@ import configparser
 import logging
 import psycopg2
 
-DIRECTORY_PATH = os.path.join(os.environ['HOME'], '.letmenotifyu')
+DIRECTORY_PATH = "data/"
 KICKASS_FILE = os.path.join(DIRECTORY_PATH, 'kickass.txt')
 LOG_FILE_PATH = os.path.join(DIRECTORY_PATH, 'letmenotifyu.log')
-DATA_FILES_PATH = '/usr/share/letmenotifyu/'
+#DATA_FILES_PATH = '/usr/share/letmenotifyu/'
 config = configparser.ConfigParser()
 
 
