@@ -1,1 +1,1 @@
-a355840c7fa0d216a429be19e6dac44a  letmenotifyu_3.1-3_all.deb
+a31ae311f1cc0ffe7ca7153a37fe611a  letmenotifyu_3.3.0-1_all.deb
