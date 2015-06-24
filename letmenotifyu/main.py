@@ -64,7 +64,7 @@ class Main(object):
         self.sp = sp
         self.mp = mp
         self.mdp = mdp
-        #bw.start_threads()
+        bw.start_threads()
         Gtk.main()
 
     def on_quit(self, widget):
