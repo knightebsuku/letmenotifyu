@@ -51,7 +51,7 @@ class AddSeries(object):
                                'watch,'\
                                'current_season,' \
                                'last_update)' \
-                                    " VALUES(%s,%s,0,0,'1','0',0,%s)",
+                               " VALUES(%s,%s,0,0,'1','0',0,%s)",
                                (show_title, text, datetime.now(),))
                 self.connection.commit()
                 logging.info("Series Added: {}".format(show_title))
@@ -148,7 +148,7 @@ class Preferences(object):
         self.pref.get_object("fcbIncomplete").set_current_folder(settings.INCOMPLETE_DIRECTORY)
 
     def write_to_config(self):
-        "save to file"
+        "save to configurations to file"
         config = configparser.ConfigParser()
         images = self.pref.get_object("fcbImages").get_current_folder()
         torrents = self.pref.get_object("fcbTorrents").get_current_folder()
@@ -159,14 +159,12 @@ class Preferences(object):
                              'CompleteDownloads': complete+os.sep,
                                  'IncompleteDownloads': incomplete+os.sep
         }
-        config["LOGGING"] = {'LoggingLevel': "Logging.DEBUG"
-        }
+        config["LOGGING"] = {'LoggingLevel': "Logging.DEBUG"}
         config['DATABASE'] = {'Host': settings.DB_HOST,
                           'Port': settings.DB_PORT,
                           'User': settings.DB_USER,
                           'Password': settings.DB_PASSWORD,
-                          'Database': settings.DB_NAME
-    }
+                          'Database': settings.DB_NAME}
         with open(settings.DIRECTORY_PATH+'/config.ini','w') as cfg_file:
             config.write(cfg_file)
 
