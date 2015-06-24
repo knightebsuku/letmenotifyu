@@ -3,7 +3,7 @@ set -e
 
 # Automatically added by dhpython:
 if which py3compile >/dev/null 2>&1; then
-	py3compile -p letmenotifyu -V 3.2-
+	py3compile -p letmenotifyu 
 fi
 
 # End automatically added section

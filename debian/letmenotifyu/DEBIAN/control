@@ -1,11 +1,11 @@
 Package: letmenotifyu
-Version: 2.0.5-2
+Version: 3.1-3
 Architecture: all
-Maintainer: Lunga Mthembu <zerefs@gmail.com>
-Installed-Size: 184
-Depends: python3 (>= 3.2), sqlite3 (>= 3.6), python3-notify2 (>= 0.2), python3-bs4 (>= 4.0)
-Section: x11
-Priority: extra
-Homepage: https://github.com/zerefs/letmenotifyu
-Description: Program to notify users
- Letmenotifyu is a program that will notify you of the lastest series and movies
+Maintainer: Lunga Mthembu <complexstu@gmail.com>
+Installed-Size: 782
+Depends: python3 (>= 3.2), python3-litemigration (>= 1.0), python3-notify2 (>= 0.3), python3-bs4 (>= 4.3), python3-requests (>= 2.4), python3-psycopg2 (>= 2.5.4)
+Section: unknown
+Priority: optional
+Homepage: https://github.com/stucomplex/letmenotifyu/
+Description: Notification for series and movies
+ Application to notify users of new episodes from primewire.ag and movies from YIFY.

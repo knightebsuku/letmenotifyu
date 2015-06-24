@@ -1,14 +1,14 @@
 from distutils.core import setup
 if __name__=='__main__':
     setup(name='letmenotifyu',
-          version='2.1.0',
+          version='3.1-3',
           description='Program to notify users of new movie and series episode release from http://www.primewire.ag/',
           author='Lunga Mthembu',
           author_email='stucomplex@gmail.com',
           url='https://github.com/stucomplex/letmenotifyu',
           license='GPL',
-          scripts=['letmenotifyu.py'],
-          packages=['letmenotifyu','migration'],
+          scripts=['letme'],
+          packages=['letmenotifyu'],
           data_files=[('share/applications',
                        ['ui/letmenotifyu.desktop']),
                       ('share/letmenotifyu/ui',
@@ -21,4 +21,5 @@ if __name__=='__main__':
                         'icons/War.png','icons/Adventure.png','icons/Comedy.png','icons/Drama.png','icons/Historic.png',
                         'icons/Romance.png','icons/Western.png','icons/Animation.png','icons/Comic.png','icons/Family.png',
                         'icons/Horror.png','icons/Sci-Fi.png','icons/Biography.png','icons/Crime.png','icons/Fantasy.png',
-                        'icons/Musical.png','icons/Thriller.png'])]
+                        'icons/Musical.png','icons/Thriller.png']),
+                        ])

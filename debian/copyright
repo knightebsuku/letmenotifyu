@@ -1,13 +1,13 @@
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: letmenotifyu
-Source: https://github.com/zerefs/letmenotifyu
+Source: https://github.com/stucomplex/letmenotifyu/
 
 Files: *
-Copyright: 2014 Lunga Mthembu <zerefs@gmail.com>
+Copyright: 2015 Lunga Mthembu <complexstu@gmail.com
 License: GPL-3.0+
 
 Files: debian/*
-Copyright: 2014 Lunga Mthembu <zerefs@gmail.com>
+Copyright: 2015 Lunga Mthembu <complexstu@gmail.com>
 License: GPL-3.0+
 
 License: GPL-3.0+

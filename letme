@@ -1,0 +1,21 @@
+#!/usr/bin/python3
+
+import logging
+import os
+from letmenotifyu import database as db
+from letmenotifyu.main import Main
+from letmenotifyu import settings
+from letmenotifyu import util
+
+os.chdir(settings.DATA_FILES_PATH)
+
+if __name__ == "__main__":
+    util.start_logging()
+    if settings.check_db() == 'connect':
+        logging.error("Unable to connect to database, check connections")
+        exit()
+    elif settings.check_db() == 'migration':
+        logging.info('no migration table found, creating')
+        db.database_init()
+    db.database_change()
+    Main()

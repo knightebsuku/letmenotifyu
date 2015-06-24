@@ -1,57 +1,55 @@
 Letmenotifyu
 ====================
 
-Program to notifyu users of new Episode and Movie releases from primewire.ag
+Application  to notify users of new episodes from [primewire.ag](http://primewire.ag) and movies from [YIFY](https://yts.re/api).
 
-Version: 2.0.5
+Full application details on the [wiki](https://github.com/stucomplex/letmenotifyu/wiki)
+
+
+Version: 3.0.0
 -------------------
 
 Program Features
 ----------------------
     
-*    Complete GUI (Gtk 3+)
+*    Complete GUI.
 
-*    Automatic updates
+*    Automatic updates of favorite series.
 
 *    Addition of new series.
 
-*    Clickable Icons to view Movies and series on primewire
-
-*    Links to torrent sites
-
-*    Start,Stop updating series.
-
-*    Set current season.
+*    Control updates.
 
 *    Show lastest episodes.
 
-*    Show latest movies
+*    Show latest movies.
 
-*    Archiving of series and movies
+*    Archiving of series and movies.
 
+*  Can be used with a torrent client to download movies or series. 
 
 Dependencies
 ----------------
 
-*python3 >= 3.2
-*sqlite3 >= 3.6
-*python3-notify2 >= 0.2
-*python3-bs4 >= 0.4
+* Python  3
+
+* Python3-notify2
+
+* Python3-bs4
+
+* GTK +3
+
+* Python3-litemigration [Litemigration](https://github.com/stucomplex/python3-litemigration)
+
+* Python3-psycopg2
+
 
 
 Installation
 ----------------------------
 
-    python setup.py
+You need to first create a database and make sure the database settings are reflected in the config.ini file
 
+I've included a releases folder which will have the latest .deb file
 
-Some Usage
---------------------------
-
-To add a new series
-
-Input the home page of the series eg:
-
-http://www.primewire.ag/tv-4326-American-Dad
-
-I use this application a lot and I'm always making improvements to it Please let me know if you use it as well
+[deb](https://github.com/stucomplex/letmenotifyu/blob/master/releases/letmenotifyu_2.1.5-8_all.deb)

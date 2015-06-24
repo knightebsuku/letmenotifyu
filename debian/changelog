@@ -1,32 +1,23 @@
-letmenotifyu (2.0.5-2) UNRELEASED; urgency=low
+letmenotifyu (3.1-3) UNRELEASED; urgency=medium
 
-  * Initial Release of the 1.9 series
-  * Removed Quit Item
-  * Fixed Database
-  * Fixed startup
-  * Added Basic Logging
-  * Fixed deletion of series if wrong page is loaded
-  * Fixed movie update
-  * Separated Series and Movie Updates
-  * Fixed update 
-  * Current Series only shows current seson of series playing
-  * Fixed rogue x 
-  * Fixed startup error
-  * Fixed Movie Links
-  * New Release 1.10
-  * Fixed Notification when a new Series is added
-  * maintanance
-  * List Series in Alphabetical order
-  * fixed newline in sqlite3
-  * Fixed Movie Update
-  * Add Menu for Current Series
-  * New GUI Layout
-  * Database changes
-  * Fix about menu
-  * Fix right click on series archive
-  * Fixed updating posters
-  * Update version
-  * fix add series link
-  * fix url link to images
+  * Delete upcoming movies if released
+  * fix
+  * code cleanup
+  * fix paths
+  * change interval to minutes
+  * Fix kickass dump tuple
+  * Re-Queue if movie detail unsucssesful
+  * fix database lock for series
+  * change database to postgres
+  * fix movie details
+  * fix uncaught exeption in postgresql
+  * keep pg connection open
 
- -- Lunga Mthembu <shellcomplex7@gmail.com>  Tue, 18 Nov 2014 16:53:49 +0200
+ -- Lunga Mthembu <complexstu@gmail.com>  Fri, 15 May 2015 21:02:31 +0200
+
+letmenotifyu (2.2.1-1) unstable; urgency=low
+
+  * Fix fetching movie images
+  * clean up
+
+ -- Lunga Mthembu <complexstu@gmail.com>  Tue, 24 Mar 2015 18:50:12 +0200
