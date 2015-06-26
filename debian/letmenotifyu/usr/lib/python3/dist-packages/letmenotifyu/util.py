@@ -114,9 +114,12 @@ def fetch_torrent(torrent_url, title):
     else:
         try:
             r = requests.get(torrent_url)
-            with open(settings.TORRENT_DIRECTORY+title+".torrent","wb") as torrent_file:
-                torrent_file.write(r.content)
-                return True
+            if r.status_code == requests.codes.ok:
+                with open(settings.TORRENT_DIRECTORY+title+".torrent","wb") as torrent_file:
+                    torrent_file.write(r.content)
+                    return True
+            else:
+                return False
         except Exception as e:
             logging.error("unable to fetch torrent for {}".format(title))
             logging.exception(e)

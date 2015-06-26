@@ -11,4 +11,6 @@ def search_episode(kickass_file, title, episode_name, uploader):
             if re.search(r'%s' %(title+".*"+episode_name+' (?!720p).*'+uploader), line):
                 logging.debug("found {}".format(line))
                 episode_info = line.split("|")
-                return episode_info
+                episode_title = episode_info[1]
+                episode_torrent_link = episode_info[4]
+                return episode_title, episode_torrent_link
