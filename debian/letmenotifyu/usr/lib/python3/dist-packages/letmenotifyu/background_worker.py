@@ -49,7 +49,7 @@ def process_series_queue():
             if watch_id == 1:
                 logging.info("fetching episode torrent for {}".format(title))
                 try:
-                    (_, series_title, _, _, episode_link, _, _, _, _, _, _,) = kickass.search_episode(kickass_file, title, ep_name,
+                    (_, series_title, _, _, episode_link, _, _, _, _, _, _,_,) = kickass.search_episode(kickass_file, title, ep_name,
                                                                                                       "HDTV x264-(LOL|KILLERS|ASAP|2HD|FUM)")
                     if util.fetch_torrent(episode_link.replace("\n", ""), series_title):
                         try:
