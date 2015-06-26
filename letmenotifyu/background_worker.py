@@ -49,9 +49,11 @@ def process_series_queue():
             if watch_id == 1:
                 logging.info("fetching episode torrent for {}".format(title))
                 try:
-                    (_, series_title, _, _, episode_link, _, _, _, _, _, _,_,) = kickass.search_episode(kickass_file, title, ep_name,
-                                                                                                      "HDTV x264-(LOL|KILLERS|ASAP|2HD|FUM)")
-                    if util.fetch_torrent(episode_link.replace("\n", ""), series_title):
+                    episode_title, episode_link = kickass.search_episode(kickass_file,
+                                                                        title,
+                                                                        ep_name,
+                                                                        "HDTV x264-(LOL|KILLERS|ASAP|2HD|FUM)")
+                    if util.fetch_torrent(episode_link.replace("\n", ""), episode_title):
                         try:
                             cursor.execute("INSERT INTO series_torrent_links(series_queue_id, link) VALUES(%s,%s)",
                                 (queue_id, episode_link,))
