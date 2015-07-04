@@ -4,11 +4,9 @@ import psycopg2
 import logging
 import time
 import gzip
-import os
 import urllib
-import glob
 
-from . import settings, util, kickass, yify
+from . import settings, util, kickass, yify, transmission
 from .movies import movie
 from .series import series
 from threading import Thread
@@ -45,18 +43,18 @@ def process_series_queue():
         cursor.execute("SELECT title, series_queue.id, episode_name, watch_queue_status_id "\
                        'FROM  series_queue join series ON series_id=series.id and watch_queue_status_id <> 4')
         for (title, queue_id, ep_name, watch_id) in cursor.fetchall():
-            series_titles = title.replace(" ", ".")
             if watch_id == 1:
                 logging.info("fetching episode torrent for {}".format(title))
                 try:
-                    episode_title, episode_link = kickass.search_episode(kickass_file,
+                    episode_title, episode_link, episode_hash = kickass.search_episode(kickass_file,
                                                                         title,
                                                                         ep_name,
                                                                         "HDTV x264-(LOL|KILLERS|ASAP|2HD|FUM)")
                     if util.fetch_torrent(episode_link.replace("\n", ""), episode_title):
                         try:
-                            cursor.execute("INSERT INTO series_torrent_links(series_queue_id, link) VALUES(%s,%s)",
-                                (queue_id, episode_link,))
+                            cursor.execute("INSERT INTO series_torrent_links(series_queue_id, link, torrent_hash) " \
+                                           "VALUES(%s,%s,%s)",
+                                (queue_id, episode_link, episode_hash.lower(),))
                             cursor.execute("UPDATE series_queue SET watch_queue_status_id=2 WHERE id=%s",
                                 (queue_id,))
                             connect.commit()
@@ -66,30 +64,8 @@ def process_series_queue():
                 except TypeError as e:
                     logging.exception(e)
                     pass
-            elif watch_id == 2:
-                for dirs in os.listdir(settings.INCOMPLETE_DIRECTORY):
-                    if dirs.startswith(series_titles):
-                        try:
-                            cursor.execute("UPDATE series_queue SET watch_queue_status_id=3 WHERE id=%s",
-                                        (queue_id,))
-                            connect.commit()
-                            break
-                        except psycopg2.OperationalError as error:
-                            connect.rollback()
-                            logging.exception(error)
-                            break
-            elif watch_id == 3:
-                for dirs in os.listdir(settings.COMPLETE_DIRECTORY):
-                    if dirs.startswith(series_titles):
-                        try:
-                            cursor.execute("UPDATE series_queue SET watch_queue_status_id=4 WHERE id=%s",
-                                            (queue_id,))
-                            connect.commit()
-                            break
-                        except psycopg2.OperationalError as e:
-                            connect.rollback()
-                            logging.exception(e)
-                            break
+            else:
+                transmission.check_episode_status(queue_id, cursor, connect)
         value = util.get_config_value(cursor, 'series_process_interval')
         connect.close()
         time.sleep(float(value)*60)
@@ -121,28 +97,8 @@ def process_movie_queue():
                     except psycopg2.OperationalError as error:
                         connect.rollback()
                         logging.exception(error)
-            elif watch_id == 2:
-                if glob.glob("{}*".format(settings.INCOMPLETE_DIRECTORY+movie_title)):
-                    try:
-                        logging.debug("{} on status 2, moving to status 3".format(movie_title))
-                        cursor.execute("UPDATE movie_queue SET watch_queue_status_id=3 WHERE id=%s",
-                            (queue_id,))
-                        connect.commit()
-                    except psycopg2.OperationalError as error:
-                        connect.rollback()
-                        logging.exception(error)
-            elif watch_id == 3:
-                if glob.glob("{}*".format(settings.COMPLETE_DIRECTORY+movie_title)):
-                    try:
-                        logging.debug("{} on status 3, moving to status 4".format(movie_title))
-                        cursor.execute("UPDATE movie_queue SET watch_queue_status_id=4 WHERE id=%s",
-                            (queue_id,))
-                        connect.commit()
-                    except psycopg2.OperationalError as error:
-                        connect.rollback()
-                        logging.exception(error)
             else:
-                logging.debug('no movies in queues')
+                transmission.check_movie_status(queue_id, cursor, connect)
         value = util.get_config_value(cursor, 'movie_process_interval')
         connect.close()
         time.sleep(float(value)*60)
