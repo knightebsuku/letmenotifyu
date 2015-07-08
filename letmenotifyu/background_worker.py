@@ -114,8 +114,7 @@ def process_movie_queue():
                 transmission.check_movie_status(transmission_hash, cursor, connect)
         value = util.get_config_value(cursor, 'movie_process_interval')
         connect.close()
-        time.sleep(100)
-        #time.sleep(float(value)*60)
+        time.sleep(float(value)*60)
 
 
 def movie_details_process():
