@@ -109,21 +109,20 @@ def pre_populate_menu(builder):
 
 def fetch_torrent(torrent_url, title):
     "fetch torrent images"
-    if os.path.isfile(settings.TORRENT_DIRECTORY+title+".torrent"):
-        return True
-    else:
-        try:
+    try:
             r = requests.get(torrent_url)
             if r.status_code == requests.codes.ok:
-                with open(settings.TORRENT_DIRECTORY+title+".torrent","wb") as torrent_file:
+                with open(settings.TORRENT_DIRECTORY+title+".torrent", "wb") as torrent_file:
                     torrent_file.write(r.content)
-                    return True
+                    logging.debug("torrent downloaded and saved")
+                    return True, settings.TORRENT_DIRECTORY+title+".torrent"
             else:
-                return False
-        except Exception as e:
+                logging.debug("unable to download torrent {}".format(r.status_code))
+                return False, None
+    except requests.exceptions.ConnectionError as e:
             logging.error("unable to fetch torrent for {}".format(title))
             logging.exception(e)
-            return False
+            return False, None
 
 
 def get_config_value(cursor, key):
