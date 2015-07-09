@@ -25,12 +25,12 @@ def check_movie_status(transmission_hash, cursor, db):
                            (transmission_hash,))
         (queue_id,) = cursor.fetchone()
         if torrent_status.status == 'downloading':
-            logging.debug("updating movie {} to status 3".format(queue_id))
+            logging.debug("updating movie queue Id {} to status 3".format(queue_id))
             cursor.execute("UPDATE movie_queue SET watch_queue_status_id=3 " \
                                       "WHERE id=%s", (queue_id,))
             db.commit()
         elif torrent_status.isFinished:
-            logging.debug("updating movie {} to status 4".format(queue_id))
+            logging.debug("updating movie queue Id {} to status 4".format(queue_id))
             cursor.execute("UPDATE movie_queue SET watch_queue_status_id=4 " \
                                       "WHERE id=%s", (queue_id,))
             db.commit()
@@ -47,12 +47,12 @@ def check_episode_status(queue_id, cursor, db):
         tc = transmissionrpc.Client('localhost', port='9091')
         torrent_status = tc.get_torrent(transmission_hash)
         if torrent_status.status == 'downloading':
-            logging.debug("updating {} to status 3".format(queue_id))
+            logging.debug("updating series queue Id {} to status 3".format(queue_id))
             cursor.execute("UPDATE series_queue SET watch_queue_status_id=3 "\
                                           "WHERE id=%s", (queue_id,))
             db.commit()
         elif torrent_status.isFinished:
-            logging.debug("updating {} to status 4".format(queue_id))
+            logging.debug("updating series queue Id {} to status 4".format(queue_id))
             cursor.execute("UPDATE series_queue SET watch_queue_status_id=4 "\
                                           "WHERE id=%s", (queue_id,))
             db.commit()
