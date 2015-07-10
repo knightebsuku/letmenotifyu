@@ -4,11 +4,9 @@ import psycopg2
 import logging
 import time
 import gzip
-import os
 import urllib
-import glob
 
-from . import settings, util, kickass, yify
+from . import settings, util, kickass, yify, transmission
 from .movies import movie
 from .series import series
 from threading import Thread
@@ -43,53 +41,36 @@ def process_series_queue():
         cursor = connect.cursor()
         kickass_file = fetch_kickass_file(cursor)
         cursor.execute("SELECT title, series_queue.id, episode_name, watch_queue_status_id "\
-                       'FROM  series_queue join series ON series_id=series.id and watch_queue_status_id <> 4')
+                       "FROM  series_queue JOIN series ON series_id=series.id "\
+                       " AND watch_queue_status_id <> 4")
         for (title, queue_id, ep_name, watch_id) in cursor.fetchall():
-            series_titles = title.replace(" ", ".")
             if watch_id == 1:
                 logging.info("fetching episode torrent for {}".format(title))
                 try:
-                    episode_title, episode_link = kickass.search_episode(kickass_file,
+                    episode_title, episode_link, episode_hash = kickass.search_episode(kickass_file,
                                                                         title,
                                                                         ep_name,
-                                                                        "HDTV x264-(LOL|KILLERS|ASAP|2HD|FUM)")
-                    if util.fetch_torrent(episode_link.replace("\n", ""), episode_title):
+                                                                        "HDTV x264-(LOL|KILLERS|ASAP|2HD|FUM|TLA)")
+                    (downloaded, torrent_file_path) = util.fetch_torrent(episode_link.replace("\n", ""),
+                                                                         episode_title)
+                    if downloaded:
                         try:
-                            cursor.execute("INSERT INTO series_torrent_links(series_queue_id, link) VALUES(%s,%s)",
-                                (queue_id, episode_link,))
-                            cursor.execute("UPDATE series_queue SET watch_queue_status_id=2 WHERE id=%s",
-                                (queue_id,))
+                            torrent_hash, torrent_name = transmission.add_torrent(torrent_file_path)
+                            cursor.execute("INSERT INTO series_torrent_links(series_queue_id, link, "\
+                                           "torrent_hash, transmission_hash, torrent_name) " \
+                                           "VALUES(%s,%s,%s,%s,%s)",
+                                (queue_id, episode_link, episode_hash, torrent_hash, torrent_name,))
+                            cursor.execute("UPDATE series_queue SET watch_queue_status_id=2 "\
+                                           "WHERE id=%s", (queue_id,))
                             connect.commit()
-                        except psycopg2.IntegrityError:
+                        except Exception as e:
                             connect.rollback()
-                            logging.warn("torrent link for {} already exists".format(title))
+                            logging.exception(e)
                 except TypeError as e:
                     logging.exception(e)
                     pass
-            elif watch_id == 2:
-                for dirs in os.listdir(settings.INCOMPLETE_DIRECTORY):
-                    if dirs.startswith(series_titles):
-                        try:
-                            cursor.execute("UPDATE series_queue SET watch_queue_status_id=3 WHERE id=%s",
-                                        (queue_id,))
-                            connect.commit()
-                            break
-                        except psycopg2.OperationalError as error:
-                            connect.rollback()
-                            logging.exception(error)
-                            break
-            elif watch_id == 3:
-                for dirs in os.listdir(settings.COMPLETE_DIRECTORY):
-                    if dirs.startswith(series_titles):
-                        try:
-                            cursor.execute("UPDATE series_queue SET watch_queue_status_id=4 WHERE id=%s",
-                                            (queue_id,))
-                            connect.commit()
-                            break
-                        except psycopg2.OperationalError as e:
-                            connect.rollback()
-                            logging.exception(e)
-                            break
+            else:
+                transmission.check_episode_status(queue_id, cursor, connect)
         value = util.get_config_value(cursor, 'series_process_interval')
         connect.close()
         time.sleep(float(value)*60)
@@ -105,44 +86,32 @@ def process_movie_queue():
                                         password=settings.DB_PASSWORD)
         cursor = connect.cursor()
         check_upcoming_queue(connect, cursor)
-        cursor.execute("SELECT title,mq.id,mtl.link,watch_queue_status_id FROM "\
-               "movie_torrent_links as mtl "\
-               " join movie_queue as mq "\
-               "on mtl.movie_id=mq.movie_id "\
-               "join movies on mtl.movie_id=movies.id and watch_queue_status_id <> 4 order by mq.id ")
-        for (movie_title, queue_id, torrent_url, watch_id) in cursor.fetchall():
+        cursor.execute("SELECT title,mq.id,mtl.link,transmission_hash,watch_queue_status_id "\
+                       "FROM "\
+                       "movie_torrent_links AS mtl "\
+                       "JOIN movie_queue AS mq "\
+                       "ON mtl.movie_id=mq.movie_id "\
+                       "JOIN movies ON mtl.movie_id=movies.id AND watch_queue_status_id <> 4 "\
+                       "ORDER BY mq.id ")
+        for (movie_title, queue_id, torrent_url, transmission_hash, watch_id) in cursor.fetchall():
             if watch_id == 1:
                 logging.info("downloading torrent for {}".format(movie_title))
-                if util.fetch_torrent(torrent_url, movie_title):
+                (downloaded, torrent_file_path) = util.fetch_torrent(torrent_url, movie_title)
+                if downloaded:
                     try:
+                        torrent_hash, torrent_name = transmission.add_torrent(torrent_file_path)
+                        logging.debug("updating details for movie {}".format(movie_title))
+                        cursor.execute("UPDATE movie_torrent_links SET transmission_hash=%s,"\
+                                       "torrent_name=%s WHERE link=%s",
+                                       (torrent_hash, torrent_name, torrent_url,))
                         cursor.execute("UPDATE movie_queue SET watch_queue_status_id=2 WHERE id=%s",
                             (queue_id,))
                         connect.commit()
-                    except psycopg2.OperationalError as error:
-                        connect.rollback()
-                        logging.exception(error)
-            elif watch_id == 2:
-                if glob.glob("{}*".format(settings.INCOMPLETE_DIRECTORY+movie_title)):
-                    try:
-                        logging.debug("{} on status 2, moving to status 3".format(movie_title))
-                        cursor.execute("UPDATE movie_queue SET watch_queue_status_id=3 WHERE id=%s",
-                            (queue_id,))
-                        connect.commit()
-                    except psycopg2.OperationalError as error:
-                        connect.rollback()
-                        logging.exception(error)
-            elif watch_id == 3:
-                if glob.glob("{}*".format(settings.COMPLETE_DIRECTORY+movie_title)):
-                    try:
-                        logging.debug("{} on status 3, moving to status 4".format(movie_title))
-                        cursor.execute("UPDATE movie_queue SET watch_queue_status_id=4 WHERE id=%s",
-                            (queue_id,))
-                        connect.commit()
-                    except psycopg2.OperationalError as error:
-                        connect.rollback()
-                        logging.exception(error)
+                    except Exception as e:
+                        logging.exception(e)
             else:
-                logging.debug('no movies in queues')
+                logging.debug('checking status on transmission')
+                transmission.check_movie_status(transmission_hash, cursor, connect)
         value = util.get_config_value(cursor, 'movie_process_interval')
         connect.close()
         time.sleep(float(value)*60)
@@ -183,7 +152,7 @@ def movie_details_process():
                     connect.rollback()
                     logging.exception(e)
         connect.close()
-        time.sleep(600)
+        time.sleep(100)
 
 
 def check_upcoming_queue(connect, cursor):
@@ -222,7 +191,6 @@ def fetch_kickass_file(cursor):
             logging.warn("unable to connect to kickass to fetch dump file")
             return settings.KICKASS_FILE
     else:
-        logging.debug("no episodes in new status")
         return settings.KICKASS_FILE
 
 

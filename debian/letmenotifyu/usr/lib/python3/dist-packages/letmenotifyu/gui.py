@@ -114,7 +114,7 @@ class Confirm(object):
         logging.warn("Deleting: {}".format(self.title))
 
     def cancel_clicked(self, widget):
-        self.confirm.get_object('msgdlg').destroy()
+        self.confirm.get_object('msgDialog').destroy()
 
 
 class Preferences(object):

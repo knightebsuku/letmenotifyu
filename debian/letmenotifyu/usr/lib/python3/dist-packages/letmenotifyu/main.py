@@ -5,7 +5,6 @@ import logging
 from datetime import datetime, timedelta
 from gi.repository import Gtk, Gdk
 from letmenotifyu import gui
-from letmenotifyu.torrent import Torrent
 from letmenotifyu import util
 from letmenotifyu import settings
 from letmenotifyu import background_worker as bw
@@ -22,7 +21,6 @@ class Main(object):
         self.cursor = self.connect.cursor()
         self.builder = Gtk.Builder()
         self.image = Gtk.Image()
-        self.torrent = Torrent(self.cursor)
         self.flag = ""
         self.builder.add_from_file("ui/Main.glade")
         signals = {'on_AppWindow_destroy': self.on_quit,
@@ -37,7 +35,6 @@ class Main(object):
                    'on_preferences_activate': self.pref_activate,
                    'on_Quit_activate': self.on_quit,
                    'on_About_activate': self.about_activate,
-                   'on_Kickass_activate': self.kickass_activate,
                    'on_BtnRoot_clicked': self.button_root_clicked,
                    'on_BtnLevel1_clicked': self.button_one_clicked,
                    'on_BtnLevel2_clicked': self.button_two_clicked,
@@ -121,10 +118,6 @@ class Main(object):
                 elif event.button == 3 and self.flag == "series_on_air_view_selected":
                     self.builder.get_object("Series").popup(None, None, None, None,
                                                             event.button, event.time)
-                elif event.button == 3 and self.flag == "latest_episode_view_selected":
-                    self.torrent.query(self.choice)
-                    self.builder.get_object("torrents").popup(None, None, None, None,
-                                                       event.button, event.time)
                 elif event.button == 3 and self.flag == "upcoming_movies_view_selected":
                     self.builder.get_object("upcoming").popup(None, None, None, None,
                                                               event.button, event.time)
@@ -323,9 +316,6 @@ class Main(object):
 
     def about_activate(self, widget):
         gui.About()
-
-    def kickass_activate(self, widget):
-        self.torrent.kickass()
 
     def stop_update_activate(self, widget):
         gui.Confirm(self.striped_name, "stop", self.connect, self.cursor)

@@ -1,4 +1,4 @@
-letmenotifyu (3.3.1-1) UNRELEASED; urgency=medium
+letmenotifyu (3.4.0-1) UNRELEASED; urgency=medium
 
   * Delete upcoming movies if released
   * fix
@@ -19,8 +19,10 @@ letmenotifyu (3.3.1-1) UNRELEASED; urgency=medium
   * fix unpacking of kickass text file
   * only unpack episode title and episode link for kickass
   * check requests status code is ok 
+  * Add transmissionrpc
+  * fix cancel button
 
- -- Lunga Mthembu <complexstu@gmail.com>  Fri, 26 Jun 2015 21:23:52 +0200
+ -- Lunga Mthembu <complexstu@gmail.com>  Thu, 09 Jul 2015 21:18:23 +0200
 
 letmenotifyu (2.2.1-1) unstable; urgency=low
 
