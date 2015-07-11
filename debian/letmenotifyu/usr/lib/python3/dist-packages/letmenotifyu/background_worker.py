@@ -55,7 +55,7 @@ def process_series_queue():
                                                                          episode_title)
                     if downloaded:
                         try:
-                            torrent_hash, torrent_name = transmission.add_torrent(torrent_file_path)
+                            torrent_hash, torrent_name = transmission.add_torrent(torrent_file_path, cursor)
                             cursor.execute("INSERT INTO series_torrent_links(series_queue_id, link, "\
                                            "torrent_hash, transmission_hash, torrent_name) " \
                                            "VALUES(%s,%s,%s,%s,%s)",
@@ -99,7 +99,7 @@ def process_movie_queue():
                 (downloaded, torrent_file_path) = util.fetch_torrent(torrent_url, movie_title)
                 if downloaded:
                     try:
-                        torrent_hash, torrent_name = transmission.add_torrent(torrent_file_path)
+                        torrent_hash, torrent_name = transmission.add_torrent(torrent_file_path, cursor)
                         logging.debug("updating details for movie {}".format(movie_title))
                         cursor.execute("UPDATE movie_torrent_links SET transmission_hash=%s,"\
                                        "torrent_name=%s WHERE link=%s",

@@ -137,6 +137,8 @@ class Preferences(object):
         series_process = util.get_config_value(self.cursor, "series_process_interval")
         series_duration = util.get_config_value(self.cursor, "series_duration")
         max_movie_result = util.get_config_value(self.cursor, 'max_movie_results')
+        transmission_host = util.get_config_value(self.cursor, 'transmission_host')
+        transmission_port = util.get_config_value(self.cursor, 'transmission_port')
         self.pref.get_object("spUpdate").set_value(float(update_interval))
         self.pref.get_object("spMovieQueue").set_value(float(movie_process))
         self.pref.get_object("spSeriesQueue").set_value(float(series_process))
@@ -146,6 +148,8 @@ class Preferences(object):
         self.pref.get_object("fcbTorrents").set_current_folder(settings.TORRENT_DIRECTORY)
         self.pref.get_object("fcbComplete").set_current_folder(settings.COMPLETE_DIRECTORY)
         self.pref.get_object("fcbIncomplete").set_current_folder(settings.INCOMPLETE_DIRECTORY)
+        self.pref.get_object("entHost").set_text(transmission_host)
+        self.pref.get_object("spPort").set_value(float(transmission_port))
 
     def write_to_config(self):
         "save to configurations to file"
@@ -177,12 +181,16 @@ class Preferences(object):
             series_duration = self.pref.get_object("spSeriesDuration").get_value()
             quality_iter = self.pref.get_object('cbMovieQuality').get_active_iter()
             movie_quality = self.pref.get_object('lsMovieCombo').get_value(quality_iter, 0)
+            trans_host = self.pref.get_object('entHost').get_text()
+            trans_port = self.pref.get_object('spPort').get_value()
             query = [(update_interval, 'update_interval'),
                      (movie_process, 'movie_process_interval'),
                      (series_process, 'series_process_interval'),
                      (movie_results, 'max_movie_results'),
                      (movie_quality, 'movie_quality'),
-                     (series_duration, 'series_duration')]
+                     (series_duration, 'series_duration'),
+                     (trans_host, 'transmission_port'),
+                     (trans_port, 'transmission_port')]
             self.cursor.executemany("UPDATE config SET value=%s WHERE key=%s", query)
             self.connect.commit()
             self.write_to_config()
