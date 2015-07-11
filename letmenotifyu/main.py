@@ -39,7 +39,6 @@ class Main(object):
                    'on_BtnLevel1_clicked': self.button_one_clicked,
                    'on_BtnLevel2_clicked': self.button_two_clicked,
                    'on_queue_activate': self.upcoming_queue,
-                   'on_search_search_changed': self.search_changed,
                    'on_series_watch_activate': self.series_watch,
                    'on_watchlist_activate': self.watch_list}
 
@@ -343,34 +342,6 @@ class Main(object):
             gui.Error("{} is already in upcoming queue".format(self.choice))
         except Exception as e:
             logging.exception(e)
-
-    def search_changed(self, widget):
-        "change search only for movies"
-        if self.flag == 'upcoming_movies_view_selected':
-            self.general_model.clear()
-            self.cursor.execute("SELECT upcoming_movies.title,path FROM upcoming_movies"\
-                            ",movie_images "\
-                            "WHERE upcoming_movies.title=movie_images.title "
-                                'AND upcoming_movies.title like ("%" || %s || "%")',
-                                 (widget.get_text(),))
-            movies = self.cursor.fetchall()
-            for movie in movies:
-                util.render_view(self.image, movie[0], self.general_model,
-                             settings.IMAGE_PATH+movie[1])
-            self.flag = 'upcoming_movies_view_selected'
-        elif self.flag == 'movie_archive_view_genre_selected':
-            self.cursor.execute("SELECT id FROM genre WHERE genre=%s",
-                                (self.search_choice,))
-            (genre_key,) = self.cursor.fetchone()
-            self.cursor.execute("SELECT movies.title,path FROM movies,movie_images " \
-                                "WHERE movies.title=movie_images.title "\
-                                "AND movies.genre_id=%s and movies.title like ('%' || %s || '%') ",
-                                (genre_key, widget.get_text(),))
-            self.general_model.clear()
-            for (title, path) in self.cursor.fetchall():
-                util.render_view(self.image, title,
-                                 self.general_model, settings.IMAGE_PATH+path)
-            self.flag = "movie_archive_view_genre_selected"
 
     def series_watch(self, widget):
         "add series to watch list"
