@@ -1,0 +1,18 @@
+from bs4 import BeautifulSoup
+
+
+def fetch_episode_search_results(series_name, episode_number):
+    "Search kickass page for episode"
+    kickass_url = 'https://kat.cr/usearch'
+    search_url = "{url}/{title} {number}".format(url=kickass_url,
+                                                 title=series_name,
+                                                 number=episode_number)
+    episode_results = requests.get(search_url)
+    return episode_results
+    #page_data = BeautifulSoup(episode_page)
+
+def fetch_episode_torrent(results_page):
+    "search for episode torrent and return results"
+    page_data = BeautifulSoup(results_page)
+    for episodes in page_data.find_all('div',{'class':'torrentname'})
+    
