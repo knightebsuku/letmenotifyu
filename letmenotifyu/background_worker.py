@@ -47,19 +47,16 @@ def process_series_queue():
             if watch_id == 1:
                 logging.info("fetching episode torrent for {}".format(title))
                 try:
-                    episode_title, episode_link, episode_hash = kickass.search_episode(kickass_file,
-                                                                        title,
-                                                                        ep_name,
-                                                                        "HDTV x264-(LOL|KILLERS|ASAP|2HD|FUM|TLA)")
-                    (downloaded, torrent_file_path) = util.fetch_torrent(episode_link.replace("\n", ""),
-                                                                         episode_title)
+                    torrent_url = kickass.fetch_episode_search_results(title, ep_name)
+                    full_episode_title = title + ep_name
+                    (downloaded, torrent_file_path) = util.fetch_torrent(torrent_url, full_episode_title)
                     if downloaded:
                         try:
                             torrent_hash, torrent_name = transmission.add_torrent(torrent_file_path, cursor)
                             cursor.execute("INSERT INTO series_torrent_links(series_queue_id, link, "\
-                                           "torrent_hash, transmission_hash, torrent_name) " \
+                                           "transmission_hash, torrent_name) " \
                                            "VALUES(%s,%s,%s,%s,%s)",
-                                (queue_id, episode_link, episode_hash, torrent_hash, torrent_name,))
+                                (queue_id, torrent_url, torrent_hash, torrent_name,))
                             cursor.execute("UPDATE series_queue SET watch_queue_status_id=2 "\
                                            "WHERE id=%s", (queue_id,))
                             connect.commit()
