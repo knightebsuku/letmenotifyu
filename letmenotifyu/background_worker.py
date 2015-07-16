@@ -39,33 +39,29 @@ def process_series_queue():
                                         user=settings.DB_USER,
                                         password=settings.DB_PASSWORD)
         cursor = connect.cursor()
-        kickass_file = fetch_kickass_file(cursor)
         cursor.execute("SELECT title, series_queue.id, episode_name, watch_queue_status_id "\
                        "FROM  series_queue JOIN series ON series_id=series.id "\
                        " AND watch_queue_status_id <> 4")
         for (title, queue_id, ep_name, watch_id) in cursor.fetchall():
             if watch_id == 1:
                 logging.info("fetching episode torrent for {}".format(title))
-                try:
-                    torrent_url = kickass.fetch_episode_search_results(title, ep_name)
-                    full_episode_title = title + ep_name
-                    (downloaded, torrent_file_path) = util.fetch_torrent(torrent_url, full_episode_title)
-                    if downloaded:
-                        try:
-                            torrent_hash, torrent_name = transmission.add_torrent(torrent_file_path, cursor)
-                            cursor.execute("INSERT INTO series_torrent_links(series_queue_id, link, "\
+                torrent_url = kickass.fetch_episode_search_results(title, ep_name)
+                if torrent_url is not None:
+                        full_episode_title = title + "-" + ep_name
+                        (downloaded, torrent_file_path) = util.fetch_torrent(torrent_url, full_episode_title)
+                        if downloaded:
+                            try:
+                                torrent_hash, torrent_name = transmission.add_torrent(torrent_file_path, cursor)
+                                cursor.execute("INSERT INTO series_torrent_links(series_queue_id, link, "\
                                            "transmission_hash, torrent_name) " \
-                                           "VALUES(%s,%s,%s,%s,%s)",
-                                (queue_id, torrent_url, torrent_hash, torrent_name,))
-                            cursor.execute("UPDATE series_queue SET watch_queue_status_id=2 "\
+                                           "VALUES(%s,%s,%s,%s)",
+                                                (queue_id, torrent_url, torrent_hash, torrent_name,))
+                                cursor.execute("UPDATE series_queue SET watch_queue_status_id=2 "\
                                            "WHERE id=%s", (queue_id,))
-                            connect.commit()
-                        except Exception as e:
-                            connect.rollback()
-                            logging.exception(e)
-                except TypeError as e:
-                    logging.exception(e)
-                    pass
+                                connect.commit()
+                            except Exception as e:
+                                connect.rollback()
+                                logging.exception(e)
             else:
                 transmission.check_episode_status(queue_id, cursor, connect)
         value = util.get_config_value(cursor, 'series_process_interval')
@@ -170,25 +166,6 @@ def check_upcoming_queue(connect, cursor):
                 connect.rollback()
                 logging.info("{} already  exists in movie_queue".format(title))
                 cursor.execute("DELETE FROM upcoming_queue WHERE title=%s", (title,))
-
-
-def fetch_kickass_file(cursor):
-    "fetch kickass dump file"
-    cursor.execute("SELECT * FROM series_queue WHERE watch_queue_status_id=1")
-    if cursor.fetchall():
-        logging.debug("episode in status new, need to fetch kickass file")
-        try:
-            kickass_file = urlopen("https://kat.cr/hourlydump.txt.gz")
-            with gzip.open(kickass_file, 'r') as gzip_file:
-                with open(settings.KICKASS_FILE, 'wb') as dump_file:
-                    for line in gzip_file:
-                        dump_file.write(line)
-            return settings.KICKASS_FILE
-        except urllib.error.URLError:
-            logging.warn("unable to connect to kickass to fetch dump file")
-            return settings.KICKASS_FILE
-    else:
-        return settings.KICKASS_FILE
 
 
 def check_actors(actor_details, movie_id, cursor):

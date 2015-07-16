@@ -1,10 +1,10 @@
 6d60abc67c6fa6599525c981feeb5c64  usr/bin/letme
-3dd50c50ede784beff6efea413029bc6  usr/lib/python3/dist-packages/letmenotifyu-3.4.0.egg-info
+6c1bbc842e7e0849bffe4be6451669b6  usr/lib/python3/dist-packages/letmenotifyu-3.4.1.egg-info
 d41d8cd98f00b204e9800998ecf8427e  usr/lib/python3/dist-packages/letmenotifyu/__init__.py
-b8ea506a7d359b5e98ca0d73c5309623  usr/lib/python3/dist-packages/letmenotifyu/background_worker.py
-fae484a3e9d1d095d307adc976fc343e  usr/lib/python3/dist-packages/letmenotifyu/database.py
+acf9966094fb314d3cade028456bfe2c  usr/lib/python3/dist-packages/letmenotifyu/background_worker.py
+05a4347ef37d9331450835a3475ead61  usr/lib/python3/dist-packages/letmenotifyu/database.py
 f869a916805279d808bbb943ae5fe91c  usr/lib/python3/dist-packages/letmenotifyu/gui.py
-ee1939a80c0a036b642246a40d9d45b0  usr/lib/python3/dist-packages/letmenotifyu/kickass.py
+9b275ef27df4e098efc935d45eb81223  usr/lib/python3/dist-packages/letmenotifyu/kickass.py
 bb4a3551e735ea48210bf311cbebe429  usr/lib/python3/dist-packages/letmenotifyu/main.py
 05cae27bacfe3664a32546c685936286  usr/lib/python3/dist-packages/letmenotifyu/movies.py
 239c0ae6561c5ceb791d7dec5291bfc2  usr/lib/python3/dist-packages/letmenotifyu/notify.py
@@ -16,8 +16,8 @@ a51547f6b6e0b27438adb4aa3e66dc8b  usr/lib/python3/dist-packages/letmenotifyu/tra
 8aacda0fad3c1966d1aa10fc4b973338  usr/lib/python3/dist-packages/letmenotifyu/yify.py
 ebd63dd34ef8daa5314bfca6cc7384f3  usr/share/applications/letmenotifyu.desktop
 ac036608c5c402f92926505d0f0ab0e4  usr/share/doc/letmenotifyu/README.Debian
-f2b6b665e6a52bd3b0f5f5f748d55980  usr/share/doc/letmenotifyu/README.md
-872c9bf9ae1016013f4d5af6ff416814  usr/share/doc/letmenotifyu/changelog.Debian.gz
+f335227497881578c8f2d2ab147945b9  usr/share/doc/letmenotifyu/README.md
+14da9417017dd0f22fb377fc504809f7  usr/share/doc/letmenotifyu/changelog.Debian.gz
 9b44b304ea8ea602066981c458463801  usr/share/doc/letmenotifyu/copyright
 8bcc029b0391f68efc29dd7cc0aabe26  usr/share/letmenotifyu/icons/Action.png
 753149684e899b298ab0dd4d4aed1d7e  usr/share/letmenotifyu/icons/Adventure.png
@@ -31,6 +31,7 @@ dc5b731caf9f0ec724c82af457f032f9  usr/share/letmenotifyu/icons/Comic.png
 c8961db95e830e8ca76914f4cee2b679  usr/share/letmenotifyu/icons/Drama.png
 05ce60ace0d82e035a6c088ec82ecc57  usr/share/letmenotifyu/icons/Family.png
 50940c2f13d436bce23c56007fb0ef51  usr/share/letmenotifyu/icons/Fantasy.png
+ab0fdeb5fef2936925261761b8937cab  usr/share/letmenotifyu/icons/Film-Noir.png
 18fffff30a29dd979386f197c3553209  usr/share/letmenotifyu/icons/Foreign.png
 2298c195ee64af6be6a8cfbb5aa20cfb  usr/share/letmenotifyu/icons/Historic.png
 1ea62e93b639366d4650756798a1a97e  usr/share/letmenotifyu/icons/Horror.png
