@@ -1,10 +1,10 @@
 6d60abc67c6fa6599525c981feeb5c64  usr/bin/letme
-0e8289a028b1f4247d3f2de1c0aa1565  usr/lib/python3/dist-packages/letmenotifyu-3.4.2.egg-info
+e02cf00daaecba559548b133154cd36f  usr/lib/python3/dist-packages/letmenotifyu-3.4.3.egg-info
 d41d8cd98f00b204e9800998ecf8427e  usr/lib/python3/dist-packages/letmenotifyu/__init__.py
 acf9966094fb314d3cade028456bfe2c  usr/lib/python3/dist-packages/letmenotifyu/background_worker.py
 05a4347ef37d9331450835a3475ead61  usr/lib/python3/dist-packages/letmenotifyu/database.py
 f869a916805279d808bbb943ae5fe91c  usr/lib/python3/dist-packages/letmenotifyu/gui.py
-9ea09bba2333c67e609e23b1b4b566ee  usr/lib/python3/dist-packages/letmenotifyu/kickass.py
+c0963ac0d9f93d6727fb06a84da338f8  usr/lib/python3/dist-packages/letmenotifyu/kickass.py
 bb4a3551e735ea48210bf311cbebe429  usr/lib/python3/dist-packages/letmenotifyu/main.py
 05cae27bacfe3664a32546c685936286  usr/lib/python3/dist-packages/letmenotifyu/movies.py
 239c0ae6561c5ceb791d7dec5291bfc2  usr/lib/python3/dist-packages/letmenotifyu/notify.py
@@ -12,12 +12,12 @@ a5ac33104e175aeb1349a2dfbfc0b9d8  usr/lib/python3/dist-packages/letmenotifyu/pri
 534ecbffc7aebf55a05deb98dafe33f1  usr/lib/python3/dist-packages/letmenotifyu/series.py
 9dd439c13b24b790c3ce149b4ab13432  usr/lib/python3/dist-packages/letmenotifyu/settings.py
 a51547f6b6e0b27438adb4aa3e66dc8b  usr/lib/python3/dist-packages/letmenotifyu/transmission.py
-6b72ac48ff32346472213a252af7cf0a  usr/lib/python3/dist-packages/letmenotifyu/util.py
+f85675b0e871627cb36b2d186b68d620  usr/lib/python3/dist-packages/letmenotifyu/util.py
 8aacda0fad3c1966d1aa10fc4b973338  usr/lib/python3/dist-packages/letmenotifyu/yify.py
 ebd63dd34ef8daa5314bfca6cc7384f3  usr/share/applications/letmenotifyu.desktop
 ac036608c5c402f92926505d0f0ab0e4  usr/share/doc/letmenotifyu/README.Debian
-f335227497881578c8f2d2ab147945b9  usr/share/doc/letmenotifyu/README.md
-a250f9287542b89e4c2c9b61a907647d  usr/share/doc/letmenotifyu/changelog.Debian.gz
+47bf47b0e398798b86a1d034432444ea  usr/share/doc/letmenotifyu/README.md
+77c7adf092cfc75024bfa86ac932eaa5  usr/share/doc/letmenotifyu/changelog.Debian.gz
 9b44b304ea8ea602066981c458463801  usr/share/doc/letmenotifyu/copyright
 8bcc029b0391f68efc29dd7cc0aabe26  usr/share/letmenotifyu/icons/Action.png
 753149684e899b298ab0dd4d4aed1d7e  usr/share/letmenotifyu/icons/Adventure.png
@@ -42,7 +42,7 @@ f948e328d922ce5a102aab8abd2ff886  usr/share/letmenotifyu/icons/Romance.png
 2b803f1a227e27d0c0e35633e35f9095  usr/share/letmenotifyu/icons/Thriller.png
 abfca07d5a92f752e25b16c77654639a  usr/share/letmenotifyu/icons/War.png
 0dabe619e921de52936c08d429443376  usr/share/letmenotifyu/icons/Western.png
-a1b202a2b7e21500ebfb433f9819ab48  usr/share/letmenotifyu/ui/About.glade
+9d374520896f793dc232441946ee6152  usr/share/letmenotifyu/ui/About.glade
 a73b07a1b4b0d7fba71f606bc6a4f0ab  usr/share/letmenotifyu/ui/AddSeries.glade
 4331d67cb1ca3025978e8b1ccab273c1  usr/share/letmenotifyu/ui/Confirm.glade
 e1379f4747598227712d28a2637c6ecd  usr/share/letmenotifyu/ui/Error.glade

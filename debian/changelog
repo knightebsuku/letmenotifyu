@@ -1,4 +1,4 @@
-letmenotifyu (3.4.2-1) UNRELEASED; urgency=medium
+letmenotifyu (3.4.3-1) UNRELEASED; urgency=medium
 
   * Delete upcoming movies if released
   * fix
@@ -24,8 +24,10 @@ letmenotifyu (3.4.2-1) UNRELEASED; urgency=medium
   * fetch series torrents frm kickass usearch
   * add new genre
   * fix regex for series match
+  * fix bs4 search for tr classes
+  * add headers for requests
 
- -- Lunga Mthembu <complexstu@gmail.com>  Mon, 20 Jul 2015 19:55:36 +0200
+ -- Lunga Mthembu <complexstu@gmail.com>  Fri, 24 Jul 2015 03:44:54 +0200
 
 letmenotifyu (2.2.1-1) unstable; urgency=low
 

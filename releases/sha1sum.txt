@@ -1,1 +1,1 @@
-736b696e286461768527240371ccd5fc73c59132  letmenotifyu_3.4.2-1_all.deb
+2ca3b9ec77ad5062bcd02dce20bf6b6f89b0adc7  releases/letmenotifyu_3.4.3-1_all.deb
