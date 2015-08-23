@@ -9,9 +9,6 @@ import os
 
 
 def movie(connect, cursor):
-    upcoming_movie_data = yify.get_upcoming_movies()
-    if upcoming_movie_data:
-        upcoming_movies(upcoming_movie_data, connect, cursor)
     released_movie_data = yify.get_released_movies(cursor)
     if released_movie_data:
         released_movies(released_movie_data, cursor, connect)
@@ -58,32 +55,6 @@ def released_movies(data, cursor, db):
                 except Exception as e:
                     db.rollback()
                     logging.exception(e)
-
-
-def upcoming_movies(movie_data, db, cursor):
-    "insert upcoming new movies"
-    new_movie_data = movie_compare(cursor, "upcoming_movies",
-                                   movie_data["data"]["upcoming_movies"])
-    if new_movie_data:
-        for movie_detail in new_movie_data:
-            if fetch_image(movie_detail["medium_cover_image"], movie_detail["title"]):
-                try:
-                    cursor.execute("INSERT INTO movie_images(title,path) VALUES(%s,%s)",
-                               (movie_detail['title'], movie_detail['title']+".jpg",))
-                    cursor.execute("INSERT INTO upcoming_movies(title,link) VALUES(%s,%s)",
-                       (movie_detail["title"],
-                        movie_detail["imdb_code"],))
-                    db.commit()
-                    announce('Upcoming Movie', movie_detail["title"],
-                         "http://www.imdb.com/title/{}".format(movie_detail["imdb_code"]))
-                except psycopg2.IntegrityError as e:
-                    db.rollback()
-                    logging.exception(e)
-                except Exception as error:
-                    db.rollback()
-                    logging.exception(error)
-    else:
-        logging.debug("no new upcoming movies")
 
 
 def fetch_image(image_url, title,):
