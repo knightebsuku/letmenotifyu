@@ -75,7 +75,6 @@ def process_movie_queue():
                                         user=settings.DB_USER,
                                         password=settings.DB_PASSWORD)
         cursor = connect.cursor()
-        check_upcoming_queue(connect, cursor)
         cursor.execute("SELECT title,mq.id,mtl.link,transmission_hash,watch_queue_status_id "\
                        "FROM "\
                        "movie_torrent_links AS mtl "\
@@ -143,26 +142,6 @@ def movie_details_process():
                     logging.exception(e)
         connect.close()
         time.sleep(100)
-
-
-def check_upcoming_queue(connect, cursor):
-    "move upcoming queue movie to movie_queue"
-    cursor.execute("SELECT title FROM upcoming_queue")
-    data = cursor.fetchall()
-    for (title,) in data:
-        cursor.execute("SELECT id FROM movies WHERE title=%s", (title,))
-        if cursor.fetchone():
-            try:
-                cursor.execute("INSERT INTO movie_queue(movie_id,watch_queue_status_id) "\
-                            "SELECT movies.id,watch_queue_status.id FROM movies,watch_queue_status "\
-                            "WHERE movies.title=%s AND watch_queue_status.name='new'", (title,))
-                cursor.execute("DELETE FROM upcoming_queue WHERE title=%s", (title,))
-                connect.commit()
-                logging.info("moved {} to movie_queue".format(title))
-            except psycopg2.IntegrityError:
-                connect.rollback()
-                logging.info("{} already  exists in movie_queue".format(title))
-                cursor.execute("DELETE FROM upcoming_queue WHERE title=%s", (title,))
 
 
 def check_actors(actor_details, movie_id, cursor):
