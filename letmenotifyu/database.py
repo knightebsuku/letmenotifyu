@@ -146,7 +146,7 @@ def database_change():
         [38, "INSERT INTO config(key,value) VALUES('transmission_host','127.0.0.1')"],
         [39, "INSERT INTO config(key,value) VALUES('transmission_port','9091')"],
         [40, "ALTER TABLE series_torrent_links DROP COLUMN torrent_hash"],
-        [41, "DROP TABLE upcoming_movies"],
+        [41, "DROP TABLE upcoming_movies CASCADE"],
         [42, "DROP TABLE upcoming_queue"]
         
     ])
