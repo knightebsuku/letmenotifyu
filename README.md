@@ -7,7 +7,7 @@ Full application details on the [wiki](https://github.com/stucomplex/letmenotify
 
 
 
-Version: 3.4.3
+Version: 3.4.4
 -------------------
 
 Program Features
