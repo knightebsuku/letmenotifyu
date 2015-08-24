@@ -3,14 +3,11 @@
 import psycopg2
 import logging
 import time
-import gzip
-import urllib
 
 from . import settings, util, kickass, yify, transmission
 from .movies import movie
 from .series import series
 from threading import Thread
-from urllib.request import urlopen
 
 
 def update():

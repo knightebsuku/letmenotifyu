@@ -8,7 +8,7 @@ from bs4 import BeautifulSoup
 
 
 def fetch_episode_search_results(series_name, episode_number):
-    "Search kickass page for episode"
+    "Search kickass page for episode torrent link"
     kickass_url = 'https://kat.cr/usearch'
     search_url = "{url}/{title} {number} HDTV x264".format(url=kickass_url,
                                                  title=series_name,
@@ -20,8 +20,10 @@ def fetch_episode_search_results(series_name, episode_number):
         for results in all_possible_results:
             result_title = results.find('a', 'cellMainLink').text
             if re.search(r'{title} {episode_number} HDTV x264-(LOL|KILLERS|ASAP|2HD|FUM|TLA)'.format(title=series_name, episode_number=episode_number), result_title):
-                logging.debug("found torrent link for {}-{}".format(series_name, episode_number))
-                return results.find('a', 'idownload icon16').get('href')
+                for urls in results.find_all('a', 'icon16'):
+                    if urls.get('title') == 'Download torrent file':
+                        logging.debug("found torrent link for {}-{}".format(series_name, episode_number))
+                        return urls.get('href')
             else:
                 logging.debug("Unable to find series match for {}".format(result_title))
     except requests.exceptions.ConnectionError as e:

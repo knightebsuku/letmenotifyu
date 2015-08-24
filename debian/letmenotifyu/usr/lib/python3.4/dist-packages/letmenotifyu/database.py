@@ -145,6 +145,8 @@ def database_change():
         [37, "ALTER TABLE series_torrent_links ADD COLUMN torrent_name TEXT DEFAULT '0'"],
         [38, "INSERT INTO config(key,value) VALUES('transmission_host','127.0.0.1')"],
         [39, "INSERT INTO config(key,value) VALUES('transmission_port','9091')"],
-        [40, "ALTER TABLE series_torrent_links DROP COLUMN torrent_hash"]
+        [40, "ALTER TABLE series_torrent_links DROP COLUMN torrent_hash"],
+        [41, "DROP TABLE upcoming_movies CASCADE"],
+        [42, "DROP TABLE upcoming_queue"]
         
     ])

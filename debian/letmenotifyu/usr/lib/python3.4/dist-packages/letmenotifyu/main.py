@@ -38,13 +38,11 @@ class Main(object):
                    'on_BtnRoot_clicked': self.button_root_clicked,
                    'on_BtnLevel1_clicked': self.button_one_clicked,
                    'on_BtnLevel2_clicked': self.button_two_clicked,
-                   'on_queue_activate': self.upcoming_queue,
                    'on_series_watch_activate': self.series_watch,
                    'on_watchlist_activate': self.watch_list}
 
         self.builder.connect_signals(signals)
         self.header_dic = {
-            'Upcoming Movies': self.upcoming_movies_view_selected,
             'Released Movies': self.released_movies_view_selected,
             'Movie Archive': self.movie_archive_view_selected,
             'Latest Episodes': self.latest_episodes_view_selected,
@@ -73,9 +71,7 @@ class Main(object):
         Gtk.main_quit()
 
     def general_view_activate(self, widget, choice):
-        if self.flag == "upcoming_movies_view_selected":
-            util.open_page(self.cursor, choice, "upcoming")
-        elif self.flag == "latest_episode_view_selected":
+        if self.flag == "latest_episode_view_selected":
             util.open_page(self.cursor, self.latest_dict[choice])
         elif self.flag == "released_movies_view_selected":
             gui.MovieDetails(self.cursor, self.connect, choice)
@@ -117,9 +113,6 @@ class Main(object):
                 elif event.button == 3 and self.flag == "series_on_air_view_selected":
                     self.builder.get_object("Series").popup(None, None, None, None,
                                                             event.button, event.time)
-                elif event.button == 3 and self.flag == "upcoming_movies_view_selected":
-                    self.builder.get_object("upcoming").popup(None, None, None, None,
-                                                              event.button, event.time)
                 elif event.button == 3 and self.flag == "watch series":
                     self.builder.get_object("RemoveQueue").popup(None, None, None, None,
                                                                  event.button, event.time)
@@ -195,18 +188,6 @@ class Main(object):
             pixbuf = self.image.get_pixbuf()
             self.general_model.append([pixbuf, genre[0]])
         self.flag = "movie_archive_view_selected"
-
-    def upcoming_movies_view_selected(self):
-        self.general_model.clear()
-        self.cursor.execute("SELECT upcoming_movies.title,path FROM upcoming_movies"\
-                            ",movie_images "\
-                            "WHERE upcoming_movies.title=movie_images.title "\
-                            "ORDER BY upcoming_movies.id DESC")
-        movies = self.cursor.fetchall()
-        for movie in movies:
-            util.render_view(self.image, movie[0], self.general_model,
-                             settings.IMAGE_PATH+movie[1])
-        self.flag = "upcoming_movies_view_selected"
 
     def latest_episodes_view_selected(self):
         self.latest_dict = {}
@@ -330,18 +311,6 @@ class Main(object):
 
     def set_season_activate(self, widget):
         gui.SetSeason(self.cursor, self.connect, self.striped_name)
-
-    def upcoming_queue(self, widget):
-        "add movie from upcoming movies to queue"
-        try:
-            self.cursor.execute("INSERT INTO upcoming_queue(title) "\
-                                "SELECT title FROM upcoming_movies WHERE title=%s",(self.choice,))
-            self.connect.commit()
-            gui.Error("{} added to upcoming queue".format(self.choice))
-        except psycopg2.IntegrityError:
-            gui.Error("{} is already in upcoming queue".format(self.choice))
-        except Exception as e:
-            logging.exception(e)
 
     def series_watch(self, widget):
         "add series to watch list"

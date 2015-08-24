@@ -7,17 +7,6 @@ from urllib.request import urlopen
 from . import util
 
 
-def get_upcoming_movies():
-    "Get list of upcoming movies by yifi"
-    try:
-        yifi_url = urlopen("https://yts.to/api/v2/list_upcoming.json")
-        return json.loads(yifi_url.read().decode('utf-8'))
-    except (urllib.error.URLError, urllib.error.HTTPError):
-        logging.error("Unable to connect to upcoming movies api")
-    except Exception as error:
-        logging.exception(error)
-
-
 def get_released_movies(cursor):
     "Get list of movies released by yifi"
     try:

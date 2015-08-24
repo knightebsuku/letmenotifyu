@@ -31,12 +31,7 @@ def get_selection(view, store_model):
 
 def open_page(cursor, title, option=None):
     "open webbrowser page"
-    if option == 'upcoming':
-        cursor.execute("SELECT link FROM upcoming_movies WHERE title=%s", (title,))
-        (link,) = cursor.fetchone()
-        webbrowser.open_new('http://www.imdb.com/title/{}'.format(link))
-    else:
-        webbrowser.open_new("http://www.primewire.ag"+title)
+    webbrowser.open_new("http://www.primewire.ag"+title)
     logging.info("Opening link {}".format(title))
 
 
@@ -95,7 +90,6 @@ def start_logging():
 def pre_populate_menu(builder):
     header_list = builder.get_object('HeaderList')
     header = header_list.append(None, ["Movies"])
-    header_list.append(header, ["Upcoming Movies"])
     header_list.append(header, ["Released Movies"])
     header_list.append(header, ["Movie Archive"])
     header = header_list.append(None, ["Series"])
