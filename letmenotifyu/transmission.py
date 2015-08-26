@@ -10,8 +10,8 @@ logging.getLogger('transmissionrpc')
 def add_torrent(torrent_file_path, cursor):
     "add torrent to transmission"
     host = util.get_config_value(cursor, 'transmission_host')
-    port = util.get_config_value(cursor, 'transmission_port')
-    client = transmissionrpc.Client(host, port=str(int(port)))
+    ports = util.get_config_value(cursor, 'transmission_port')
+    client = transmissionrpc.Client(host, port=ports[:-2])
     details = client.add_torrent(torrent_file_path)
     return details.hashString, details.name
 
@@ -19,8 +19,8 @@ def add_torrent(torrent_file_path, cursor):
 def check_movie_status(transmission_hash, cursor, db):
     try:
         host = util.get_config_value(cursor, 'transmission_host')
-        port = util.get_config_value(cursor, 'transmission_port')
-        tc = transmissionrpc.Client(host, port=str(int(port)))
+        ports = util.get_config_value(cursor, 'transmission_port')
+        tc = transmissionrpc.Client(host, port=ports[:-2])
         torrent_status = tc.get_torrent(transmission_hash)
         cursor.execute("SELECT mq.id FROM "\
                            "movie_queue AS mq JOIN "\
@@ -50,8 +50,8 @@ def check_episode_status(queue_id, cursor, db):
                        "WHERE series_queue_id=%s", (queue_id,))
         (transmission_hash,) = cursor.fetchone()
         host = util.get_config_value(cursor, 'transmission_host')
-        port = util.get_config_value(cursor, 'transmission_port')
-        tc = transmissionrpc.Client(host, port=str(int(port)))
+        ports = util.get_config_value(cursor, 'transmission_port')
+        tc = transmissionrpc.Client(host, port=ports[:-2])
         torrent_status = tc.get_torrent(transmission_hash)
         if torrent_status.status == 'downloading':
             logging.debug("updating series queue Id {} to status 3".format(queue_id))
