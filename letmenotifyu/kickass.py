@@ -24,8 +24,6 @@ def fetch_episode_search_results(series_name, episode_number):
                     if urls.get('title') == 'Download torrent file':
                         logging.debug("found torrent link for {}-{}".format(series_name, episode_number))
                         return urls.get('href')
-            else:
-                logging.debug("Unable to find series match for {}".format(result_title))
     except requests.exceptions.ConnectionError as e:
         logging.debug("unable to get torrent url for {}-{}".format(series_name, episode_number))
         logging.exception(e)
