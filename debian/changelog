@@ -1,4 +1,4 @@
-letmenotifyu (3.4.4-1) UNRELEASED; urgency=medium
+letmenotifyu (3.4.4-3) UNRELEASED; urgency=medium
 
   * Delete upcoming movies if released
   * fix
@@ -28,8 +28,10 @@ letmenotifyu (3.4.4-1) UNRELEASED; urgency=medium
   * add headers for requests
   * remove upcoming movies
   * fix downloading episode torrent
+  * clean up ui for upcoming queue
+  * fix transmission port
 
- -- Lunga Mthembu <complexstu@gmail.com>  Mon, 24 Aug 2015 08:16:59 +0200
+ -- Lunga Mthembu <complexstu@gmail.com>  Thu, 27 Aug 2015 06:44:35 +0200
 
 letmenotifyu (2.2.1-1) unstable; urgency=low
 

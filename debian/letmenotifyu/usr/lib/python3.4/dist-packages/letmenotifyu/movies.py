@@ -43,8 +43,6 @@ def released_movies(data, cursor, db):
                     else:
                         cursor.execute("INSERT INTO movie_images(title,path) VALUES(%s,%s)",
                                (movie_detail['title'], movie_detail['title']+".jpg",))
-                    cursor.execute("DELETE FROM upcoming_movies WHERE title IN "\
-                                   "(SELECT title FROM movies)")
                     db.commit()
                     announce('Newly Released Movie', "{} ({})".format(movie_detail["title"],
                                                                       movie_detail["genres"][0]),

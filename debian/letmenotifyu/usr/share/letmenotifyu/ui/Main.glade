@@ -351,17 +351,4 @@
       </object>
     </child>
   </object>
-  <object class="GtkMenu" id="upcoming">
-    <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <child>
-      <object class="GtkMenuItem" id="queue">
-        <property name="visible">True</property>
-        <property name="can_focus">False</property>
-        <property name="label" translatable="yes">Add to watch queue</property>
-        <property name="use_underline">True</property>
-        <signal name="activate" handler="on_queue_activate" swapped="no"/>
-      </object>
-    </child>
-  </object>
 </interface>
