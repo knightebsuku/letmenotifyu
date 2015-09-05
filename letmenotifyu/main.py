@@ -39,7 +39,9 @@ class Main(object):
                    'on_BtnLevel1_clicked': self.button_one_clicked,
                    'on_BtnLevel2_clicked': self.button_two_clicked,
                    'on_series_watch_activate': self.series_watch,
-                   'on_watchlist_activate': self.watch_list}
+                   'on_watchlist_activate': self.watch_list,
+                   'on_ViewOnline_activate': self.view_episode_online,
+                   'on_AddEpisodeQueue_activate': self.add_episode_queue}
 
         self.builder.connect_signals(signals)
         self.header_dic = {
@@ -86,7 +88,8 @@ class Main(object):
             self.button_level_1.set_property("visible", True)
             self.button_level_1.set_property("label", choice)
         elif self.flag == "series_on_air_view_series_selected":
-            util.open_page(self.cursor, self.active_series_dic[choice])
+            #util.open_page(self.cursor, self.active_series_dic[choice])
+            pass
         elif self.flag == "series_archive_view_selected":
             self.series_archive_view_season_selected(choice)
             self.button_level_1.set_property("visible", True)
@@ -116,6 +119,10 @@ class Main(object):
                 elif event.button == 3 and self.flag == "watch series":
                     self.builder.get_object("RemoveQueue").popup(None, None, None, None,
                                                                  event.button, event.time)
+                elif event.button == 3 and self.flag == "series_on_air_view_series_selected":
+                    self.builder.get_object("Episode").popup(None, None, None, None,
+                                                             event.button, event.time)
+
 
     def header_view_event(self, widget, event):
         button_root = self.builder.get_object("BtnRoot")
@@ -162,6 +169,7 @@ class Main(object):
         self.flag = "movie_archive_view_genre_selected"
 
     def series_on_air_view_series_selected(self, choice):
+        "show current seasons episodes"
         self.active_series_dic = {}
         series_name = choice.split(" Season")[0]
         logging.debug(series_name)
@@ -225,7 +233,7 @@ class Main(object):
                                  settings.IMAGE_PATH+path)
             self.flag = 'series_archive_view_selected'
 
-    def series_archive_view_season_selected(self,choice):
+    def series_archive_view_season_selected(self, choice):
         self.series_name = choice
         self.cursor.execute("SELECT number_of_seasons FROM series WHERE title=%s",
                             (choice,))
@@ -332,4 +340,18 @@ class Main(object):
             gui.Error("{} has been added to the watch list".format(self.choice))
         except psycopg2.IntegrityError:
             gui.Error("record is already in the movie queue")
-            logging.info("recored is already in movie queue")
+
+    def add_episode_queue(self, widget):
+        " add exsisting episode to watch list"
+        try:
+            self.cursor.execute("INSERT INTO series_queue(series_id,episode_id,episode_name) "\
+                            "SELECT series_id,id,episode_number FROM episodes WHERE episode_link=%s",
+                            (self.active_series_dic[self.choice],))
+            self.connect.commit()
+            logging.info("adding {} to series queue".format(self.active_series_dic[self.choice]))
+        except psycopg2.IntegrityError:
+            gui.Error("Episode is already in the queue")
+
+    def view_episode_online(self, widget):
+        "view episode online"
+        util.open_page(self.cursor, self.active_series_dic[self.choice])
