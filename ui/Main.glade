@@ -2,6 +2,32 @@
 <!-- Generated with glade 3.18.3 -->
 <interface>
   <requires lib="gtk+" version="3.12"/>
+  <object class="GtkMenu" id="Episode">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <child>
+      <object class="GtkMenuItem" id="ViewOnline">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="label" translatable="yes">View Online</property>
+        <signal name="activate" handler="on_ViewOnline_activate" swapped="no"/>
+      </object>
+    </child>
+    <child>
+      <object class="GtkSeparatorMenuItem" id="menuitem4">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+      </object>
+    </child>
+    <child>
+      <object class="GtkMenuItem" id="AddEpisodeQueue">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="label" translatable="yes">Add To Queue</property>
+        <signal name="activate" handler="on_AddEpisodeQueue_activate" swapped="no"/>
+      </object>
+    </child>
+  </object>
   <object class="GtkListStore" id="General">
     <columns>
       <!-- column-name GdkPixbuf1 -->
@@ -226,6 +252,7 @@
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="shadow_type">in</property>
+                <property name="overlay_scrolling">False</property>
                 <child>
                   <object class="GtkIconView" id="GeneralIconView">
                     <property name="visible">True</property>
