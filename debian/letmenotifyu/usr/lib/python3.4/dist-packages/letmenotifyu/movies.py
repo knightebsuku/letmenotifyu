@@ -3,6 +3,7 @@
 from urllib.request import urlretrieve
 from letmenotifyu.notify import announce
 from . import settings, yify
+from datetime import datetime
 import logging
 import psycopg2
 import os
@@ -31,7 +32,7 @@ def released_movies(data, cursor, db):
                            (genre_id,
                             movie_detail['title'],
                             movie_detail["imdb_code"],
-                            movie_detail["date_uploaded"],
+                            datetime.now(),
                             movie_detail["id"],
                            movie_detail["year"],))
                     row_id = cursor.fetchone()[0]
