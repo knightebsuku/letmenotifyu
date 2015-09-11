@@ -1,10 +1,10 @@
 from distutils.core import setup
 if __name__ == '__main__':
     setup(name='letmenotifyu',
-          version='3.4.4',
+          version='3.5.0',
           description='Program to notify users of new movie and series episode release from http://www.primewire.ag/',
           author='Lunga Mthembu',
-          author_email='stucomplex@gmail.com',
+          author_email='complexstu@gmail.com',
           url='https://github.com/stucomplex/letmenotifyu',
           license='GPL',
           scripts=['letme'],
