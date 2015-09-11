@@ -21,7 +21,7 @@ class Main(object):
         self.cursor = self.connect.cursor()
         self.builder = Gtk.Builder()
         self.image = Gtk.Image()
-        self.flag = ""
+        self.view_flag = ""
         self.episodes_dict = {}
         self.builder.add_from_file("ui/Main.glade")
         signals = {'on_AppWindow_destroy': self.on_quit,
@@ -32,7 +32,6 @@ class Main(object):
                    'on_Stop_Update_activate': self.stop_update_activate,
                    'on_Start_Update_activate': self.start_update_activate,
                    'on_Delete_Series_activate': self.delete_series_activate,
-                   'on_Current_Season_activate': self.set_season_activate,
                    'on_preferences_activate': self.pref_activate,
                    'on_Quit_activate': self.on_quit,
                    'on_About_activate': self.about_activate,
@@ -51,8 +50,8 @@ class Main(object):
             'Latest Episodes': self.latest_episodes_view_selected,
             'Series on Air': self.series_on_air_view_selected,
             'Series Archive': self.series_archive_view_selected,
-            'Movie Queue': self.watch_movies,
-            'Series Queue': self.watch_series}
+            'Movie Queue': self.watch_queue_movie_selected,
+            'Series Queue': self.watch_queue_series_selected}
         self.general_model = self.builder.get_object("General")
         self.general_icon_view = self.builder.get_object('GeneralIconView')
         self.button_level_1 = self.builder.get_object("BtnLevel1")
@@ -74,34 +73,28 @@ class Main(object):
         Gtk.main_quit()
 
     def general_view_activate(self, widget, choice):
-        if self.flag == "latest_episode_view_selected":
+        if self.view_flag == "latest_episode_view_selected":
             util.open_page(self.cursor, self.episodes_dict[choice])
-        elif self.flag == "released_movies_view_selected":
+        elif self.view_flag == "released_movies_view_selected":
             gui.MovieDetails(self.cursor, self.connect, choice)
-        elif self.flag == "movie_archive_view_selected":
+        elif self.view_flag == "movie_archive_view_selected":
             self.movie_archive_view_genre_selected(choice)
             self.button_level_1.set_property("visible", True)
             self.button_level_1.set_property("label", choice)
-        elif self.flag == "movie_archive_view_genre_selected":
+        elif self.view_flag == "movie_archive_view_genre_selected":
             gui.MovieDetails(self.cursor, self.connect, choice)
-        elif self.flag == "series_on_air_view_selected":
+        elif self.view_flag == "series_on_air_view_selected":
             self.series_on_air_view_series_selected(choice)
             self.button_level_1.set_property("visible", True)
             self.button_level_1.set_property("label", choice)
-        elif self.flag == "series_on_air_view_series_selected":
-            #util.open_page(self.cursor, self.active_series_dic[choice])
-            pass
-        elif self.flag == "series_archive_view_selected":
+        elif self.view_flag == "series_archive_view_selected":
             self.series_archive_view_season_selected(choice)
             self.button_level_1.set_property("visible", True)
             self.button_level_1.set_property("label", choice)
-        elif self.flag == "series_archive_view_season_selected":
+        elif self.view_flag == "series_archive_view_season_selected":
             self.series_archive_view_season_episode_view_selected(choice)
             self.button_level_2.set_property("visible", True)
             self.button_level_2.set_property("label", choice)
-        elif self.flag == "series_archive_view_season_episode_view_selected":
-            #util.open_page(self.cursor, self.episodes_dict[choice])
-            pass
         
     def general_view_event(self, widget, event):
         if event.type == Gdk.EventType.BUTTON_PRESS:
@@ -112,29 +105,31 @@ class Main(object):
                 self.striped_name = self.choice.split(" Season")[0]
                 if event.button == 1:
                     self.general_view_activate(widget, self.choice)
-                elif event.button == 3 and self.flag == "series_archive_view_selected":
+                elif event.button == 3 and self.view_flag == "series_archive_view_selected":
                     self.builder.get_object("Series").popup(None, None, None, None,
                                                             event.button, event.time)
-                elif event.button == 3 and self.flag == "series_on_air_view_selected":
+                elif event.button == 3 and self.view_flag == "series_on_air_view_selected":
                     self.builder.get_object("Series").popup(None, None, None, None,
                                                             event.button, event.time)
-                elif event.button == 3 and self.flag == "watch series":
+                elif event.button == 3 and self.view_flag == "watch series":
                     self.builder.get_object("RemoveQueue").popup(None, None, None, None,
                                                                  event.button, event.time)
-                elif event.button == 3 and self.flag == "series_on_air_view_series_selected":
+                elif event.button == 3 and self.view_flag == "series_on_air_view_series_selected":
                     self.builder.get_object("Episode").popup(None, None, None, None,
                                                              event.button, event.time)
-                elif event.button == 3 and self.flag == 'series_archive_view_season_episode_view_selected':
+                elif event.button == 3 and self.view_flag == 'series_archive_view_season_episode_view_selected':
                     self.builder.get_object("Episode").popup(None, None, None, None,
                                                              event.button, event.time)
 
     def header_view_event(self, widget, event):
+        "selection of header"
         button_root = self.builder.get_object("BtnRoot")
         if event.button == 1:
             selection = widget.get_selection()
             name, itr = selection.get_selected()
             header_choice = name[itr][0]
             try:
+                self.image.clear()
                 self.header_dic[header_choice]()
                 button_root.set_property("label", header_choice)
                 button_root.set_property("visible", True)
@@ -154,7 +149,7 @@ class Main(object):
                             "AND date_added BETWEEN %s AND %s", (week, datetime.now(),))
         for (title, path) in self.cursor.fetchall():
             util.render_view(self.image, title, self.general_model, settings.IMAGE_PATH+path)
-        self.flag = "released_movies_view_selected"
+        self.view_flag = "released_movies_view_selected"
 
     def movie_archive_view_genre_selected(self, choice):
         "show all movies from a particular genre"
@@ -170,7 +165,7 @@ class Main(object):
         for (movie_title, path) in movie_info:
             util.render_view(self.image, movie_title,
                                  self.general_model, settings.IMAGE_PATH+path)
-        self.flag = "movie_archive_view_genre_selected"
+        self.view_flag = "movie_archive_view_genre_selected"
 
     def series_on_air_view_series_selected(self, choice):
         "show current seasons episodes"
@@ -188,7 +183,7 @@ class Main(object):
         for (episode_name, episode_link) in self.cursor.fetchall():
             util.render_view(self.image, episode_name, self.general_model)
             self.episodes_dict[episode_name] = episode_link
-        self.flag = "series_on_air_view_series_selected"
+        self.view_flag = "series_on_air_view_series_selected"
 
     def movie_archive_view_selected(self):
         "show all movie genres"
@@ -199,7 +194,7 @@ class Main(object):
             self.image.set_from_file("icons/"+genre[0]+'.png')
             pixbuf = self.image.get_pixbuf()
             self.general_model.append([pixbuf, genre[0]])
-        self.flag = "movie_archive_view_selected"
+        self.view_flag = "movie_archive_view_selected"
 
     def latest_episodes_view_selected(self):
         "show latest episodes"
@@ -217,18 +212,18 @@ class Main(object):
             util.render_view(self.image, episode_name, self.general_model,
                              settings.IMAGE_PATH+path)
             self.episodes_dict[episode_name] = episode_link
-        self.flag = 'latest_episode_view_selected'
+        self.view_flag = 'latest_episode_view_selected'
 
     def series_on_air_view_selected(self):
         "show series which are currently on air"
         self.general_model.clear()
-        self.cursor.execute("SELECT title,current_season,path  FROM series "\
+        self.cursor.execute("SELECT title,number_of_seasons,path  FROM series "\
                             "JOIN series_images ON series.id=series_id AND "\
                             "status='1' ORDER BY title")
         for (title, current_season, path) in self.cursor.fetchall():
             util.render_view(self.image, title+" "+"Season"+" "+str(current_season),
                               self.general_model, settings.IMAGE_PATH+path)
-        self.flag = 'series_on_air_view_selected'
+        self.view_flag = 'series_on_air_view_selected'
 
     def series_archive_view_selected(self):
         "show all series"
@@ -238,7 +233,7 @@ class Main(object):
         for (title, path) in self.cursor.fetchall():
             util.render_view(self.image, title, self.general_model,
                                  settings.IMAGE_PATH+path)
-            self.flag = 'series_archive_view_selected'
+            self.view_flag = 'series_archive_view_selected'
 
     def series_archive_view_season_selected(self, choice):
         "show seasons of series"
@@ -247,11 +242,9 @@ class Main(object):
                             (choice,))
         (no_seasons,) = self.cursor.fetchone()
         self.general_model.clear()
-        index = 1
-        while index <= int(no_seasons):
-            util.render_view(self.image, "Season {}".format(index), self.general_model)
-            index += 1
-        self.flag = "series_archive_view_season_selected"
+        for num in range(1, no_seasons+1):
+            util.render_view(self.image, "Season {}".format(num), self.general_model)
+        self.view_flag = "series_archive_view_season_selected"
 
     def series_archive_view_season_episode_view_selected(self, choice):
         "show episodes of particular season of a series"
@@ -265,9 +258,10 @@ class Main(object):
         for (episode_name, episode_link) in self.cursor.fetchall():
             util.render_view(self.image, episode_name, self.general_model)
             self.episodes_dict[episode_name] = episode_link
-        self.flag = "series_archive_view_season_episode_view_selected"
+        self.view_flag = "series_archive_view_season_episode_view_selected"
 
-    def watch_movies(self):
+    def watch_queue_movie_selected(self):
+        "show movies in queue"
         self.general_model.clear()
         self.cursor.execute("SELECT mi.path,wqs.name FROM "\
                             'movie_images AS mi,'\
@@ -278,9 +272,9 @@ class Main(object):
         for (path, watch_name) in self.cursor.fetchall():
             util.render_view(self.image, watch_name, self.general_model,
                              settings.IMAGE_PATH+path)
-        self.flag = 'watch movies'
+        self.view_flag = 'watch_queue_movies_selected'
 
-    def watch_series(self):
+    def watch_queue_series_selected(self):
         "show series in watch queue"
         self.general_model.clear()
         self.cursor.execute("SELECT si.path,wqs.name,sq.episode_name FROM "\
@@ -288,22 +282,22 @@ class Main(object):
                             'watch_queue_status AS wqs,'\
                              'series_queue AS sq '\
                              'WHERE wqs.id=sq.watch_queue_status_id '\
-                             'AND sq.series_id=si.series_id ORDER BY sq.id DESC')
+                             'AND sq.series_id=si.series_id ORDER BY sq.id DESC limit 15')
         for (path, watch_name, episode_name) in self.cursor.fetchall():
             util.render_view(self.image, episode_name+":  "+watch_name, self.general_model,
                              settings.IMAGE_PATH+path)
-        self.flag = 'watch series'
+        self.view_flag = 'watch_queue_series_selected'
 
     def button_root_clicked(self, widget):
         self.header_dic[widget.get_label()]()
 
     def button_one_clicked(self, widget):
-        if self.flag in ("released_movies_view_selected",
+        if self.view_flag in ("released_movies_view_selected",
                          "movie_archive_view_genre_selected"):
             self.released_movies_select(widget.get_label())
-        elif self.flag in ("series_on_air_view_selected", "series_on_air_view_series_selected"):
+        elif self.view_flag in ("series_on_air_view_selected", "series_on_air_view_series_selected"):
             self.series_on_air_series_selected(widget.get_label())
-        elif self.flag in ("series_archive_view_season_episode_view_selected", "series_archive_view_selected"):
+        elif self.view_flag in ("series_archive_view_season_episode_view_selected", "series_archive_view_selected"):
             self.series_archive_view_season_selected(widget.get_label())
 
     def button_two_clicked(self, widget):
@@ -327,12 +321,9 @@ class Main(object):
     def pref_activate(self, widget):
         gui.Preferences(self.cursor, self.connect)
 
-    def set_season_activate(self, widget):
-        gui.SetSeason(self.cursor, self.connect, self.striped_name)
-
     def series_watch(self, widget):
         "add series to watch list"
-        if self.flag == 'series_archive_view_selected':
+        if self.view_flag == 'series_archive_view_selected':
             try:
                 self.cursor.execute("UPDATE series SET watch='1' WHERE title=%s",(self.choice,))
                 self.connect.commit()

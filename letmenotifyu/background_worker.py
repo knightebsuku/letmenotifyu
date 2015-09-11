@@ -60,7 +60,7 @@ def process_series_queue():
                                 connect.rollback()
                                 logging.exception(e)
             else:
-                transmission.check_episode_status(queue_id, cursor, connect)
+                transmission.check_episode_status(watch_id, queue_id, cursor, connect)
         value = util.get_config_value(cursor, 'series_process_interval')
         connect.close()
         time.sleep(float(value)*60)
@@ -99,8 +99,7 @@ def process_movie_queue():
                     except Exception as e:
                         logging.exception(e)
             else:
-                logging.debug('checking status on transmission')
-                transmission.check_movie_status(transmission_hash, cursor, connect)
+                transmission.check_movie_status(watch_id, transmission_hash, cursor, connect)
         value = util.get_config_value(cursor, 'movie_process_interval')
         connect.close()
         time.sleep(float(value)*60)
