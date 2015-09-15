@@ -18,11 +18,11 @@ def movie(connect, cursor):
 def released_movies(data, cursor, db):
     "insert new movies"
     if not data:
-        return
+        logging.info("Unable to get newly released movies")
     elif data["status"] == "error":
-        return
+        logging.info("api status error")
     else:
-        released_data = movie_compare(cursor, "movies", data["data"]["movies"])
+        released_data = movie_compare(cursor, data["data"]["movies"])
         for movie_detail in released_data:
             if fetch_image(movie_detail["medium_cover_image"], movie_detail['title']):
                 try:
@@ -71,10 +71,10 @@ def fetch_image(image_url, title,):
             return False
 
 
-def movie_compare(cursor, table, new_data):
+def movie_compare(cursor, new_data):
     "compare new movie list to current database"
     new_movie_data = []
-    cursor.execute("SELECT title FROM "+table)
+    cursor.execute("SELECT title FROM movies")
     old_movie_data = [x[0] for x in cursor.fetchall()]
     for movie_data in new_data:
         if movie_data["title"] not in old_movie_data:
