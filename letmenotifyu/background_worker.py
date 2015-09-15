@@ -45,7 +45,7 @@ def process_series_queue():
                 torrent_url = kickass.fetch_episode_search_results(title, ep_name)
                 if torrent_url is not None:
                         full_episode_title = title + "-" + ep_name
-                        (downloaded, torrent_file_path) = util.fetch_torrent(torrent_url, full_episode_title)
+                        (downloaded, torrent_file_path) = util.fetch_torrent('https:'+torrent_url, full_episode_title)
                         if downloaded:
                             try:
                                 torrent_hash, torrent_name = transmission.add_torrent(torrent_file_path, cursor)
