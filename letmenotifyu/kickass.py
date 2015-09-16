@@ -14,7 +14,8 @@ def fetch_episode_search_results(series_name, episode_number):
                                                  title=series_name,
                                                  number=episode_number)
     try:
-        episode_results = requests.get(search_url)
+        header = {'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.9; rv:32.0) Gecko/20100101 Firefox/32.0',}
+        episode_results = requests.get(search_url, headers=header)
         page_data = BeautifulSoup(episode_results.text)
         all_possible_results = page_data.find_all('tr', {'class': ['odd', 'even']})
         for results in all_possible_results:
@@ -23,6 +24,7 @@ def fetch_episode_search_results(series_name, episode_number):
                 for urls in results.find_all('a', 'icon16'):
                     if urls.get('title') == 'Download torrent file':
                         logging.debug("found torrent link for {}-{}".format(series_name, episode_number))
+                        logging.debug(urls.get('href'))
                         return urls.get('href')
     except requests.exceptions.ConnectionError as e:
         logging.debug("unable to get torrent url for {}-{}".format(series_name, episode_number))
