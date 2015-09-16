@@ -67,10 +67,12 @@ class Series(object):
                 if current_ep_no == 0:
                     logging.debug('series does not have any episodes, adding.....')
                     self._add_episodes(series_id, all_episodes)
-                elif number_eps == episode_count:
+                elif current_ep_no == episode_count:
                     logging.info("no new episodes for {}".format(series_link))
-                elif number_eps < episode_count:
-                    new_list = series_compare(self.cursor, series_info, ids)
+                elif current_ep_no < episode_count:
+                    compared_list = self._series_compare(series_id,
+                                                         all_episodes)
+                    
                     self.insert_new_epsiodes(new_list, episode_count, ids, season_count)
             except TypeError:
                 pass
