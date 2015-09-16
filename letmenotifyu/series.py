@@ -9,18 +9,33 @@ import psycopg2
 
 
 def fetch_new_episdoes(series_link):
-    "search for new episodes"
+    "search for new series episodes"
     return primewire(series_link)
 
 
 def series_compare(cursor, new_list, series_id):
-    "Compare db list with new series"
+    "compare exsisting episode to new episodes"
     cursor.execute("SELECT episode_link FROM episodes WHERE series_id=%s",
                    (series_id,))
     data = [x[0] for x in cursor.fetchall()]
     new_data = [link for link in new_list if link[0] not in data]
     return new_data
 
+
+def add_episodes():
+    "add new series episodes"
+    for (episode_link, episode_number, episode_name) in new_episodes:
+        try:
+            cursor.execute("INSERT INTO episodes(" \
+                                    'series_id,' \
+                                    'episode_link,' \
+                                    'episode_name,' \
+                                    'episode_number,'\
+                                    'Date) ' \
+                                    'VALUES(%s,%s,%s,%s,%s) RETURNING id'
+                                    ,(series_id, episode_link, episode_name, episode_number, datetime.now(),))
+            episode_id = cursor.fetchone()[0]
+    
 
 def insert_records(connect, cursor, new_episodes, series_id, series_title):
     "inser new episodes"
