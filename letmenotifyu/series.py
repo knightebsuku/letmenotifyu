@@ -8,25 +8,17 @@ import logging
 import psycopg2
 
 
-def fetch_new_episdoes(series_link):
-    "search for new series episodes"
-    return primewire(series_link)
+class Series(object):
+    "deal with series and episodes"
+    def __init__(self, db, cursor):
+        self.cursor = cursor
+        self.db = db
 
-
-def series_compare(cursor, new_list, series_id):
-    "compare exsisting episode to new episodes"
-    cursor.execute("SELECT episode_link FROM episodes WHERE series_id=%s",
-                   (series_id,))
-    data = [x[0] for x in cursor.fetchall()]
-    new_data = [link for link in new_list if link[0] not in data]
-    return new_data
-
-
-def add_episodes():
-    "add new series episodes"
-    for (episode_link, episode_number, episode_name) in new_episodes:
-        try:
-            cursor.execute("INSERT INTO episodes(" \
+    def _add_episodes(self,series_id, new_episodes):
+        "add new episodes"
+        for (episode_link, episode_number, episode_name) in new_episodes:
+            try:
+                self.cursor.execute("INSERT INTO episodes(" \
                                     'series_id,' \
                                     'episode_link,' \
                                     'episode_name,' \
@@ -34,9 +26,55 @@ def add_episodes():
                                     'Date) ' \
                                     'VALUES(%s,%s,%s,%s,%s) RETURNING id'
                                     ,(series_id, episode_link, episode_name, episode_number, datetime.now(),))
-            episode_id = cursor.fetchone()[0]
-    
+                episode_id = self.cursor.fetchone()[0]
+                return episode_id
+            except psycopg2.IntegrityError:
+                logging.error("episode already exists")
 
+    def _send_to_queue(self,series_id, episode_id ):
+        "send new episodes to queue"
+        try:
+            self.cursor.execute("INSERT INTO series_queue(series_id,"\
+                           "episode_id,"\
+                           "episode_name,"\
+                           "watch_queue_status_id) "\
+                   "VALUES(%s,%s,%s,%s)",(series_id,
+                                          row_id,
+                                          episode_number,
+                                          1,))
+            logging.debug("episode {} added to series queue".format(episode_number))
+        except psycopg2.IntegrityError:
+            self.db.rollback()
+            logging.warn("episode is already in the queue")
+            
+    def _get_new_episodes(self, series_link):
+        "check for new episodes"
+        return primewire(series_link)
+
+    def _series_compare(self, series_id, new_episode_list):
+        "compare current series list with new list"
+        self.cursor.execute("SELECT episode_link FROM episodes WHERE series_id=%s",
+                   (series_id,))
+        data = [x[0] for x in self.cursor.fetchall()]
+        new_data = [link for link in new_episode_list if link[0] not in data]
+        return new_data
+
+    def _update_series(self):
+        self.cursor.execute("SELECT id,series_link,number_of_episodes FROM series WHERE status='1'")
+        for (series_id, series_link, current_ep_no) in self.cursor.fetchall():
+            try:
+                all_episodes, episode_count, season_count = self._get_new_episodes(series_link)
+                if current_ep_no == 0:
+                    logging.debug('series does not have any episodes, adding.....')
+                    self._add_episodes(series_id, all_episodes)
+                elif number_eps == episode_count:
+                    logging.info("no new episodes for {}".format(series_link))
+                elif number_eps < episode_count:
+                    new_list = series_compare(self.cursor, series_info, ids)
+                    self.insert_new_epsiodes(new_list, episode_count, ids, season_count)
+            except TypeError:
+                pass
+                
 def insert_records(connect, cursor, new_episodes, series_id, series_title):
     "inser new episodes"
     for (episode_link, episode_number, episode_name) in new_episodes:
@@ -61,37 +99,11 @@ def insert_records(connect, cursor, new_episodes, series_id, series_title):
             connect.rollback()
             logging.exception(e)
 
-
-def send_to_queue(series_id, episode_number, db, cursor, row_id):
-    try:
-        cursor.execute("INSERT INTO series_queue(series_id,episode_id, episode_name,watch_queue_status_id) "\
-                   "VALUES(%s,%s,%s,%s)",(series_id, row_id, episode_number, 1,))
-        logging.debug("episode {} added to series queue".format(episode_number))
-    except psycopg2.IntegrityError:
-        db.rollback()
-        logging.warn("episode is already in the queue")
-
-
 class Series(object):
     def __init__(self, connect, cursor):
         self.cursor = cursor
         self.connect = connect
 
-    def update_series(self):
-        self.cursor.execute("SELECT id,series_link,number_of_episodes FROM series WHERE status='1'")
-        for (ids, series_link, number_eps,) in self.cursor.fetchall():
-            try:
-                series_info, episode_count, season_count = fetch_new_episdoes(series_link)
-                if number_eps == 0:
-                    logging.debug('series does not have any episodes, adding.....')
-                    self.new_series_episodes(series_info, episode_count, ids, season_count)
-                elif number_eps == episode_count:
-                    logging.info("no new episodes for {}".format(series_link))
-                elif number_eps < episode_count:
-                    new_list = series_compare(self.cursor, series_info, ids)
-                    self.insert_new_epsiodes(new_list, episode_count, ids, season_count)
-            except TypeError:
-                pass
 
     def insert_new_epsiodes(self, all_eps, new_ep_number, series_id, no_seasons):
         self.cursor.execute("SELECT title,watch FROM series WHERE id=%s", (series_id,))
