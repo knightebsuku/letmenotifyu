@@ -150,8 +150,8 @@ def database_change():
         [42, "DROP TABLE upcoming_queue"],
         [43, "ALTER TABLE series_queue ALTER COLUMN watch_queue_status_id SET DEFAULT 1"],
         [44, "ALTER TABLE movie_queue ALTER COLUMN watch_queue_status_id SET DEFAULT 1"],
-        [45, "DROP TABLE torrents"]
+        [45, "DROP TABLE torrents"],
         [46, "ALTER TABLE series ALTER COLUMN watch SET DEFAULT '1'"],
-        [47, "ALTER TABLE series ALTER COLUMN status SET DEFAULT '1'"]
+        [47, "ALTER TABLE series ALTER COLUMN status SET DEFAULT '1'"],
         
     ])
