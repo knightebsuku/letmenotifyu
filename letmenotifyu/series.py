@@ -59,7 +59,7 @@ class Series(object):
                                 (episode_count, season_count, datetime.now(), series_id,))
         self.db.commit()
         
-    def _update(self):
+    def update(self):
         self.cursor.execute("SELECT id,title,series_link,number_of_episodes FROM series WHERE status='1'")
         for (series_id, series_title, series_link, current_ep_no) in self.cursor.fetchall():
             try:
@@ -68,6 +68,7 @@ class Series(object):
                     logging.debug('series does not have any episodes, adding.....')
                     self._add_episodes(series_id, all_episodes, series_title, 'new')
                     self._update_series_details(episode_count, season_count, series_id)
+                    util.series_poster(self.cursor, self.db, series_id)
                 elif current_ep_no == episode_count:
                     logging.info("no new episodes for {}".format(series_link))
                 elif current_ep_no < episode_count:
@@ -81,4 +82,4 @@ class Series(object):
 def series(connect, cursor):
     "Initialise series to update"
     update_series = Series(connect, cursor)
-    update_series._update()
+    update_series.update()
