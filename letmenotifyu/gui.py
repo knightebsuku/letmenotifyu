@@ -46,11 +46,9 @@ class AddSeries(object):
                                'series_link,' \
                                'number_of_episodes,' \
                                'number_of_seasons,' \
-                               'status,' \
-                               'watch,'\
                                'current_season,' \
                                'last_update)' \
-                               " VALUES(%s,%s,0,0,'1','0',0,%s)",
+                               " VALUES(%s,%s,0,0,0,%s)",
                                (show_title, text, datetime.now(),))
                 self.connection.commit()
                 logging.info("Series Added: {}".format(show_title))
