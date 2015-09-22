@@ -3,10 +3,10 @@
 import webbrowser
 import logging
 import re
-import sqlite3
 import urllib
 import os
 import requests
+import psycopg2
 
 from urllib.request import Request, urlopen
 from bs4 import BeautifulSoup
@@ -44,7 +44,7 @@ def series_poster(cursor, connect, series_id):
         cursor.execute("INSERT INTO series_images(series_id,path) VALUES(%s,%s)",
                             (series_id, '{}.jpg'.format(title),))
         connect.commit()
-    except sqlite3.IntegrityError:
+    except psycopg2.IntegrityError:
         logging.warn("Image for {} already exists".format(title))
 
 
