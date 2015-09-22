@@ -41,26 +41,23 @@ def process_series_queue():
                        " AND watch_queue_status_id <> 4")
         for (title, queue_id, ep_name, watch_id) in cursor.fetchall():
             if watch_id == 1:
-                logging.info("fetching episode torrent for {}".format(title))
+                logging.info("fetching episode magnet for {}".format(title))
                 torrent_url = kickass.fetch_episode_search_results(title, ep_name)
                 if torrent_url is not None:
-                        full_episode_title = title + "-" + ep_name
-                        (downloaded, torrent_file_path) = util.fetch_torrent(torrent_url, full_episode_title)
-                        if downloaded:
-                            try:
-                                torrent_hash, torrent_name = transmission.add_torrent(torrent_file_path, cursor)
-                                cursor.execute("INSERT INTO series_torrent_links(series_queue_id, link, "\
+                    try:
+                        torrent_hash, torrent_name = transmission.add_torrent(torrent_url, cursor)
+                        cursor.execute("INSERT INTO series_torrent_links(series_queue_id, link, "\
                                            "transmission_hash, torrent_name) " \
                                            "VALUES(%s,%s,%s,%s)",
                                                 (queue_id, torrent_url, torrent_hash, torrent_name,))
-                                cursor.execute("UPDATE series_queue SET watch_queue_status_id=2 "\
+                        cursor.execute("UPDATE series_queue SET watch_queue_status_id=2 "\
                                            "WHERE id=%s", (queue_id,))
-                                connect.commit()
-                            except Exception as e:
-                                connect.rollback()
-                                logging.exception(e)
+                        connect.commit()
+                    except Exception as e:
+                        connect.rollback()
+                        logging.exception(e)
             else:
-                transmission.check_episode_status(queue_id, cursor, connect)
+                transmission.check_episode_status(watch_id, queue_id, cursor, connect)
         value = util.get_config_value(cursor, 'series_process_interval')
         connect.close()
         time.sleep(float(value)*60)
@@ -99,8 +96,7 @@ def process_movie_queue():
                     except Exception as e:
                         logging.exception(e)
             else:
-                logging.debug('checking status on transmission')
-                transmission.check_movie_status(transmission_hash, cursor, connect)
+                transmission.check_movie_status(watch_id, transmission_hash, cursor, connect)
         value = util.get_config_value(cursor, 'movie_process_interval')
         connect.close()
         time.sleep(float(value)*60)

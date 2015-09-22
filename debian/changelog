@@ -1,4 +1,4 @@
-letmenotifyu (3.4.5-1) UNRELEASED; urgency=medium
+letmenotifyu (3.5.0-1) UNRELEASED; urgency=medium
 
   * Delete upcoming movies if released
   * fix
@@ -31,8 +31,14 @@ letmenotifyu (3.4.5-1) UNRELEASED; urgency=medium
   * clean up ui for upcoming queue
   * fix transmission port
   * add series episode manually
+  * remove movie image from movie detail
+  * added series now in watch list
+  * default values for queues
+  * clean up
+  * limit number of items shown in queues
+  * 3.5.0
 
- -- Lunga Mthembu <complexstu@gmail.com>  Sat, 05 Sep 2015 09:32:07 +0200
+ -- Lunga Mthembu <complexstu@gmail.com>  Tue, 22 Sep 2015 20:41:21 +0200
 
 letmenotifyu (2.2.1-1) unstable; urgency=low
 

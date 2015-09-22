@@ -7,7 +7,6 @@ import re
 import os
 from datetime import datetime
 from gi.repository import Gtk
-from gi.repository.GdkPixbuf import Pixbuf
 from . import util, settings
 
 
@@ -47,11 +46,9 @@ class AddSeries(object):
                                'series_link,' \
                                'number_of_episodes,' \
                                'number_of_seasons,' \
-                               'status,' \
-                               'watch,'\
                                'current_season,' \
                                'last_update)' \
-                               " VALUES(%s,%s,0,0,'1','0',0,%s)",
+                               " VALUES(%s,%s,0,0,0,%s)",
                                (show_title, text, datetime.now(),))
                 self.connection.commit()
                 logging.info("Series Added: {}".format(show_title))
@@ -163,7 +160,7 @@ class Preferences(object):
                              'CompleteDownloads': complete+os.sep,
                                  'IncompleteDownloads': incomplete+os.sep
         }
-        config["LOGGING"] = {'LoggingLevel': "Logging.DEBUG"}
+        config["LOGGING"] = {'LoggingLevel': "Logging.INFO"}
         config['DATABASE'] = {'Host': settings.DB_HOST,
                           'Port': settings.DB_PORT,
                           'User': settings.DB_USER,
@@ -220,41 +217,6 @@ class Error(object):
         self.error.get_object('msgError').destroy()
 
 
-class SetSeason(object):
-    "Current season popup"
-    def __init__(self, cursor, connection, series_title):
-        self.cursor = cursor
-        self.connection = connection
-        self.series_title = series_title
-        self.current_season = Gtk.Builder()
-        self.current_season.add_from_file("ui/SetSeason.glade")
-        signals = {'on_btnApply_clicked': self.apply_clicked,
-                 'on_btnCancel_clicked': self.cancel_clicked}
-        self.current_season.connect_signals(signals)
-        cur_sea = self.fetch_current_season(series_title)
-        self.current_season.get_object('txtCurrent').set_text(str(cur_sea))
-        self.current_season.get_object("CurrentSeason").show()
-
-    def fetch_current_season(self, series_title):
-        self.cursor.execute('SELECT current_season FROM series WHERE title=%s', (series_title,))
-        (no_season,) = self.cursor.fetchone()
-        return no_season
-
-    def cancel_clicked(self, widget):
-        self.current_season.get_object('CurrentSeason').close()
-
-    def apply_clicked(self, widget):
-        try:
-            cur_season = self.current_season.get_object('txtCurrent').get_text()
-            self.cursor.execute('UPDATE series SET current_season = %s WHERE title=%s',
-                           (cur_season, self.series_title,))
-            self.connection.commit()
-            self.current_season.get_object("CurrentSeason").destroy()
-        except Exception as e:
-            logging.warn("Unable to set current season")
-            logging.exception(e)
-
-
 class MovieDetails(object):
     "show movie details"
     def __init__(self, cursor, connect, movie_title):
@@ -270,22 +232,18 @@ class MovieDetails(object):
         self.details.get_object("winMovieDetails").show()
 
     def populate(self):
-        movie_image = self.details.get_object("imageMovie")
         movie_title = self.details.get_object("lblMovieTitle")
         rating = self.details.get_object("lblRating")
         movie_link = self.details.get_object("lkImdb")
         youtube_link = self.details.get_object("lkYoutubeUrl")
         self.watch_list = self.details.get_object("lblWatchList")
         description = self.details.get_object("bufDescription")
-        self.cursor.execute("SELECT movies.title,movies.link,movie_images.path "\
-                            'FROM movies,movie_images WHERE movies.title=%s '\
-                            'AND movie_images.title=%s',(self.movie_title, self.movie_title,))
-        (mt, ml, mi,) = self.cursor.fetchone()
+        self.cursor.execute("SELECT title,link FROM movies WHERE title=%s"
+                            ,(self.movie_title,))
+        (mt, ml,) = self.cursor.fetchone()
         movie_title.set_text(mt)
         movie_link.set_uri("http://www.imdb.com/title/{}".format(ml))
         movie_link.set_property('label',"Imdb")
-        pb = Pixbuf.new_from_file(settings.IMAGE_PATH+mi)
-        movie_image.set_from_pixbuf(pb)
         self.cursor.execute("SELECT id FROM movie_queue WHERE movie_id="\
                             '(SELECT id FROM movies WHERE title=%s)',(self.movie_title,))
         if self.cursor.fetchone():
@@ -319,7 +277,7 @@ class MovieDetails(object):
                          2: self.details.get_object("lblActor2"),
                          3: self.details.get_object("lblActor3"),
                          4: self.details.get_object("lblActor4")}
-            for num,name in enumerate(self.cursor.fetchall(), start=1):
+            for num, name in enumerate(self.cursor.fetchall(), start=1):
                 cast_list[num].set_text(name[0])
 
     def watch_list(self, widget):
