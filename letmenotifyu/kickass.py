@@ -16,7 +16,7 @@ def fetch_episode_search_results(series_name, episode_number):
     try:
         header = {'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.9; rv:32.0) Gecko/20100101 Firefox/32.0',}
         episode_results = requests.get(search_url, headers=header)
-        page_data = BeautifulSoup(episode_results.text)
+        page_data = BeautifulSoup(episode_results.text, "lxml")
         all_possible_results = page_data.find_all('tr', {'class': ['odd', 'even']})
         for results in all_possible_results:
             result_title = results.find('a', 'cellMainLink').text
