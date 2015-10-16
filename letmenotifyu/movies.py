@@ -72,14 +72,11 @@ def fetch_image(image_url, title,):
 
 def movie_compare(cursor, new_data):
     "compare new movie list to current database"
-    #new_movie_data = []
     cursor.execute("SELECT title FROM movies")
     old_movie_data = [x[0] for x in cursor.fetchall()]
     for movie_data in new_data:
         if movie_data["title"] not in old_movie_data:
             yield movie_data
-            #new_movie_data.append(movie_data)
-    #return new_movie_data
 
 
 def get_movie_genre(genre, cursor, db):
