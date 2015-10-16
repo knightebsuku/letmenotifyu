@@ -22,8 +22,7 @@ def released_movies(data, cursor, db):
     elif data["status"] == "error":
         logging.info("api status error")
     else:
-        released_data = movie_compare(cursor, data["data"]["movies"])
-        for movie_detail in released_data:
+        for movie_detail in movie_compare(cursor, data['data']['movies']):
             if fetch_image(movie_detail["medium_cover_image"], movie_detail['title']):
                 try:
                     genre_id = get_movie_genre(movie_detail["genres"][0], cursor, db)
@@ -73,13 +72,14 @@ def fetch_image(image_url, title,):
 
 def movie_compare(cursor, new_data):
     "compare new movie list to current database"
-    new_movie_data = []
+    #new_movie_data = []
     cursor.execute("SELECT title FROM movies")
     old_movie_data = [x[0] for x in cursor.fetchall()]
     for movie_data in new_data:
         if movie_data["title"] not in old_movie_data:
-            new_movie_data.append(movie_data)
-    return new_movie_data
+            yield movie_data
+            #new_movie_data.append(movie_data)
+    #return new_movie_data
 
 
 def get_movie_genre(genre, cursor, db):
