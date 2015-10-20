@@ -20,7 +20,7 @@ def fetch_episode_search_results(series_name, episode_number):
         all_possible_results = page_data.find_all('tr', {'class': ['odd', 'even']})
         for results in all_possible_results:
             result_title = results.find('a', 'cellMainLink').text
-            if re.search(r'{title} {episode_number} (PROPER|INTERNAL|WEB-DL)? HDTV x264-(LOL|KILLERS|ASAP|2HD|FUM|TLA|BATV)'.format(title=series_name, episode_number=episode_number), result_title):
+            if re.search(r'{title} {episode_number} (PROPER |INTERNAL |WEB-DL )?HDTV x264-(LOL|KILLERS|ASAP|2HD|FUM|TLA|BATV)'.format(title=series_name, episode_number=episode_number), result_title):
                 for urls in results.find_all('a', 'icon16'):
                     if urls.get('title') == 'Torrent magnet link':
                         logging.debug("found magnet link for {}-{}".format(series_name, episode_number))
