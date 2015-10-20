@@ -32,7 +32,7 @@ def primewire(episode_site):
     "process series html page"
     try:
         series_page = requests.get(episode_site)
-        series_page_data = BeautifulSoup(series_page.text)
+        series_page_data = BeautifulSoup(series_page.text, "lxml")
         all_series_info = []
         for episode_item in series_page_data.find_all('div', {'class': 'tv_episode_item'}):
             link = episode_item.a['href']
