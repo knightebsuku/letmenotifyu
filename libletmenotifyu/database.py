@@ -3,16 +3,72 @@
 from letmenotifyu import settings
 from litemigration.database import Database
 
-
-def database_init():
-    db = Database('postgresql', database=settings.DB_NAME,
-                  user=settings.DB_USER,
-                  password=settings.DB_PASSWORD,
-                  host=settings.DB_HOST,
-                  port=settings.DB_PORT)
+def create_db(db_name):
+    db = Database('sqlite', database=db_name)
     db.initialise()
 
+def migrate():
+    movie_schema()
+    series_schema()
 
+    
+    
+
+
+
+
+def series_schema():
+    return
+
+def movie_schema():
+    movie = Database('sqlite', database='movie.sqlite')
+    movie.add_schema([
+        [1, 'CREATE TABLE movie('\
+             'id INTEGER PRIMARY KEY,'\
+             'title TEXT NOT NULL UNIQUE,'\
+             'kickass_url TEXT NOT NULL UNIQUE)'],
+        [2, 'CREATE TABLE movie_detail('\
+             'id INTEGER PRIMARY KEY,'\
+             'movie_id INTEGER NOT NULL'\
+             'imdb_link TEXT NOT NULL UNIQUE,'\
+             'imdb_rating REAL NOT NULL,'\
+             'release_date TEXT NOT NULL,'\
+             'FOREIGN KEY(movie_id) REFERENCES movie(id))'],
+        [3, 'CREATE TABLE movie_image('\
+             'id INTEGER PRIMARY KEY,'\
+             'movie_id INTEGER NOT NULL,'\
+             'path TEXT NOT NULL UNIQUE,'\
+             'FOREIGN KEY(movie_id) REFERENCES movie(id))'],
+        [4, 'CREATE TABLE genre('
+             'id INTEGER PRIMARY KEY,'
+             'genre_name TEXT NOT NULL UNIQUE)'],
+        [5, "INSERT INTO genre(name) VALUES('Action')"],
+        [6, "INSERT INTO genre(name) VALUES('Adventure')"],
+        [7, "INSERT INTO genre(name) VALUES('Animation')"],
+        [8, "INSERT INTO genre(name) VALUES('Comedy')"],
+        [9, "INSERT INTO genre(name) VALUES('Crime')"],
+        [10, "INSERT INTO genre(name) VALUES('Documentary')"],
+        [11, "INSERT INTO genre(name) VALUES('Drama')"],
+        [12, "INSERT INTO genre(name) VALUES('Family')"],
+        [13, "INSERT INTO genre(name) VALUES('Fantasy')"],
+        [14, "INSERT INTO genre(name) VALUES('Film-Noir')"],
+        [15, "INSERT INTO genre(name) VALUES('History')"],
+        [16, "INSERT INTO genre(name) VALUES('Horror')"],
+        [17, "INSERT INTO genre(name) VALUES('Musical')"],
+        [18, "INSERT INTO genre(name) VALUES('Mystery')"],
+        [19, "INSERT INTO genre(name) VALUES('Romance')"],
+        [20, "INSERT INTO genre(name) VALUES('Sci-Fi')"],
+        [21, "INSERT INTO genre(name) VALUES('Sport')"],
+        [22, "INSERT INTO genre(name) VALUES('Thriller')"],
+        [23, "INSERT INTO genre(name) VALUES('War')"],
+        [24, "INSERT INTO genre(name) VALUES('Western')"],
+        [25, 'CREATE TABLE config('\
+             'id INTEGER PRIMARY KEY,'\
+             'name TEXT NOT NULL UNIQUE,'\
+             'key, TEXT NOT NULL UNIQUE)'],
+    ])
+    return
+    
 def database_change():
     db = Database('postgresql', database=settings.DB_NAME,
                   user=settings.DB_USER,
