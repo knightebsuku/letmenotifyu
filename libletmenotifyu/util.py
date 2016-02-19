@@ -84,7 +84,7 @@ def start_logging():
     "Start logging"
     logging.basicConfig(filename=settings.LOG_FILE_PATH,
                             format='%(asctime)s - %(name)s-%(levelname)s:%(message)s', filemode='w',
-                            level=settings.LOG_LEVEL)
+                            level=logging.DEBUG)
 
 
 def pre_populate_menu(builder):

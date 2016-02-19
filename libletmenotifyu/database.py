@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-from letmenotifyu import settings
+from libletmenotifyu import settings
 from litemigration.database import Database
 
 def create_db(db_name):
@@ -11,30 +11,26 @@ def migrate():
     movie_schema()
     series_schema()
 
-    
-    
-
-
-
-
 def series_schema():
     return
 
 def movie_schema():
-    movie = Database('sqlite', database='movie.sqlite')
+    movie = Database('sqlite', database=settings.MOVIE_DB_PATH)
     movie.add_schema([
         [1, 'CREATE TABLE movie('\
              'id INTEGER PRIMARY KEY,'\
              'title TEXT NOT NULL UNIQUE,'\
-             'kickass_url TEXT NOT NULL UNIQUE)'],
-        [2, 'CREATE TABLE movie_detail('\
+             'kickass_url TEXT NOT NULL UNIQUE,'\
+             'date_added TEXT NOT NULL)'],
+        [2, 'CREATE TABLE detail('\
              'id INTEGER PRIMARY KEY,'\
-             'movie_id INTEGER NOT NULL'\
+             'movie_id INTEGER NOT NULL,'\
              'imdb_link TEXT NOT NULL UNIQUE,'\
              'imdb_rating REAL NOT NULL,'\
              'release_date TEXT NOT NULL,'\
+             'summary TEXT NOT NULL,'\
              'FOREIGN KEY(movie_id) REFERENCES movie(id))'],
-        [3, 'CREATE TABLE movie_image('\
+        [3, 'CREATE TABLE image('\
              'id INTEGER PRIMARY KEY,'\
              'movie_id INTEGER NOT NULL,'\
              'path TEXT NOT NULL UNIQUE,'\
@@ -42,30 +38,45 @@ def movie_schema():
         [4, 'CREATE TABLE genre('
              'id INTEGER PRIMARY KEY,'
              'genre_name TEXT NOT NULL UNIQUE)'],
-        [5, "INSERT INTO genre(name) VALUES('Action')"],
-        [6, "INSERT INTO genre(name) VALUES('Adventure')"],
-        [7, "INSERT INTO genre(name) VALUES('Animation')"],
-        [8, "INSERT INTO genre(name) VALUES('Comedy')"],
-        [9, "INSERT INTO genre(name) VALUES('Crime')"],
-        [10, "INSERT INTO genre(name) VALUES('Documentary')"],
-        [11, "INSERT INTO genre(name) VALUES('Drama')"],
-        [12, "INSERT INTO genre(name) VALUES('Family')"],
-        [13, "INSERT INTO genre(name) VALUES('Fantasy')"],
-        [14, "INSERT INTO genre(name) VALUES('Film-Noir')"],
-        [15, "INSERT INTO genre(name) VALUES('History')"],
-        [16, "INSERT INTO genre(name) VALUES('Horror')"],
-        [17, "INSERT INTO genre(name) VALUES('Musical')"],
-        [18, "INSERT INTO genre(name) VALUES('Mystery')"],
-        [19, "INSERT INTO genre(name) VALUES('Romance')"],
-        [20, "INSERT INTO genre(name) VALUES('Sci-Fi')"],
-        [21, "INSERT INTO genre(name) VALUES('Sport')"],
-        [22, "INSERT INTO genre(name) VALUES('Thriller')"],
-        [23, "INSERT INTO genre(name) VALUES('War')"],
-        [24, "INSERT INTO genre(name) VALUES('Western')"],
+        [5, "INSERT INTO genre(genre_name) VALUES('Action')"],
+        [6, "INSERT INTO genre(genre_name) VALUES('Adventure')"],
+        [7, "INSERT INTO genre(genre_name) VALUES('Animation')"],
+        [8, "INSERT INTO genre(genre_name) VALUES('Comedy')"],
+        [9, "INSERT INTO genre(genre_name) VALUES('Crime')"],
+        [10, "INSERT INTO genre(genre_name) VALUES('Documentary')"],
+        [11, "INSERT INTO genre(genre_name) VALUES('Drama')"],
+        [12, "INSERT INTO genre(genre_name) VALUES('Family')"],
+        [13, "INSERT INTO genre(genre_name) VALUES('Fantasy')"],
+        [14, "INSERT INTO genre(genre_name) VALUES('Film-Noir')"],
+        [15, "INSERT INTO genre(genre_name) VALUES('History')"],
+        [16, "INSERT INTO genre(genre_name) VALUES('Horror')"],
+        [17, "INSERT INTO genre(genre_name) VALUES('Musical')"],
+        [18, "INSERT INTO genre(genre_name) VALUES('Mystery')"],
+        [19, "INSERT INTO genre(genre_name) VALUES('Romance')"],
+        [20, "INSERT INTO genre(genre_name) VALUES('Sci-Fi')"],
+        [21, "INSERT INTO genre(genre_name) VALUES('Sport')"],
+        [22, "INSERT INTO genre(genre_name) VALUES('Thriller')"],
+        [23, "INSERT INTO genre(genre_name) VALUES('War')"],
+        [24, "INSERT INTO genre(genre_name) VALUES('Western')"],
         [25, 'CREATE TABLE config('\
              'id INTEGER PRIMARY KEY,'\
-             'name TEXT NOT NULL UNIQUE,'\
-             'key, TEXT NOT NULL UNIQUE)'],
+             'name TEXT NOT NULL,'\
+             'key TEXT NOT NULL,'\
+             'UNIQUE(name,key))'],
+        [26, "INSERT INTO config(name, key)"\
+             " VALUES('update_interval','300')"],
+        [27, 'CREATE TABLE detail_queue_status('
+             'id INTEGER PRIMARY KEY,'
+             'status TEXT NOT NULL UNIQUE)'],
+        [28, "INSERT INTO detail_queue_status(status) VALUES('NEW')"],
+        [29, "INSERT INTO detail_queue_status(status) VALUES('BUSY')"],
+        [30, "INSERT INTO detail_queue_status(status) VALUES('COMPLETE')"],
+        [31, 'CREATE TABLE movie_detail_queue('
+             'id INTEGER PRIMARY KEY,'
+             'movie_id INTEGER NOT NULL,'
+             'detail_queue_status_id INTEGER NOT NULL DEFAULT 1,'
+             'FOREIGN KEY (detail_queue_status_id) REFERENCES detail_queue_status(id),'\
+             'FOREIGN KEY (movie_id) REFERENCES movie(id))'],
     ])
     return
     
@@ -198,7 +209,7 @@ def database_change():
         [34, "ALTER TABLE movie_torrent_links ADD COLUMN transmission_hash TEXT DEFAULT '0'"],
         [35, "ALTER TABLE movie_torrent_links ADD COLUMN torrent_name TEXT DEFAULT '0'"],
         [36, "ALTER TABLE series_torrent_links ADD COLUMN transmission_hash TEXT DEFAULT '0'"],
-        [37, "ALTER TABLE series_torrent_links ADD COLUMN torrent_name TEXT DEFAULT '0'"],
+        [37, "ALTER TABLE series_torrent_links ADD COLUMN torrent_namennnnn TEXT DEFAULT '0'"],
         [38, "INSERT INTO config(key,value) VALUES('transmission_host','127.0.0.1')"],
         [39, "INSERT INTO config(key,value) VALUES('transmission_port','9091')"],
         [40, "ALTER TABLE series_torrent_links DROP COLUMN torrent_hash"],
