@@ -20,22 +20,28 @@ def movie_schema():
         [1, 'CREATE TABLE movie('\
              'id INTEGER PRIMARY KEY,'\
              'title TEXT NOT NULL UNIQUE,'\
-             'kickass_url TEXT NOT NULL UNIQUE,'\
-             'date_added TEXT NOT NULL)'],
-        [2, 'CREATE TABLE detail('\
-             'id INTEGER PRIMARY KEY,'\
-             'movie_id INTEGER NOT NULL,'\
-             'imdb_link TEXT NOT NULL UNIQUE,'\
-             'imdb_rating REAL NOT NULL,'\
-             'release_date TEXT NOT NULL,'\
-             'summary TEXT NOT NULL,'\
-             'FOREIGN KEY(movie_id) REFERENCES movie(id))'],
-        [3, 'CREATE TABLE image('\
+             'year INT NOT NULL,'\
+             'url TEXT NOT NULL UNIQUE,'\
+             'date_added TIMESTAMP NOT NULL)'],
+        [2, 'CREATE TABLE image('\
              'id INTEGER PRIMARY KEY,'\
              'movie_id INTEGER NOT NULL,'\
              'path TEXT NOT NULL UNIQUE,'\
              'FOREIGN KEY(movie_id) REFERENCES movie(id))'],
-        [4, 'CREATE TABLE genre('
+        [3, 'CREATE TABLE detail_queue_status('
+             'id INTEGER PRIMARY KEY,'
+             'status TEXT NOT NULL UNIQUE)'],
+        [4, "INSERT INTO detail_queue_status(status) VALUES('NEW')"],
+        [5, "INSERT INTO detail_queue_status(status) VALUES('COMPLETE')"],
+        [6, "INSERT INTO detail_queue_status(status) VALUES('ERROR')"],
+        [7, 'CREATE TABLE detail_queue('
+             'id INTEGER PRIMARY KEY,'
+             'movie_id INTEGER NOT NULL,'
+             'detail_queue_status_id INTEGER NOT NULL DEFAULT 1,'
+             'FOREIGN KEY (detail_queue_status_id) REFERENCES detail_queue_status(id) ON UPDATE CASCADE ON DELETE CASCADE,'\
+             'FOREIGN KEY (movie_id) REFERENCES movie(id) ON UPDATE CASCADE ON DELETE CASCADE)'],
+        ])
+'''        [4, 'CREATE TABLE genre('
              'id INTEGER PRIMARY KEY,'
              'genre_name TEXT NOT NULL UNIQUE)'],
         [5, "INSERT INTO genre(genre_name) VALUES('Action')"],
@@ -65,21 +71,11 @@ def movie_schema():
              'UNIQUE(name,key))'],
         [26, "INSERT INTO config(name, key)"\
              " VALUES('update_interval','300')"],
-        [27, 'CREATE TABLE detail_queue_status('
-             'id INTEGER PRIMARY KEY,'
-             'status TEXT NOT NULL UNIQUE)'],
-        [28, "INSERT INTO detail_queue_status(status) VALUES('NEW')"],
-        [29, "INSERT INTO detail_queue_status(status) VALUES('BUSY')"],
-        [30, "INSERT INTO detail_queue_status(status) VALUES('COMPLETE')"],
-        [31, 'CREATE TABLE movie_detail_queue('
-             'id INTEGER PRIMARY KEY,'
-             'movie_id INTEGER NOT NULL,'
-             'detail_queue_status_id INTEGER NOT NULL DEFAULT 1,'
-             'FOREIGN KEY (detail_queue_status_id) REFERENCES detail_queue_status(id),'\
-             'FOREIGN KEY (movie_id) REFERENCES movie(id))'],
+        
     ])
     return
-    
+'''
+        
 def database_change():
     db = Database('postgresql', database=settings.DB_NAME,
                   user=settings.DB_USER,

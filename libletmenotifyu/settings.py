@@ -11,6 +11,8 @@ DATABASE_DIRECTORY = os.path.join(DIRECTORY_PATH, 'database')
 MOVIE_DB_PATH = os.path.join(DATABASE_DIRECTORY, 'movie.sqlite')
 SERIES_DB_PATH = os.path.join(DATABASE_DIRECTORY, 'series.sqlite')
 IMAGE_DIRECTORY = os.path.join(DIRECTORY_PATH, 'images')
+MOVIE_IMAGE_DIRECTORY = os.path.join(IMAGE_DIRECTORY, 'movies')
+SERIES_IMAGE_DIRECTORY = os.path.join(IMAGE_DIRECTORY,'series')
 TORRENT_DIRECTORY = os.path.join(DIRECTORY_PATH, 'torrents')
 INCOMPLETE_DIRECTORY = os.path.join(DIRECTORY_PATH, 'incomplete')
 COMPLETE_DIRECTORY = os.path.join(DIRECTORY_PATH, 'complete')
@@ -31,12 +33,11 @@ def initial():
     os.mkdir(INCOMPLETE_DIRECTORY)
     os.mkdir(COMPLETE_DIRECTORY)
     os.mkdir(DATABASE_DIRECTORY)
-    config['DIRECTORIES'] = {'ImagesDirectory': DIRECTORY_PATH+'/images/',
-                             'TorrentsDirectory': DIRECTORY_PATH+'/torrents/',
-                             'CompleteDownloads':DIRECTORY_PATH+'/complete/',
-                             'IncompleteDownloads': DIRECTORY_PATH+'/incomplete/'
+    os.mkdir(MOVIE_IMAGE_DIRECTORY)
+    os.mkdir(SERIES_IMAGE_DIRECTORY)
+    config['DIRECTORIES'] = {'CompleteDownloads':DIRECTORY_PATH+'/complete/'
     }
-    config["LOGGING"] = {'LoggingLevel': "Logging.INFO"}
+    config["LOGGING"] = {'LoggingLevel': "Logging.DEGUG"}
     with open(DIRECTORY_PATH+'/config.ini','w') as cfg_file:
         config.write(cfg_file)
 
