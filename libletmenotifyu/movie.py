@@ -6,14 +6,11 @@ import concurrent.futures as cf
 import os
 
 from bs4 import BeautifulSoup as Soup
-from queue import Queue
 from datetime import datetime as dt
 
 from . import settings
 
 PRIMEWIRE_FEATURED_MOVIES_URL = 'http://www.primewire.ag/index.php?sort=featured'
-MOVIE_QUEUE = Queue()
-
 
 def get_new_movies():
     "check for new movies"
@@ -78,6 +75,8 @@ def movie_insert(title, date, movie_link, image_path):
     "insert new movie into database"
     conn = sqlite3.connect(settings.MOVIE_DB_PATH,
                                detect_types=sqlite3.PARSE_DECLTYPES|sqlite3.PARSE_COLNAMES)
+    conn.execute('PRAGMA journal_mode=WAL')
+    conn.execute('pragma foreign_keys=on')
     c = conn.cursor()
     try:
         row_id = c.execute("INSERT INTO movie(title, year, url, date_added) VALUES(?,?,?,?)",
