@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-from libletmenotifyu import settings
+from watchme import settings
 from litemigration.database import Database
 
 def create_db(db_name):

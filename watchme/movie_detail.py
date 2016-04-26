@@ -5,8 +5,9 @@ import aiohttp
 from . import settings
 from bs4 import BeautifulSoup as Soup
 from random import randint
+from Queue import Queue
 
-
+MOVIE_DETAIL_QUEUE = Queue()
 
 PRIMEWIRE_URL = 'http://www.primewire.ag'
 

@@ -10,7 +10,7 @@ import psycopg2
 
 from urllib.request import Request, urlopen
 from bs4 import BeautifulSoup
-from letmenotifyu import settings
+from watchme import settings
 
 
 def render_view(image, string, store_model, image_file="ui/movies.png"):

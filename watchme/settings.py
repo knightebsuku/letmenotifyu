@@ -10,9 +10,11 @@ DIRECTORY_PATH = "DevLetme"
 DATABASE_DIRECTORY = os.path.join(DIRECTORY_PATH, 'database')
 MOVIE_DB_PATH = os.path.join(DATABASE_DIRECTORY, 'movie.sqlite')
 SERIES_DB_PATH = os.path.join(DATABASE_DIRECTORY, 'series.sqlite')
+
 IMAGE_DIRECTORY = os.path.join(DIRECTORY_PATH, 'images')
 MOVIE_IMAGE_DIRECTORY = os.path.join(IMAGE_DIRECTORY, 'movies')
 SERIES_IMAGE_DIRECTORY = os.path.join(IMAGE_DIRECTORY,'series')
+
 TORRENT_DIRECTORY = os.path.join(DIRECTORY_PATH, 'torrents')
 INCOMPLETE_DIRECTORY = os.path.join(DIRECTORY_PATH, 'incomplete')
 COMPLETE_DIRECTORY = os.path.join(DIRECTORY_PATH, 'complete')
