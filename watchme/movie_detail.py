@@ -12,6 +12,19 @@ MOVIE_DETAIL_QUEUE = Queue()
 PRIMEWIRE_URL = 'http://www.primewire.ag'
 
 def fetch_movie_detail():
+    conn = sqlite3.connect(settings.MOVIE_DB_PATH)
+    cur = conn.cursor()
+    urls = poll_detail_queue(cur)
+    if urls:
+        for url in urls:
+            try:
+                
+        
+    
+    
+
+
+    
     loop = asyncio.get_event_loop()
     client = aiohttp.ClientSession(headers={'User-Agent': 'Mozilla/5.0'})
     conn = sqlite3.connect(settings.MOVIE_DB_PATH)
@@ -35,8 +48,25 @@ def poll_detail_queue(c):
     try:
         c.execute("SELECT movie.id,url FROM movie JOIN detail_queue ON movie.id=movie_id WHERE detail_queue_status_id <> 2 limit 1")
         return c.fetchall()
-    except:
-        raise sqlite3.OperationalError
+    except sqlite3.OperationalError:
+        return None
+
+
+async def fetch_page(url):
+    "Fetch movie detail html page"
+    async with ClientSession() as session:
+        async with session.get(PRIMEWIRE_URL+url) as response:
+        return await response.read()
+
+async def run(urls):
+    "get all movie html pages"
+    tasks = []
+    for movie_id, movie_url in urls:
+        task = asyncio.ensure_future(fetch_page(movie_url))
+        tasks.append(task)
+
+    response = await asyncio.gather(*tasks)
+    
 
 
 async def fetch_page(client, url, movie_id):
