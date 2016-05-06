@@ -9,6 +9,7 @@ from datetime import datetime as dt
 from . import settings
 from . import primewire
 
+
 def new_movies():
     "check for new movies"
     logging.debug("checking for new movies")

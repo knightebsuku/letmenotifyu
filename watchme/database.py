@@ -40,11 +40,19 @@ def movie_schema():
              'detail_queue_status_id INTEGER NOT NULL DEFAULT 1,'
              'FOREIGN KEY (detail_queue_status_id) REFERENCES detail_queue_status(id) ON UPDATE CASCADE ON DELETE CASCADE,'\
              'FOREIGN KEY (movie_id) REFERENCES movie(id) ON UPDATE CASCADE ON DELETE CASCADE)'],
+        [8, "CREATE TABLE detail("
+            'id INTEGER PRIMARY KEY',
+            'movie_id INT NOT NULL',
+            'imdb_key VARCHAR NOT NULL',
+            'released_date TIMESTAMP NOT NULL',
+            'plot VARCHAR NOT NULL',
+            'imdb_rating REAL NOT NULL',
+            'FOREIGN_KEY(movie_id) REFERENCES movie(id))'],
         ])
 '''        [4, 'CREATE TABLE genre('
              'id INTEGER PRIMARY KEY,'
              'genre_name TEXT NOT NULL UNIQUE)'],
-        [5, "INSERT INTO genre(genre_name) VALUES('Action')"],
+        [5, "INSERT INTO genre(name) VALUES('Action')"],
         [6, "INSERT INTO genre(genre_name) VALUES('Adventure')"],
         [7, "INSERT INTO genre(genre_name) VALUES('Animation')"],
         [8, "INSERT INTO genre(genre_name) VALUES('Comedy')"],

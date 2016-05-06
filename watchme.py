@@ -9,7 +9,6 @@ from watchme import settings
 from watchme import util
 from watchme import movie
 from watchme import movie_detail
-import time
 
 #os.chdir(settings.DATA_FILES_PATH)
 
@@ -25,6 +24,9 @@ if __name__ == "__main__":
         util.start_logging()
         db.migrate()
     movie.new_movies()
+    detail = movie_detail.MovieDetail()
+    detail.fetch()
+    print('Complete')
     #movie_detail.fetch_movie_detail()
     
     #Main(series_process, movie_process, movie_details)    

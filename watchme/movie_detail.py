@@ -1,86 +1,87 @@
 import sqlite3
-import asyncio
-import aiohttp
+import logging
+import requests
+from aiohttp import ClientSession
+
 
 from . import settings
 from bs4 import BeautifulSoup as Soup
-from random import randint
-from Queue import Queue
 
-MOVIE_DETAIL_QUEUE = Queue()
+logger = logging.getLogger(__name__)
 
 PRIMEWIRE_URL = 'http://www.primewire.ag'
+OMDB_API_URL = 'http://www.omdbapi.com/?i=' #tt0372784
 
-def fetch_movie_detail():
-    conn = sqlite3.connect(settings.MOVIE_DB_PATH)
-    cur = conn.cursor()
-    urls = poll_detail_queue(cur)
-    if urls:
-        for url in urls:
+
+class MovieDetail:
+    def __init__(self):
+        self.connect = sqlite3.connect(settings.MOVIE_DB_PATH)
+        self.cursor = self.connect.cursor()
+
+    def _poll_queue(self):
+        "Get all movies in queue"
+        try:
+            self.cursor.execute("SELECT movie.id,url FROM movie JOIN detail_queue ON movie.id=movie_id WHERE detail_queue_status_id <> 2 limit 1")
+            return self.cursor.fetchall()
+        except sqlite3.OperationalError as e:
+            logger.error("Unable to fetch movies in detail_queue")
+            logger.error(e)
+
+    def fetch(self):
+        urls = self._poll_queue()
+        if urls:
+            for movie_id, movie_url in urls:
+                html_page = self._fetch_page(movie_url)
+                if html_page:
+                    self._detail(movie_id, html_page)
+
+    def _fetch_page(self, url):
+        "Fetch movie detail html page"
+        try:
+            req = requests.get(PRIMEWIRE_URL+url)
+            if req.status_code == 200:
+                return req.text
+        except requests.exceptions.ConnectionError():
+            logger.error("Unable to fetch url for {}".format(PRIMEWIRE_URL+url))
+                         
+    def _detail(self, movie_id, web_page_text):
+        "extract imdb url and insert into database"
+        page = Soup(web_page_text, 'lxml')
+        imdb_info = page.find('div', {'class': 'mlink_imdb'})
+        if imdb_info:
+            imdb_key = imdb_info.a['href'].strip('http://www.imdb.com/title/')
             try:
-                
-        
-    
-    
+                details = self._omdbapi(imdb_key)
+                self.cursor.execute("INSERT INTO detail(movie_id, imdb_key, 'released_date, plot, imdb_rating) VALUES(?,?,?,?,?)",
+                                    (movie_id,
+                                     imdb_key,
+                                     details['Released'],
+                                     details['Plot'],
+                                     details['imdbRating']))
+                actors = details['Actors'].split(',')
+                self._actors(actors, movie_id)
+            except sqlite3.OperationalError as e:
+                logger.error("unable to insert imdb key for {}".format(movie_id))
+                logger.error(e)
 
+    def _omdbapi(self, imdb_key, movie_id):
+        "Get full movie details"
+        req = requests.get(OMDB_API_URL+imdb_key)
+        if req.headers['content-type'] == 'application/json; charset=utf-8':
+            data = req.json()
+            if data['Response'] == True:
+                return data
 
-    
-    loop = asyncio.get_event_loop()
-    client = aiohttp.ClientSession(headers={'User-Agent': 'Mozilla/5.0'})
-    conn = sqlite3.connect(settings.MOVIE_DB_PATH)
-    c = conn.cursor()
-    try:
-        urls = poll_detail_queue(c)
-        fetch_pages = [fetch_page(client, url, movie_id) for movie_id,url in urls]
-        loop.run_until_complete(asyncio.wait(fetch_pages))
-    except sqlite3.OperationalError:
-        logging.info("unable to retrive movie detail records")
-    except Exception:
-        pass
-    finally:
-        loop.close()
-        client.close()
-        conn.close()
-        print('complete')
-
-def poll_detail_queue(c):
-    "get movie details by polling detail queue table"
-    try:
-        c.execute("SELECT movie.id,url FROM movie JOIN detail_queue ON movie.id=movie_id WHERE detail_queue_status_id <> 2 limit 1")
-        return c.fetchall()
-    except sqlite3.OperationalError:
-        return None
-
-
-async def fetch_page(url):
-    "Fetch movie detail html page"
-    async with ClientSession() as session:
-        async with session.get(PRIMEWIRE_URL+url) as response:
-        return await response.read()
-
-async def run(urls):
-    "get all movie html pages"
-    tasks = []
-    for movie_id, movie_url in urls:
-        task = asyncio.ensure_future(fetch_page(movie_url))
-        tasks.append(task)
-
-    response = await asyncio.gather(*tasks)
-    
-
-
-async def fetch_page(client, url, movie_id):
-    "get web page and send to queue for processing"
-    sleeping = randint(0,20)
-    print("Going to sleep for {}".format(sleeping))
-    await asyncio.sleep(sleeping)
-    print("Getting web page for {}".format(url))
-    async with client.get(PRIMEWIRE_URL+url) as resp:
-        assert resp.status == 200
-        await detail(resp.read())
-        #MOVIE_DETAIL_QUEUE.put([movie_id, resp.read()])
-
-async def detail(web_page_text):
-    "extract movie detail"
-    page = Soup(web_page_text, 'lxml')
-    movie_info = page.find('div', {'class': 'movie_info'})
+    def _actors(self, actors, movie_id):
+        "insert movie actors"
+        for actor in actors:
+            try:
+                self.cursor.execute('INSERT INTO actor(name) VALUES(?)',
+                                    (actor,))
+                actor_id = self.cursor.lastrowid()
+            except sqlite3.IntegrityError:
+                logger.warn("actor {} already exists".format(actor))
+                self.cursor.execute("SELECT id FROM actor WHERE name=?",(actor))
+                self.cursor.execute("INSERT INTO movie_actors(movie_id, actor_id) VALUES(?,?)", (movie_id, self.cursor.fetchone[0]))
+            else:
+                self.cursor.execute('INSERT INTO movie_actors(movie_id, actor) VALUES(?,?)', (movie_id, actor_id))
