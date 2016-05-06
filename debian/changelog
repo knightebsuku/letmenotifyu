@@ -1,4 +1,4 @@
-letmenotifyu (3.5.0-1) UNRELEASED; urgency=medium
+letmenotifyu (3.5.2-1) UNRELEASED; urgency=medium
 
   * Delete upcoming movies if released
   * fix
@@ -37,8 +37,12 @@ letmenotifyu (3.5.0-1) UNRELEASED; urgency=medium
   * clean up
   * limit number of items shown in queues
   * 3.5.0
+  * add move releases
+  * clean up commented code
+  * change movie compare to generator
+  * fix regular expression for matching episodes which kickass
 
- -- Lunga Mthembu <complexstu@gmail.com>  Tue, 22 Sep 2015 20:41:21 +0200
+ -- Lunga Mthembu <complexstu@gmail.com>  Tue, 20 Oct 2015 07:33:46 +0200
 
 letmenotifyu (2.2.1-1) unstable; urgency=low
 

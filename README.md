@@ -6,8 +6,7 @@ Application to provide notification of new series episodes and movies from [prim
 Full application details on the [wiki](https://github.com/stumenz/watchme/wiki)
 
 
-
-Version: 4.0.0-dev
+Version: 3.5.2
 -------------------
 
 Program Features
