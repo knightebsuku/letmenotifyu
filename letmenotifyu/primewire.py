@@ -5,22 +5,6 @@ import logging
 import re
 
 from bs4 import BeautifulSoup
-from requests.exceptions import ConnectionError, HTTPError
-
-PRIMEWIRE_FEATURED_MOVIES_URL = 'http://www.primewire.ag/index.php?sort=featured'
-
-def featured_movies_page():
-    "fetch primewire featured movies html page"
-    try:
-        req = requests.get(PRIMEWIRE_FEATURED_MOVIES_URL,
-                               headers={'User-Agent': 'Mozilla/5.0'})
-        return req.text
-    except (ConnectionError, HTTPError) as e:
-        logging.error("unable to fetch new featured movies")
-        logging.error(e)
-        return None
-
-
 
 
 def check_episode_numbers(episode_number):
@@ -62,22 +46,3 @@ def primewire(episode_site):
     except Exception as e:
         logging.warn("Unable to connect to {} ".format(episode_site))
         logging.exception(e)
-
-
-def poster(image_link, image_file_path):
-    "download movie poster"
-    try:
-        url = ''.join(('http:', image_link))
-        image_response = requests.get(url, headers={'User-Agent': 'Mozilla/5.0'})
-        if image_response.status_code == 200:
-            logging.debug('got image, writing to file')
-            with open(image_file_path, 'wb') as image:
-                    image.write(image_response.content)
-                    logging.debug('image written to file')
-            return True
-        else:
-            logging.warn("Unable to connect to images.primewire.ag")
-            return False
-    except ConnectionError:
-        logging.warn("Unable to connect to images.primewire.ag")
-        return False

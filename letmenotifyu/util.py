@@ -6,11 +6,11 @@ import re
 import urllib
 import os
 import requests
-#import psycopg2
+import psycopg2
 
 from urllib.request import Request, urlopen
 from bs4 import BeautifulSoup
-from watchme import settings
+from letmenotifyu import settings
 
 
 def render_view(image, string, store_model, image_file="ui/movies.png"):
@@ -84,7 +84,7 @@ def start_logging():
     "Start logging"
     logging.basicConfig(filename=settings.LOG_FILE_PATH,
                             format='%(asctime)s - %(name)s-%(levelname)s:%(message)s', filemode='w',
-                            level=logging.DEBUG)
+                            level=settings.LOG_LEVEL)
 
 
 def pre_populate_menu(builder):

@@ -1,89 +1,18 @@
 #!/usr/bin/python3
 
-from watchme import settings
+from letmenotifyu import settings
 from litemigration.database import Database
 
-def create_db(db_name):
-    db = Database('sqlite', database=db_name)
+
+def database_init():
+    db = Database('postgresql', database=settings.DB_NAME,
+                  user=settings.DB_USER,
+                  password=settings.DB_PASSWORD,
+                  host=settings.DB_HOST,
+                  port=settings.DB_PORT)
     db.initialise()
 
-def migrate():
-    movie_schema()
-    series_schema()
 
-def series_schema():
-    return
-
-def movie_schema():
-    movie = Database('sqlite', database=settings.MOVIE_DB_PATH)
-    movie.add_schema([
-        [1, 'CREATE TABLE movie('\
-             'id INTEGER PRIMARY KEY,'\
-             'title TEXT NOT NULL UNIQUE,'\
-             'year INT NOT NULL,'\
-             'url TEXT NOT NULL UNIQUE,'\
-             'date_added TIMESTAMP NOT NULL)'],
-        [2, 'CREATE TABLE image('\
-             'id INTEGER PRIMARY KEY,'\
-             'movie_id INTEGER NOT NULL,'\
-             'path TEXT NOT NULL UNIQUE,'\
-             'FOREIGN KEY(movie_id) REFERENCES movie(id))'],
-        [3, 'CREATE TABLE detail_queue_status('
-             'id INTEGER PRIMARY KEY,'
-             'status TEXT NOT NULL UNIQUE)'],
-        [4, "INSERT INTO detail_queue_status(status) VALUES('NEW')"],
-        [5, "INSERT INTO detail_queue_status(status) VALUES('COMPLETE')"],
-        [6, "INSERT INTO detail_queue_status(status) VALUES('ERROR')"],
-        [7, 'CREATE TABLE detail_queue('
-             'id INTEGER PRIMARY KEY,'
-             'movie_id INTEGER NOT NULL,'
-             'detail_queue_status_id INTEGER NOT NULL DEFAULT 1,'
-             'FOREIGN KEY (detail_queue_status_id) REFERENCES detail_queue_status(id) ON UPDATE CASCADE ON DELETE CASCADE,'\
-             'FOREIGN KEY (movie_id) REFERENCES movie(id) ON UPDATE CASCADE ON DELETE CASCADE)'],
-        [8, "CREATE TABLE detail("
-            'id INTEGER PRIMARY KEY',
-            'movie_id INT NOT NULL',
-            'imdb_key VARCHAR NOT NULL',
-            'released_date TIMESTAMP NOT NULL',
-            'plot VARCHAR NOT NULL',
-            'imdb_rating REAL NOT NULL',
-            'FOREIGN_KEY(movie_id) REFERENCES movie(id))'],
-        ])
-'''        [4, 'CREATE TABLE genre('
-             'id INTEGER PRIMARY KEY,'
-             'genre_name TEXT NOT NULL UNIQUE)'],
-        [5, "INSERT INTO genre(name) VALUES('Action')"],
-        [6, "INSERT INTO genre(genre_name) VALUES('Adventure')"],
-        [7, "INSERT INTO genre(genre_name) VALUES('Animation')"],
-        [8, "INSERT INTO genre(genre_name) VALUES('Comedy')"],
-        [9, "INSERT INTO genre(genre_name) VALUES('Crime')"],
-        [10, "INSERT INTO genre(genre_name) VALUES('Documentary')"],
-        [11, "INSERT INTO genre(genre_name) VALUES('Drama')"],
-        [12, "INSERT INTO genre(genre_name) VALUES('Family')"],
-        [13, "INSERT INTO genre(genre_name) VALUES('Fantasy')"],
-        [14, "INSERT INTO genre(genre_name) VALUES('Film-Noir')"],
-        [15, "INSERT INTO genre(genre_name) VALUES('History')"],
-        [16, "INSERT INTO genre(genre_name) VALUES('Horror')"],
-        [17, "INSERT INTO genre(genre_name) VALUES('Musical')"],
-        [18, "INSERT INTO genre(genre_name) VALUES('Mystery')"],
-        [19, "INSERT INTO genre(genre_name) VALUES('Romance')"],
-        [20, "INSERT INTO genre(genre_name) VALUES('Sci-Fi')"],
-        [21, "INSERT INTO genre(genre_name) VALUES('Sport')"],
-        [22, "INSERT INTO genre(genre_name) VALUES('Thriller')"],
-        [23, "INSERT INTO genre(genre_name) VALUES('War')"],
-        [24, "INSERT INTO genre(genre_name) VALUES('Western')"],
-        [25, 'CREATE TABLE config('\
-             'id INTEGER PRIMARY KEY,'\
-             'name TEXT NOT NULL,'\
-             'key TEXT NOT NULL,'\
-             'UNIQUE(name,key))'],
-        [26, "INSERT INTO config(name, key)"\
-             " VALUES('update_interval','300')"],
-        
-    ])
-    return
-'''
-        
 def database_change():
     db = Database('postgresql', database=settings.DB_NAME,
                   user=settings.DB_USER,
@@ -213,7 +142,7 @@ def database_change():
         [34, "ALTER TABLE movie_torrent_links ADD COLUMN transmission_hash TEXT DEFAULT '0'"],
         [35, "ALTER TABLE movie_torrent_links ADD COLUMN torrent_name TEXT DEFAULT '0'"],
         [36, "ALTER TABLE series_torrent_links ADD COLUMN transmission_hash TEXT DEFAULT '0'"],
-        [37, "ALTER TABLE series_torrent_links ADD COLUMN torrent_namennnnn TEXT DEFAULT '0'"],
+        [37, "ALTER TABLE series_torrent_links ADD COLUMN torrent_name TEXT DEFAULT '0'"],
         [38, "INSERT INTO config(key,value) VALUES('transmission_host','127.0.0.1')"],
         [39, "INSERT INTO config(key,value) VALUES('transmission_port','9091')"],
         [40, "ALTER TABLE series_torrent_links DROP COLUMN torrent_hash"],

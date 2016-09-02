@@ -1,9 +1,10 @@
 Letmenotifyu
 ====================
 
-Application to provide notification of new series episodes and movies from [primewire.ag](http://primewire.ag)
+Application to provide notification of new series episodes from [primewire.ag](http://primewire.ag) and movies from [YIFY](https://yts.re/api).
 
-Full application details on the [wiki](https://github.com/stumenz/watchme/wiki)
+Full application details on the [wiki](https://github.com/stucomplex/letmenotifyu/wiki)
+
 
 
 Version: 3.5.2
