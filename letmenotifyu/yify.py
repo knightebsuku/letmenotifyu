@@ -12,7 +12,7 @@ def get_released_movies(cursor):
     try:
         quality = util.get_config_value(cursor, "movie_quality")
         limit = util.get_config_value(cursor, 'max_movie_results')
-        yifi_url = urlopen("https://yts.to/api/v2/list_movies.json?quality={}&limit={}".format(quality, limit))
+        yifi_url = urlopen("https://yts.ag/api/v2/list_movies.json?quality={}&limit={}".format(quality, limit))
         return json.loads(yifi_url.read().decode('utf-8'))
     except (urllib.error.URLError, urllib.error.HTTPError):
         logging.error("unable to connect to released movies api")
@@ -22,7 +22,7 @@ def get_released_movies(cursor):
 
 def get_movie_details(yify_id):
     try:
-        yify_url = urlopen("https://yts.to/api/v2/movie_details.json?movie_id={}&with_cast=true".format(yify_id))
+        yify_url = urlopen("https://yts.ag/api/v2/movie_details.json?movie_id={}&with_cast=true".format(yify_id))
         return json.loads(yify_url.read().decode('utf-8'))
     except (urllib.error.URLError, urllib.error.HTTPError):
         logging.warn("Unable to connect to movie detail api")
