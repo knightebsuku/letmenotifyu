@@ -7,10 +7,8 @@ from bs4 import BeautifulSoup
 
 log = logging.getLogger(__name__)
 
-
-
 PIRATE_BAY_URL = "https://thepiratebay.org/search"
-HEADER = {'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.9; rv:32.0) Gecko/20100101 Firefox/32.0',}
+HEADER = {'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.9; rv:32.0) Gecko/20100101 Firefox/32.0'}
 
 
 def episode_magnet_link(series_name, episode_number):
@@ -37,7 +35,9 @@ def episode_magnet_link(series_name, episode_number):
                 epsiode=episode_number
             ))
             if name:
-                if re.search(r'{title}.{episode_number}.(PROPER |INTERNAL |WEB-DL )?HDTV.x264-(LOL|KILLERS|ASAP|2HD|FUM|TLA|BATV)'.format(
+                if re.search(r'{title}.{episode_number}.'
+                             '(PROPER |INTERNAL |WEB-DL )?HDTV.x264-'
+                             '(LOL|KILLERS|ASAP|2HD|FUM|TLA|BATV)'.format(
                         title=series_name.replace(" ", "."),
                         episode_number=episode_number),
                              name.string):
