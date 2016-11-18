@@ -32,7 +32,7 @@ def episode_magnet_link(series_name, episode_number):
             name = row.find('a', {'class': 'detLink'})
             log.info("Searching for episode for {title} {episode}".format(
                 title=series_name,
-                epsiode=episode_number
+                episode=episode_number
             ))
             if name:
                 if re.search(r'{title}.{episode_number}.'
@@ -48,5 +48,8 @@ def episode_magnet_link(series_name, episode_number):
                     log.info("Magnet Link found")
                     return magnet_link
     except requests.exceptions.ConnectionError as e:
+        log.warn("Unable to connect to piratebay")
+        log.exception(e)
+    except AttributeError as e:
         log.warn("Unable to connect to piratebay")
         log.exception(e)

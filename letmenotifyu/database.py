@@ -4,13 +4,104 @@ from letmenotifyu import settings
 from litemigration.database import Database
 
 
-def database_init():
-    db = Database('postgresql', database=settings.DB_NAME,
-                  user=settings.DB_USER,
-                  password=settings.DB_PASSWORD,
-                  host=settings.DB_HOST,
-                  port=settings.DB_PORT)
+def create_movie_db():
+    """
+    Create Movie database
+    """
+    db = Database('sqlite', database=settings.MOVIE_DB)
     db.initialise()
+    return
+
+
+def create_series_db():
+    """
+    Create series database
+    """
+    db = Database('sqlite', database=settings.SERIES_DB)
+    db.initialise()
+    return
+
+
+def movie_migration():
+    """
+    Database changes for movie database
+    """
+    db = Database('sqlite', database=settings.SERIES_DB)
+    db.add_schema([
+        [1, 'CREATE TABLE config('
+         'id INTEGER PRIMARY KEY,'
+         'key TEXT NOT NULL,'
+         'value TEXT NOT NULL,'
+         'UNIQUE(key,value)) ']
+        [2, "INSERT INTO config(key, value)"
+         "VALUES('movie_process_interval', '15')"],
+        [3, "INSERT INTO config(key,value) VALUES('movie_duration','7')"],
+        [4, "INSERT INTO config(key,value) VALUES('movie_quality','720p')"],
+        [5, "INSERT INTO config(key,value) VALUES('max_movie_results','50')"],
+        [6, "INSERT INTO config(key,value) VALUES('update_interval','3600')"]
+        [7, "CREATE TABLE genre("
+         "id INTEGER PRIMARY KEY,"
+         "genre TEXT UNIQUE NOT NULL )"],
+        [8, 'CREATE TABLE movies('
+         'id SERIAL PRIMARY KEY,'
+         'yify_id INT UNIQUE NOT NULL,'
+         'genre_id INT  NOT NULL,'
+         'title TEXT UNIQUE NOT NULL,'
+         'link TEXT NOT NULL,'
+         'date_added TIMESTAMP NOT NULL,'
+         'year INT NOT NULL,'
+         'FOREIGN KEY(genre_id) REFERENCES genre(id)'
+         ' ON UPDATE CASCADE ON DELETE CASCADE)'],
+        [9, "CREATE TABLE movie_details("
+         'id SERIAL PRIMARY KEY NOT NULL,'
+         'movie_id INT UNIQUE NOT NULL,'
+         'language TEXT NOT NULL,'
+         'movie_rating REAL NOT NULL,'
+         'youtube_url TEXT NOT NULL,'
+         'description TEXT NOT NULL,'
+         'FOREIGN KEY(movie_id) REFERENCES movies(id)'
+         'ON UPDATE CASCADE ON DELETE CASCADE)'],
+        [10, "CREATE TABLE movie_details("
+         'id SERIAL PRIMARY KEY NOT NULL,'
+         'movie_id INT UNIQUE NOT NULL,'
+         'language TEXT NOT NULL,'
+         'movie_rating REAL NOT NULL,'
+         'youtube_url TEXT NOT NULL,'
+         'description TEXT NOT NULL,'
+         'FOREIGN KEY(movie_id) REFERENCES movies(id) ON UPDATE CASCADE ON DELETE CASCADE)'],
+        [11, 'CREATE table movie_images(' 
+                            'id serial PRIMARY KEY,'
+                            'title TEXT NOT NULL,'
+                            'path TEXT NOT NULL,'
+                            'UNIQUE(title,path))' ],
+        [12, "CREATE TABLE movie_torrent_links("
+                           'id SERIAL PRIMARY KEY,'
+                           'movie_id INT UNIQUE NOT NULL,'
+                           'link TEXT NOT NULL,'\
+                           'hash_sum TEXT NOT NULL,'
+                           'FOREIGN KEY(movie_id) REFERENCES movies(id) ON UPDATE CASCADE ON DELETE CASCADE)'],
+        [13, "CREATE TABLE upcoming_movies("\
+                           'id SERIAL PRIMARY KEY,'\
+                           'title TEXT UNIQUE NOT NULL,'\
+                           'link TEXT UNIQUE NOT NULL,'\
+                           'UNIQUE(title,link))'],
+    ])
+    return
+
+
+def series_migration():
+    """
+    Database changes for series database
+    """
+    return
+
+# def database_init():
+#     db = Database('postgresql', database=settings.DB_NAME,
+#                   user=settings.DB_USER,
+#                   password=settings.DB_PASSWORD,
+#                   host=settings.DB_HOST,
+#                   port=settings.DB_PORT)
+#     db.initialise()
 
 
 def database_change():
@@ -26,48 +117,12 @@ def database_change():
                             'value TEXT NOT NULL,'\
                             'UNIQUE(key,value))'],
         [2, "INSERT INTO config(key,value) VALUES('update_interval','3600')"],
-        [3, "INSERT INTO config(key,value) VALUES('movie_process_interval', '15')"],
+        
         [4, "INSERT INTO config(key,value) VALUES('series_process_interval','15')"],
-        [5, "INSERT INTO config(key,value) VALUES('movie_duration','7')"],
+        
         [6, "INSERT INTO config(key,value) VALUES('series_duration','7')"],
-        [7, "INSERT INTO config(key,value) VALUES('movie_quality','720p')"],
-        [8, "INSERT INTO config(key,value) VALUES('max_movie_results','50')"],
-        [9, "CREATE TABLE genre(" \
-                            "id SERIAL PRIMARY KEY," \
-                            "genre TEXT UNIQUE NOT NULL )"],
-        [10, 'CREATE TABLE movies(' \
-                            'id SERIAL PRIMARY KEY,' \
-                            'yify_id INT UNIQUE NOT NULL,'\
-                            'genre_id INT  NOT NULL,' \
-                            'title TEXT UNIQUE NOT NULL,' \
-                            'link TEXT NOT NULL,' \
-                            'date_added TIMESTAMP NOT NULL,' \
-                            'year INT NOT NULL,'\
-                            'FOREIGN KEY(genre_id) REFERENCES genre(id) ON UPDATE CASCADE ON DELETE CASCADE)'],
-        [11, "CREATE TABLE movie_details("\
-                            'id SERIAL PRIMARY KEY NOT NULL,'\
-                            'movie_id INT UNIQUE NOT NULL,'\
-                            'language TEXT NOT NULL,'\
-                            'movie_rating REAL NOT NULL,'\
-                            'youtube_url TEXT NOT NULL,'\
-                            'description TEXT NOT NULL,'\
-                            'FOREIGN KEY(movie_id) REFERENCES movies(id) ON UPDATE CASCADE ON DELETE CASCADE)'],
-        [12, 'CREATE table movie_images(' \
-                            'id serial PRIMARY KEY,' \
-                            'title TEXT NOT NULL,'\
-                            'path TEXT NOT NULL,'\
-                            'UNIQUE(title,path))' ],
-        [13, "CREATE TABLE movie_torrent_links("\
-                           'id SERIAL PRIMARY KEY,'\
-                           'movie_id INT UNIQUE NOT NULL,'\
-                           'link TEXT NOT NULL,'\
-                           'hash_sum TEXT NOT NULL,'
-                           'FOREIGN KEY(movie_id) REFERENCES movies(id) ON UPDATE CASCADE ON DELETE CASCADE)'],
-        [14, "CREATE TABLE upcoming_movies("\
-                           'id SERIAL PRIMARY KEY,'\
-                           'title TEXT UNIQUE NOT NULL,'\
-                           'link TEXT UNIQUE NOT NULL,'\
-                           'UNIQUE(title,link))'],
+
+        
         [15, 'CREATE TABLE series(' \
                             'id SERIAL PRIMARY KEY,' \
                             'title TEXT NOT NULL,' \

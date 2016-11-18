@@ -7,15 +7,13 @@ import psycopg2
 
 # DIRECTORY_PATH = os.path.join(os.environ['HOME'], '.letmenotifyu')
 DIRECTORY_PATH = 'DevLetme'
-KICKASS_FILE = os.path.join(DIRECTORY_PATH, 'kickass.txt')
+DATABSE_PATH = 'database'
+MOVIE_DB = os.path.join(DATABSE_PATH, 'movie.db')
+SERIES_DB = os.path.join(DATABSE_PATH, 'series.db')
 LOG_FILE_PATH = os.path.join(DIRECTORY_PATH, 'letmenotifyu.log')
 DATA_FILES_PATH = '/usr/share/letmenotifyu/'
+IMAGE_PATH = os.path.join(DIRECTORY_PATH, 'images')
 config = configparser.ConfigParser()
-
-Images_Directory = os.path.join(DIRECTORY_PATH, 'images')
-Torrents_Directory = os.path.join(DIRECTORY_PATH, 'torrents')
-Complete_Downloads_Directory = os.path.join(DIRECTORY_PATH, 'complete')
-Incomplete_Downloads_Directory = os.path.join(DIRECTORY_PATH, 'incomplete')
 
 
 def logging_dict(log_level):
@@ -25,10 +23,12 @@ def logging_dict(log_level):
 
 
 def create_ini_file():
-    config['DIRECTORIES'] = {'ImagesDirectory': Images_Directory,
-                             'TorrentsDirectory': Torrents_Directory,
-                             'CompleteDownloads': Complete_Downloads_Directory,
-                             'IncompleteDownloads': Incomplete_Downloads_Directory}
+    complete_directory = os.path.join(DIRECTORY_PATH, 'complete')
+    incomplete_directory = os.path.join(DIRECTORY_PATH, 'incomplete')
+    
+    config['DIRECTORIES'] = {
+                             'CompleteDownloads': complete_directory,
+                             'IncompleteDownloads': incomplete_directory}
     config['DATABASE'] = {'Host': '172.16.210.128',
                           'Port': '5432',
                           'User': 'letmenotifyu',
@@ -59,10 +59,8 @@ def check_db():
 
 try:
     config.read(DIRECTORY_PATH+'/config.ini')
-    TORRENT_DIRECTORY = config['DIRECTORIES']['Torrents_Directory']
-    IMAGE_PATH = config['DIRECTORIES']['Images_Directory']
-    COMPLETE_DIRECTORY = config['DIRECTORIES']['Complete_Downloads_Directory']
-    INCOMPLETE_DIRECTORY = config['DIRECTORIES']['Incomplete_Downloads_Directory']
+    COMPLETE_DIRECTORY = config['DIRECTORIES']['CompleteDownloads']
+    INCOMPLETE_DIRECTORY = config['DIRECTORIES']['IncompleteDownloads']
     LOG_LEVEL = logging_dict(config['LOGGING']['LoggingLevel'])
     DB_NAME = config['DATABASE']['Database']
     DB_HOST = config['DATABASE']['Host']
@@ -72,10 +70,8 @@ try:
 except KeyError:
     os.mkdir(DIRECTORY_PATH)
     create_ini_file()
-    TORRENT_DIRECTORY = config['DIRECTORIES']['Torrents_Directory']
-    IMAGE_PATH = config['DIRECTORIES']['Images_Directory']
-    COMPLETE_DIRECTORY = config['DIRECTORIES']['Complete_Downloads_Directory']
-    INCOMPLETE_DIRECTORY = config['DIRECTORIES']['Incomplete_Downloads_Directory']
+    COMPLETE_DIRECTORY = config['DIRECTORIES']['CompleteDownloads']
+    INCOMPLETE_DIRECTORY = config['DIRECTORIES']['IncompleteDownloads']
     LOG_LEVEL = logging_dict(config['LOGGING']['LoggingLevel'])
     DB_NAME = config['DATABASE']['Database']
     DB_HOST = config['DATABASE']['Host']
@@ -83,6 +79,5 @@ except KeyError:
     DB_USER = config['DATABASE']['User']
     DB_PASSWORD = config['DATABASE']['Password']
     os.mkdir(IMAGE_PATH)
-    os.mkdir(TORRENT_DIRECTORY)
     os.mkdir(INCOMPLETE_DIRECTORY)
     os.mkdir(COMPLETE_DIRECTORY)

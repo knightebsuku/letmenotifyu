@@ -1,12 +1,17 @@
 #!/usr/bin/python3
 
+import logging
+import psycopg2
+import os
+import requests
+
 from urllib.request import urlretrieve
 from letmenotifyu.notify import announce
 from . import settings, yify
 from datetime import datetime
-import logging
-import psycopg2
-import os
+
+
+log = logging.getLogger(__name__)
 
 
 def movie(connect, cursor):
@@ -16,37 +21,54 @@ def movie(connect, cursor):
 
 
 def released_movies(data, cursor, db):
-    "insert new movies"
+    """
+    Get new movies from json file.
+    Get movies posters as well.
+    insert into database
+    """
     if not data:
-        logging.info("Unable to get newly released movies")
+        log.info("Unable to get newly released movies")
     elif data["status"] == "error":
-        logging.info("api status error")
+        log.info("api status error")
     else:
         for movie_detail in movie_compare(cursor, data['data']['movies']):
-            if fetch_image(movie_detail["medium_cover_image"], movie_detail['title']):
+            log.debug("fetching image for {}".format(movie_detail['title']))
+            if fetch_image(movie_detail["medium_cover_image"],
+                           movie_detail['title']):
                 try:
-                    genre_id = get_movie_genre(movie_detail["genres"][0], cursor, db)
-                    cursor.execute("INSERT INTO movies(genre_id,title,link,date_added,yify_id,year) "\
-                                 'VALUES(%s,%s,%s,%s,%s,%s) RETURNING id',
-                           (genre_id,
-                            movie_detail['title'],
-                            movie_detail["imdb_code"],
-                            datetime.now(),
-                            movie_detail["id"],
-                           movie_detail["year"],))
+                    log.debug("getting movie genre")
+                    genre_id = get_movie_genre(movie_detail["genres"][0],
+                                               cursor, db)
+                    cursor.execute("INSERT INTO movies("
+                                   "genre_id,title,link,date_added,"
+                                   "yify_id,year) "
+                                   'VALUES(%s,%s,%s,%s,%s,%s) RETURNING id',
+                                   (genre_id,
+                                    movie_detail['title'],
+                                    movie_detail["imdb_code"],
+                                    datetime.now(),
+                                    movie_detail["id"],
+                                    movie_detail["year"],))
                     row_id = cursor.fetchone()[0]
-                    cursor.execute("INSERT INTO movie_torrent_links(movie_id,link,hash_sum) "\
+                    cursor.execute("INSERT INTO movie_torrent_links("
+                                   "movie_id,link,hash_sum) "
                                    "VALUES(%s,%s,%s)",
-                           (row_id, movie_detail["torrents"][0]["url"], movie_detail["torrents"][0]["hash"],))
+                                   (row_id,
+                                    movie_detail["torrents"][0]["url"],
+                                    movie_detail["torrents"][0]["hash"],))
                     if image_record_exists(movie_detail['title'], cursor):
                         pass
                     else:
-                        cursor.execute("INSERT INTO movie_images(title,path) VALUES(%s,%s)",
-                               (movie_detail['title'], movie_detail['title']+".jpg",))
+                        cursor.execute("INSERT INTO movie_images(title,path)"
+                                       " VALUES(%s,%s)",
+                                       (movie_detail['title'],
+                                        movie_detail['title']+".jpg",))
                     db.commit()
-                    announce('Newly Released Movie', "{} ({})".format(movie_detail["title"],
-                                                                      movie_detail["genres"][0]),
-                             "http://www.imdb.com/title/{}".format(movie_detail["imdb_code"]))
+                    announce('Newly Released Movie',
+                             "{} ({})".format(movie_detail["title"],
+                                              movie_detail["genres"][0]),
+                             "http://www.imdb.com/title/{}".format(
+                                 movie_detail["imdb_code"]))
                 except psycopg2.IntegrityError as e:
                     db.rollback()
                     logging.exception(e)
@@ -58,7 +80,7 @@ def released_movies(data, cursor, db):
 def fetch_image(image_url, title,):
     "fetch image"
     if os.path.isfile(settings.IMAGE_PATH+title+".jpg"):
-        logging.debug("Image file for {} already downloaded".format(title))
+        log.debug("Image file for {} already downloaded".format(title))
         return True
     else:
         try:

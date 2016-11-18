@@ -12,7 +12,7 @@ from letmenotifyu import background_worker as bw
 
 class Main(object):
     "Main application"
-    def __init__(self, sp, mp, mdp):
+    def __init__(self):
         self.connect = psycopg2.connect(host=settings.DB_HOST,
                                         database=settings.DB_NAME,
                                         port=settings.DB_PORT,
@@ -58,18 +58,18 @@ class Main(object):
         self.button_level_2 = self.builder.get_object("BtnLevel2")
         util.pre_populate_menu(self.builder)
         self.builder.get_object('AppWindow').show()
-        self.sp = sp
-        self.mp = mp
-        self.mdp = mdp
+        #self.sp = sp
+        #self.mp = mp
+        #self.mdp = mdp
         bw.start_threads()
         Gtk.main()
 
     def on_quit(self, widget):
         self.connect.close()
         logging.debug("Shutting down processes")
-        self.sp.terminate()
-        self.mp.terminate()
-        self.mdp.terminate()
+        #self.sp.terminate()
+        #self.mp.terminate()
+        #self.mdp.terminate()
         Gtk.main_quit()
 
     def general_view_activate(self, widget, choice):

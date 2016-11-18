@@ -138,7 +138,7 @@ def movie_details_process():
                                    user=settings.DB_USER,
                                    password=settings.DB_PASSWORD)
         cursor = connect.cursor()
-        cursor.execute('SELECT movies.id,yify_id FROM movies'
+        cursor.execute('SELECT movies.id,yify_id FROM movies '
                        'LEFT OUTER JOIN  movie_details '
                        'ON movies.id=movie_details.movie_id '
                        'WHERE movie_details.movie_id is NULL')
