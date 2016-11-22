@@ -111,109 +111,65 @@ def series_migration():
     Database changes for series database
     """
     log.debug("applying migrations for series database")
-    return
-
-def database_change():
-    db = Database('postgresql', database=settings.DB_NAME,
-                  user=settings.DB_USER,
-                  password=settings.DB_PASSWORD,
-                  host=settings.DB_HOST,
-                  port=settings.DB_PORT)
+    db = Database('sqlite', database=settings.SERIES_DB)
     db.add_schema([
-        [1, 'CREATE TABLE config(' \
-                            'id SERIAL PRIMARY KEY, ' \
-                            'key TEXT NOT NULL,' \
-                            'value TEXT NOT NULL,'\
-                            'UNIQUE(key,value))'],
+        [1, 'CREATE TABLE config('
+         'id INTEGER PRIMARY KEY, '
+         'key TEXT NOT NULL,'
+         'value TEXT NOT NULL,'
+         'UNIQUE(key,value))'],
         [2, "INSERT INTO config(key,value) VALUES('update_interval','3600')"],
-        
-        [4, "INSERT INTO config(key,value) VALUES('series_process_interval','15')"],
-        
-        [6, "INSERT INTO config(key,value) VALUES('series_duration','7')"],
-
-        
-        [15, 'CREATE TABLE series(' \
-                            'id SERIAL PRIMARY KEY,' \
-                            'title TEXT NOT NULL,' \
-                            'series_link TEXT UNIQUE NOT NULL,' \
-                            'number_of_episodes INT NOT NULL,' \
-                            'number_of_seasons INT NOT NULL,' \
-                            'current_season INT NOT NULL,' \
-                            'last_update TIMESTAMP NOT NULL,' \
-                            'status BOOLEAN NOT NULL,'\
-                             'watch BOOLEAN NOT NULL)'],
-        [16, 'CREATE table series_images(' \
-                            'id SERIAL PRIMARY KEY,' \
-                            'series_id INT NOT NULL,'
-                            'path TEXT UNIQUE NOT NULL,' \
-                            'FOREIGN KEY (series_id) REFERENCES series(id) ON UPDATE CASCADE ON DELETE CASCADE)'],
-        [17, 'CREATE TABLE episodes(' \
-                            'id SERIAL PRIMARY KEY,' \
-                            'series_id INT  NOT NULL,' \
-                            'episode_name TEXT NOT NULL,' \
-                            'episode_number TEXT NOT NULL,'\
-                            'episode_link TEXT UNIQUE NOT NULL,' \
-                            'date TIMESTAMP,' \
-                            ' FOREIGN KEY (series_id) REFERENCES series(id) ON DELETE CASCADE ON UPDATE CASCADE)'],
-        [18, "CREATE TABLE watch_queue_status("\
-                                "id SERIAL PRIMARY KEY,"\
-                                "name TEXT UNIQUE NOT NULL)"],
-        [19, "INSERT INTO watch_queue_status(name) VALUES('new')"],
-        [20, "INSERT INTO watch_queue_status(name) VALUES('torrent downloaded')"],
-        [21, "INSERT INTO watch_queue_status(name) VALUES('downloading')"],
-        [22, "INSERT INTO watch_queue_status(name) VALUES('complete')"],
-        [23, "INSERT INTO watch_queue_status(name) VALUES('error downloading')"],
-        [24, "CREATE TABLE series_queue(" \
-                                'id SERIAL PRIMARY KEY,' \
-                                'series_id INT NOT NULL,' \
-                                'episode_id INT UNIQUE NOT NULL,' \
-                                'episode_name TEXT NOT NULL,' \
-                                'watch_queue_status_id INT NOT NULL,'\
-                                'FOREIGN KEY(series_id) REFERENCES series(id) ON DELETE CASCADE ON UPDATE CASCADE,'\
-                                'FOREIGN KEY(episode_id) REFERENCES episodes(id),'\
-                                'FOREIGN KEY(watch_queue_status_id) REFERENCES watch_queue_status(id))'],
-        [25, "CREATE TABLE series_torrent_links("\
-                            'id SERIAL PRIMARY KEY,'\
-                            'series_queue_id INT UNIQUE NOT NULL,'\
-                            'link TEXT NOT NULL,'\
-                            'FOREIGN KEY(series_queue_id) REFERENCES series_queue(id) ON UPDATE CASCADE ON DELETE CASCADE)'],
-        [26, 'CREATE TABLE torrents(' \
-                            'Id SERIAL PRIMARY KEY,' \
-                            'name TEXT UNIQUE NOT NULL,' \
-                            'link TEXT NOT NULL)' ],
-        [27, "CREATE TABLE movie_queue("\
-                                'id SERIAL PRIMARY KEY,'\
-                                'movie_id INT UNIQUE NOT NULL,'\
-                                'watch_queue_status_id INT NOT NULL,'\
-                                'FOREIGN KEY(movie_id) REFERENCES movies(id) ON DELETE CASCADE ON UPDATE CASCADE,'\
-                                'FOREIGN KEY(watch_queue_status_id) REFERENCES watch_queue_status(id))'],
-        [28, "CREATE TABLE upcoming_queue("\
-                                'id SERIAL PRIMARY KEY,'\
-                                'title TEXT UNIQUE NOT NULL,'\
-                                'FOREIGN KEY(title) REFERENCES upcoming_movies(title) ON DELETE CASCADE ON UPDATE CASCADE)'],
-        [29, "CREATE TABLE actors("\
-                                'id SERIAL PRIMARY KEY,' \
-                                'name TEXT UNIQUE NOT NULL)'],
-        [30, "CREATE TABLE actors_movies("\
-                                 'id SERIAL PRIMARY KEY,'\
-                                 'actor_id INTEGER NOT NULL,'\
-                                 'movie_id INTEGER NOT NULL,'\
-                                 'UNIQUE(actor_id,movie_id),'\
-                                 'FOREIGN KEY(movie_id) REFERENCES movies(id))'],
-        [31, "INSERT INTO config(key,value) VALUES('imdb_url','http://www.imdb.com/title/')"],
-        [32, "INSERT INTO config(key,value) VALUES('youtube_url','https://www.youtube.com/watch?v=')"],
-        [33, "ALTER TABLE series_torrent_links ADD COLUMN torrent_hash TEXT DEFAULT '0'"],
-        [36, "ALTER TABLE series_torrent_links ADD COLUMN transmission_hash TEXT DEFAULT '0'"],
-        [37, "ALTER TABLE series_torrent_links ADD COLUMN torrent_name TEXT DEFAULT '0'"],
-        [38, "INSERT INTO config(key,value) VALUES('transmission_host','127.0.0.1')"],
-        [39, "INSERT INTO config(key,value) VALUES('transmission_port','9091')"],
-        [40, "ALTER TABLE series_torrent_links DROP COLUMN torrent_hash"],
-        [41, "DROP TABLE upcoming_movies CASCADE"],
-        [42, "DROP TABLE upcoming_queue"],
-        [43, "ALTER TABLE series_queue ALTER COLUMN watch_queue_status_id SET DEFAULT 1"],
-        [44, "ALTER TABLE movie_queue ALTER COLUMN watch_queue_status_id SET DEFAULT 1"],
-        [45, "DROP TABLE torrents"],
-        [46, "ALTER TABLE series ALTER COLUMN watch SET DEFAULT '1'"],
-        [47, "ALTER TABLE series ALTER COLUMN status SET DEFAULT '1'"],
-        
+        [3, "INSERT INTO config(key,value) VALUES('series_process_interval','15')"],
+        [4, "INSERT INTO config(key,value) VALUES('series_duration','7')"],
+        [5, "INSERT INTO config(key,value) VALUES('transmission_host','127.0.0.1')"],
+        [6, "INSERT INTO config(key,value) VALUES('transmission_port','9091')"],
+        [7, 'CREATE TABLE series(' 
+         'id INTEGER PRIMARY KEY,'
+         'title TEXT NOT NULL,'
+         'series_link TEXT UNIQUE NOT NULL,'
+         'number_of_episodes INT NOT NULL,'
+         'number_of_seasons INT NOT NULL,'
+         'current_season INT NOT NULL,'
+         'last_update TIMESTAMP NOT NULL,'
+         'status BOOLEAN NOT NULL DEFAULT t,'
+         'watch BOOLEAN NOT NULL DEFAULT t)'],
+        [8, 'CREATE table series_images('
+         'id INTEGER PRIMARY KEY,'
+         'series_id INT NOT NULL,'
+         'path TEXT UNIQUE NOT NULL,'
+         'FOREIGN KEY (series_id) REFERENCES series(id) ON UPDATE CASCADE ON DELETE CASCADE)'],
+        [9, 'CREATE TABLE episodes('
+         'id INTEGER PRIMARY KEY,'
+         'series_id INT  NOT NULL,'
+         'episode_name TEXT NOT NULL,'
+         'episode_number TEXT NOT NULL,'
+         'episode_link TEXT UNIQUE NOT NULL,'
+         'date TIMESTAMP,'
+         ' FOREIGN KEY (series_id) REFERENCES series(id) ON DELETE CASCADE ON UPDATE CASCADE)'],
+        [10, "CREATE TABLE watch_queue_status("
+         "id INTEGER PRIMARY KEY,"
+         "name TEXT UNIQUE NOT NULL)"],
+        [11, "INSERT INTO watch_queue_status(name) VALUES('new')"],
+        [12, "INSERT INTO watch_queue_status(name) VALUES('torrent downloaded')"],
+        [13, "INSERT INTO watch_queue_status(name) VALUES('downloading')"],
+        [14, "INSERT INTO watch_queue_status(name) VALUES('complete')"],
+        [15, "INSERT INTO watch_queue_status(name) VALUES('error downloading')"],
+        [16, "CREATE TABLE series_queue("
+         'id INTEGER PRIMARY KEY,'
+         'series_id INT NOT NULL,'
+         'episode_id INT UNIQUE NOT NULL,'
+         'episode_name TEXT NOT NULL,'
+         'watch_queue_status_id INT NOT NULL DEFAULT 1,'
+         'FOREIGN KEY(series_id) REFERENCES series(id) ON DELETE CASCADE ON UPDATE CASCADE,'
+         'FOREIGN KEY(episode_id) REFERENCES episodes(id),'
+         'FOREIGN KEY(watch_queue_status_id) REFERENCES watch_queue_status(id))'],
+        [17, "CREATE TABLE series_torrent_links("
+         'id INTEGER PRIMARY KEY,'
+         'series_queue_id INT UNIQUE NOT NULL,'
+         'link TEXT NOT NULL,'
+         'transmission_hash TEXT DEFAULT 0,'
+         'torrent_name TEXT DEFAULT 0,'
+         'FOREIGN KEY(series_queue_id) REFERENCES series_queue(id) ON UPDATE CASCADE ON DELETE CASCADE)'],
+        [18, "INSERT INTO config(key,value) VALUES('imdb_url','http://www.imdb.com/title/')"],
+        [19, "INSERT INTO config(key,value) VALUES('youtube_url','https://www.youtube.com/watch?v=')"],
     ])
