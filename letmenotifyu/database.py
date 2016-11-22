@@ -1,59 +1,63 @@
-#!/usr/bin/python3
-
+import logging
 from letmenotifyu import settings
 from litemigration.database import Database
 
+log = logging.getLogger(__name__)
 
 def create_movie_db():
     """
     Create Movie database
     """
+    log.debug("creatting movie database")
     db = Database('sqlite', database=settings.MOVIE_DB)
     db.initialise()
-    return
 
 
 def create_series_db():
     """
     Create series database
     """
+    log.debug("creatting movie database")
     db = Database('sqlite', database=settings.SERIES_DB)
     db.initialise()
-    return
 
 
 def movie_migration():
     """
     Database changes for movie database
     """
-    db = Database('sqlite', database=settings.SERIES_DB)
+    log.debug("applying migrations for movie database")
+    db = Database('sqlite', database=settings.MOVIE_DB)
     db.add_schema([
         [1, 'CREATE TABLE config('
          'id INTEGER PRIMARY KEY,'
          'key TEXT NOT NULL,'
          'value TEXT NOT NULL,'
-         'UNIQUE(key,value)) ']
-        [2, "INSERT INTO config(key, value)"
-         "VALUES('movie_process_interval', '15')"],
+         'UNIQUE(key,value)) '],
+        [2, "INSERT INTO config(key, value) VALUES('movie_process_interval', '15')"],
         [3, "INSERT INTO config(key,value) VALUES('movie_duration','7')"],
         [4, "INSERT INTO config(key,value) VALUES('movie_quality','720p')"],
         [5, "INSERT INTO config(key,value) VALUES('max_movie_results','50')"],
-        [6, "INSERT INTO config(key,value) VALUES('update_interval','3600')"]
-        [7, "CREATE TABLE genre("
+        [6, "INSERT INTO config(key,value) VALUES('update_interval','3600')"],
+        [7, "INSERT INTO config(key,value) VALUES('imdb_url','http://www.imdb.com/title/')"],
+        [8, "INSERT INTO config(key,value) VALUES('youtube_url','https://www.youtube.com/watch?v=')"],
+        [9, "INSERT INTO config(key,value) VALUES('transmission_host','127.0.0.1')"],
+        [10, "INSERT INTO config(key,value) VALUES('transmission_port','9091')"],
+        [11, "CREATE TABLE genre("
          "id INTEGER PRIMARY KEY,"
          "genre TEXT UNIQUE NOT NULL )"],
-        [8, 'CREATE TABLE movies('
-         'id SERIAL PRIMARY KEY,'
+        [12, 'CREATE TABLE movies('
+         'id INTEGER PRIMARY KEY,'
          'yify_id INT UNIQUE NOT NULL,'
-         'genre_id INT  NOT NULL,'
+         'genre_id INT NOT NULL,'
          'title TEXT UNIQUE NOT NULL,'
          'link TEXT NOT NULL,'
          'date_added TIMESTAMP NOT NULL,'
          'year INT NOT NULL,'
          'FOREIGN KEY(genre_id) REFERENCES genre(id)'
          ' ON UPDATE CASCADE ON DELETE CASCADE)'],
-        [9, "CREATE TABLE movie_details("
-         'id SERIAL PRIMARY KEY NOT NULL,'
+        [13, "CREATE TABLE movie_details("
+         'id INTEGER PRIMARY KEY NOT NULL,'
          'movie_id INT UNIQUE NOT NULL,'
          'language TEXT NOT NULL,'
          'movie_rating REAL NOT NULL,'
@@ -61,30 +65,43 @@ def movie_migration():
          'description TEXT NOT NULL,'
          'FOREIGN KEY(movie_id) REFERENCES movies(id)'
          'ON UPDATE CASCADE ON DELETE CASCADE)'],
-        [10, "CREATE TABLE movie_details("
-         'id SERIAL PRIMARY KEY NOT NULL,'
+        [14, 'CREATE table movie_images(' 
+         'id INTEGER PRIMARY KEY,'
          'movie_id INT UNIQUE NOT NULL,'
-         'language TEXT NOT NULL,'
-         'movie_rating REAL NOT NULL,'
-         'youtube_url TEXT NOT NULL,'
-         'description TEXT NOT NULL,'
+         'path TEXT NOT NULL,'
+         'FOREIGN KEY(movie_id) REFERENCES movies(id) ON UPDATE CASCADE ON DELETE CASCADE)' ],
+        [15, "CREATE TABLE movie_torrent_links("
+         'id INTEGER PRIMARY KEY,'
+         'movie_id INT UNIQUE NOT NULL,'
+         'link TEXT NOT NULL,'
+         'hash_sum TEXT NOT NULL,'
+         'transmission_hash TEXT DEFAULT 0,'
+         'torrent_name TEXT DEFAULT 0,'
          'FOREIGN KEY(movie_id) REFERENCES movies(id) ON UPDATE CASCADE ON DELETE CASCADE)'],
-        [11, 'CREATE table movie_images(' 
-                            'id serial PRIMARY KEY,'
-                            'title TEXT NOT NULL,'
-                            'path TEXT NOT NULL,'
-                            'UNIQUE(title,path))' ],
-        [12, "CREATE TABLE movie_torrent_links("
-                           'id SERIAL PRIMARY KEY,'
-                           'movie_id INT UNIQUE NOT NULL,'
-                           'link TEXT NOT NULL,'\
-                           'hash_sum TEXT NOT NULL,'
-                           'FOREIGN KEY(movie_id) REFERENCES movies(id) ON UPDATE CASCADE ON DELETE CASCADE)'],
-        [13, "CREATE TABLE upcoming_movies("\
-                           'id SERIAL PRIMARY KEY,'\
-                           'title TEXT UNIQUE NOT NULL,'\
-                           'link TEXT UNIQUE NOT NULL,'\
-                           'UNIQUE(title,link))'],
+        [16, "CREATE TABLE watch_queue_status("
+         "id INTEGER PRIMARY KEY,"
+         "name TEXT UNIQUE NOT NULL)"],
+        [17, "INSERT INTO watch_queue_status(name) VALUES('new')"],
+        [18, "INSERT INTO watch_queue_status(name) VALUES('torrent downloaded')"],
+        [19, "INSERT INTO watch_queue_status(name) VALUES('downloading')"],
+        [20, "INSERT INTO watch_queue_status(name) VALUES('complete')"],
+        [21, "INSERT INTO watch_queue_status(name) VALUES('error downloading')"],
+        [22, "CREATE TABLE movie_queue("
+         'id INTEGER PRIMARY KEY,'
+         'movie_id INT UNIQUE NOT NULL,'
+         'watch_queue_status_id INT NOT NULL DEFAULT 1,'
+         'FOREIGN KEY(movie_id) REFERENCES movies(id) ON DELETE CASCADE ON UPDATE CASCADE,'
+         'FOREIGN KEY(watch_queue_status_id) REFERENCES watch_queue_status(id))'],
+        [23, "CREATE TABLE actors("
+         'id INTEGER PRIMARY KEY,' 
+         'name TEXT UNIQUE NOT NULL)'],
+        [24, "CREATE TABLE actors_movies("
+         'id INTEGER PRIMARY KEY,'
+         'actor_id INT NOT NULL,'
+         'movie_id INT NOT NULL,'
+         'UNIQUE(actor_id,movie_id),'
+         'FOREIGN KEY(movie_id) REFERENCES movies(id) ON DELETE CASCADE ON UPDATE CASCADE,'
+         'FOREIGN KEY(actor_id) REFERENCES actors(id) ON DELETE CASCADE ON UPDATE CASCADE)'],
     ])
     return
 
@@ -93,16 +110,8 @@ def series_migration():
     """
     Database changes for series database
     """
+    log.debug("applying migrations for series database")
     return
-
-# def database_init():
-#     db = Database('postgresql', database=settings.DB_NAME,
-#                   user=settings.DB_USER,
-#                   password=settings.DB_PASSWORD,
-#                   host=settings.DB_HOST,
-#                   port=settings.DB_PORT)
-#     db.initialise()
-
 
 def database_change():
     db = Database('postgresql', database=settings.DB_NAME,
@@ -194,8 +203,6 @@ def database_change():
         [31, "INSERT INTO config(key,value) VALUES('imdb_url','http://www.imdb.com/title/')"],
         [32, "INSERT INTO config(key,value) VALUES('youtube_url','https://www.youtube.com/watch?v=')"],
         [33, "ALTER TABLE series_torrent_links ADD COLUMN torrent_hash TEXT DEFAULT '0'"],
-        [34, "ALTER TABLE movie_torrent_links ADD COLUMN transmission_hash TEXT DEFAULT '0'"],
-        [35, "ALTER TABLE movie_torrent_links ADD COLUMN torrent_name TEXT DEFAULT '0'"],
         [36, "ALTER TABLE series_torrent_links ADD COLUMN transmission_hash TEXT DEFAULT '0'"],
         [37, "ALTER TABLE series_torrent_links ADD COLUMN torrent_name TEXT DEFAULT '0'"],
         [38, "INSERT INTO config(key,value) VALUES('transmission_host','127.0.0.1')"],
