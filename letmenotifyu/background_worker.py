@@ -3,6 +3,7 @@
 import psycopg2
 import logging
 import time
+import sqlite3
 
 from . import settings, util, yify, transmission, piratebay
 from .movies import movie
@@ -10,6 +11,22 @@ from .series import series
 from threading import Thread
 
 log = logging.getLogger(__name__)
+
+
+def movie_update():
+    """
+    check for any new movies
+    """
+    connect = sqlite3.connect(settings.MOVIE_DB)
+    cursor = connect.cursor()
+    
+    return
+
+def series_update():
+    """
+    check for new series episodes
+    """
+
 
 
 def update():

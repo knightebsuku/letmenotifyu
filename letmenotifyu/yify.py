@@ -1,7 +1,5 @@
-#!/usr/bin/python3
 
 import logging
-import urllib
 import requests
 from . import util
 
@@ -18,12 +16,16 @@ def get_released_movies(cursor):
         params = {'quality': quality, 'limit': limit.replace(".0", "")}
         data = requests.get("https://yts.ag/api/v2/list_movies.json",
                             params=params)
-        log.debug(data.url)
+        log.debug(data.json())
         return data.json()
-    except (urllib.error.URLError, urllib.error.HTTPError):
+    except (requests.exceptions.ConnectionError, requests.exceptions.HTTPError) as e:
         logging.error("unable to connect to released movies api")
+        log.error(e)
+        raise
     except Exception as error:
+        log.error("Unknow exception")
         logging.exception(error)
+        raise
 
 
 def get_movie_details(yify_id):

@@ -4,9 +4,11 @@ import logging
 import psycopg2
 import os
 import requests
+import sqlite3
 
 from urllib.request import urlretrieve
 from letmenotifyu.notify import announce
+from . import settings
 from . import settings, yify
 from datetime import datetime
 
@@ -14,10 +16,85 @@ from datetime import datetime
 log = logging.getLogger(__name__)
 
 
-def movie(connect, cursor):
-    released_movie_data = yify.get_released_movies(cursor)
-    if released_movie_data:
-        released_movies(released_movie_data, cursor, connect)
+class Movie:
+    connect = sqlite3.connect(settings.MOVIE_DB)
+    cur = connect.cursor()
+    new_movie_json = ''
+    
+    def __init__(self):
+        pass
+    def update(self):
+        """
+        Check for new movie updates
+        """
+        try:
+            self.new_movie_json = yify.get_released_movies(self.cursor)
+        except (requests.exceptions.ConnectionError, requests.exceptions.HTTPError) as e:
+            log.warn("Unable to connect to yify api")
+            log.warn(e)
+        else:
+            if json_data['status'] == 'error':
+                log.warn("yify api status error")
+            else:
+                for movie in self.compare():
+                    log.info("fetch movie poster for {}".format(movie['title']))
+                    if self._poster(movie['image'], movie['title']):
+                        
+                        
+                    
+                    
+                
+            
+    
+    def _poster(self, image_url, title):
+        """
+        Fetch new movie poster
+        """
+        if os.path.isfile(settings.IMAGE_PATH+title+".jpg"):
+            log.debug("Image file for {} already downloaded".format(title))
+            return True
+        else:
+            try:
+                urlretrieve(image_url, settings.IMAGE_PATH+title+".jpg")
+                logging.debug("imaged fetched for {}".format(title))
+                return True
+            except Exception as e:
+                logging.exception(e)
+                return False
+        
+        pass
+    def _compare(self):
+        """
+        only return movies that are not already in the database
+        """
+        self.cur.execute("SELECT title FROM movies")
+        current_movie_titles = [x[0] for x in self.cur.fetchall()]
+        for movie in self.new_movie_json:
+            if movie["title"] not in current_movie_titles:
+                yield movie
+                
+    def _genre(self, genre):
+        """
+        create new genre or get new genre for new movie
+        """
+        self.cur.execute("SELECT id FROM genre WHERE genre=?", (genre,))
+        if self.cur.fetchone() is None:
+            log.debug("genre does not exist yet")
+            self.cur.execute("INSERT INTO genre(genre) VALUES(?) RETURNING id", (genre,))
+            genre_id = self.cur.fetchone()[0]
+            return genre_id
+        else:
+            log.debug('genre exists')
+            cursor.execute("SELECT id FROM genre WHERE genre=%s", (genre,))
+            (genre_id,) = cursor.fetchone()
+            return int(genre_id)
+        pass
+
+    def _poster_exists(self):
+        """
+        Check if movie poster exists
+        """
+        pass
 
 
 def released_movies(data, cursor, db):
