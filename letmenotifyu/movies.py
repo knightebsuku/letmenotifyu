@@ -44,7 +44,7 @@ class Movie:
                     
                     
                 
-            
+        pass
     
     def _poster(self, image_url, title):
         """
@@ -79,10 +79,9 @@ class Movie:
         """
         self.cur.execute("SELECT id FROM genre WHERE genre=?", (genre,))
         if self.cur.fetchone() is None:
-            log.debug("genre does not exist yet")
+            log.debug("genre does not exist yet, creating new genre....")
             self.cur.execute("INSERT INTO genre(genre) VALUES(?) RETURNING id", (genre,))
-            genre_id = self.cur.fetchone()[0]
-            return genre_id
+            return self.cur.fetchone()[0]
         else:
             log.debug('genre exists')
             cursor.execute("SELECT id FROM genre WHERE genre=%s", (genre,))

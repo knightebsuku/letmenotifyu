@@ -9,17 +9,23 @@ from letmenotifyu import settings
 from letmenotifyu import util
 from letmenotifyu import background_worker as bw
 
+log = logging.getLogger(__name__)
 #os.chdir(settings.DATA_FILES_PATH)
+
 
 if __name__ == "__main__":
     util.start_logging()
-    if settings.check_db() == 'connect':
-        logging.error("Unable to connect to database, check connections")
-        exit()
-    elif settings.check_db() == 'migration':
-        logging.info('no migration table found, creating')
-        db.database_init()
-    db.database_change()
+    try:
+        settings.check_db()
+    except ValueError:
+        log.info("creating new databases")
+        db.create_movie_db()
+        db.create_series_db()
+    finally:
+        db.movie_migration()
+        db.series_migration()
+        #Main()
+                
     # series_process = Process(name='series_process',
     #                          target=bw.process_series_queue)
     # movie_process = Process(name='movie_process',
@@ -34,5 +40,4 @@ if __name__ == "__main__":
     # series_process.start()
     # movie_process.start()
     # movie_details.start()
-    Main()
     # Main(series_process, movie_process, movie_details)
