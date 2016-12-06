@@ -122,6 +122,6 @@ def fetch_torrent(torrent_url, title):
 
 def get_config_value(cursor, key):
     "get result from config table"
-    cursor.execute("SELECT value FROM config WHERE key=%s", (key,))
+    cursor.execute("SELECT value FROM config WHERE key=?", (key,))
     (value,) = cursor.fetchone()
     return value

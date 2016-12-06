@@ -6,9 +6,10 @@ import time
 import sqlite3
 
 from . import settings, util, yify, transmission, piratebay
-from .movies import movie
+from .movies import Movie
 from .series import series
 from threading import Thread
+from requests.exceptions import ConnectionError
 
 log = logging.getLogger(__name__)
 
@@ -17,37 +18,29 @@ def movie_update():
     """
     check for any new movies
     """
-    connect = sqlite3.connect(settings.MOVIE_DB)
-    cursor = connect.cursor()
-    
-    return
-
-def series_update():
-    """
-    check for new series episodes
-    """
-
+    try:
+        json_yify = yify.new_movies()
+        if json_yify['status'] == 'error':
+            log.error("Error connecting to yify json api")
+        else:
+            movie_list = json_yify['data']['movies']
+    except(ConnectionError):
+        log.error("Unable to connect to yify site")
+    else:
+        for m in movie_list:
+            json_movie = Movie(m)
+            if json_movie.poster():
+                json_movie.commit()
 
 
 def update():
     """
-    Check for new movie releases
-    Check for new series episodes
+    Check for new movie and series episode releases
     """
-    while True:
-        connect = psycopg2.connect(host=settings.DB_HOST,
-                                   database=settings.DB_NAME,
-                                   port=settings.DB_PORT,
-                                   user=settings.DB_USER,
-                                   password=settings.DB_PASSWORD)
-        cursor = connect.cursor()
-        log.debug("checking for new movies")
-        movie(connect, cursor)
-        log.debug("checking for new series episodes")
-        series(connect, cursor)
-        value = util.get_config_value(cursor, 'update_interval')
-        connect.close()
-        time.sleep(float(value)*60)
+    movie_update()
+    log.info("sleeping for updating")
+    time.sleep(300)
+    # time.sleep(float(value)*60)
 
 
 def process_series_queue():

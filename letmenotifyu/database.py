@@ -65,7 +65,7 @@ def movie_migration():
          'description TEXT NOT NULL,'
          'FOREIGN KEY(movie_id) REFERENCES movies(id)'
          'ON UPDATE CASCADE ON DELETE CASCADE)'],
-        [14, 'CREATE table movie_images(' 
+        [14, 'CREATE table movie_images('
          'id INTEGER PRIMARY KEY,'
          'movie_id INT UNIQUE NOT NULL,'
          'path TEXT NOT NULL,'
@@ -93,7 +93,7 @@ def movie_migration():
          'FOREIGN KEY(movie_id) REFERENCES movies(id) ON DELETE CASCADE ON UPDATE CASCADE,'
          'FOREIGN KEY(watch_queue_status_id) REFERENCES watch_queue_status(id))'],
         [23, "CREATE TABLE actors("
-         'id INTEGER PRIMARY KEY,' 
+         'id INTEGER PRIMARY KEY,'
          'name TEXT UNIQUE NOT NULL)'],
         [24, "CREATE TABLE actors_movies("
          'id INTEGER PRIMARY KEY,'

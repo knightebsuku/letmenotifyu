@@ -24,6 +24,7 @@ if __name__ == "__main__":
     finally:
         db.movie_migration()
         db.series_migration()
+        bw.update()
         #Main()
                 
     # series_process = Process(name='series_process',
