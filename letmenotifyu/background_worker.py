@@ -39,8 +39,9 @@ def update():
     """
     movie_update()
     log.info("sleeping for updating")
-    time.sleep(300)
+    # time.sleep(300)
     # time.sleep(float(value)*60)
+    movie_details_process()
 
 
 def process_series_queue():
@@ -142,33 +143,32 @@ def process_movie_queue():
 def movie_details_process():
     "add movie details"
     while True:
-        connect = psycopg2.connect(host=settings.DB_HOST,
-                                   database=settings.DB_NAME,
-                                   port=settings.DB_PORT,
-                                   user=settings.DB_USER,
-                                   password=settings.DB_PASSWORD)
+        connect = sqlite3.connect(settings.MOVIE_DB)
         cursor = connect.cursor()
+        cursor.execute(settings.SQLITE_WAL_MODE)
         cursor.execute('SELECT movies.id,yify_id FROM movies '
                        'LEFT OUTER JOIN  movie_details '
                        'ON movies.id=movie_details.movie_id '
                        'WHERE movie_details.movie_id is NULL')
         for (movie_id, yify_id) in cursor.fetchall():
             log.debug("getting movie details for {}".format(movie_id))
-            movie_detail = yify.get_movie_details(yify_id)
+            movie_detail = yify.movie_details(yify_id)
             if not movie_detail:
                 pass
             elif movie_detail["status"] == "ok":
                 try:
+                    detail = movie_detail['data']['movie']
                     cursor.execute("INSERT INTO movie_details("
                                    "movie_id,language,movie_rating,"
                                    'youtube_url,description) '
-                                   'VALUES(%s,%s,%s,%s,%s)',
-                                   (movie_id, movie_detail["data"]['language'],
-                                    movie_detail['data']["rating"],
-                                    movie_detail["data"]["yt_trailer_code"],
-                                    movie_detail["data"]["description_full"],))
-                    check_actors(movie_detail['data']['actors'],
-                                 movie_id, cursor)
+                                   'VALUES(?,?,?,?,?)',
+                                   (movie_id,
+                                    detail['language'],
+                                    detail["rating"],
+                                    detail["yt_trailer_code"],
+                                    detail["description_full"],))
+                    # check_actors(detail['actors'],
+                    #             movie_id, cursor)
                     connect.commit()
                 except psycopg2.IntegrityError as e:
                     connect.rollback()
@@ -179,25 +179,6 @@ def movie_details_process():
                     log.exception(e)
         connect.close()
         time.sleep(100)
-
-
-def check_actors(actor_details, movie_id, cursor):
-    "Check if actor exists or not"
-    for actor in actor_details:
-        cursor.execute("SELECT id from actors WHERE name=%s", (actor['name'],))
-        if cursor.fetchone():
-            cursor.execute("SELECT id from actors WHERE name=%s",
-                           (actor['name'],))
-            (actor_id,) = cursor.fetchone()
-            cursor.execute("INSERT INTO actors_movies(actor_id,movie_id) "
-                           'VALUES(%s,%s)', (actor_id, movie_id,))
-        else:
-            cursor.execute("INSERT INTO actors(name) "
-                           'VALUES(%s) RETURNING id', (actor["name"],))
-            lastrowid = cursor.fetchone()[0]
-            cursor.execute("INSERT INTO actors_movies(actor_id,movie_id) "
-                           'VALUES(%s,%s)', (lastrowid, movie_id,))
-
 
 def start_threads():
     "start all threads and processes"

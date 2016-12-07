@@ -4,6 +4,7 @@ import requests
 import sqlite3
 from typing import Dict, List
 from . import util, settings
+from requests.exceptions import ConnectionError, HTTPError
 
 log = logging.getLogger(__name__)
 
@@ -22,29 +23,25 @@ def new_movies() -> List[Json]:
         params = {'quality': quality, 'limit': limit.replace(".0", "")}
         data = requests.get("https://yts.ag/api/v2/list_movies.json",
                             params=params)
-        log.debug(data.json())
-        connect.close()
         return data.json()
-    except (requests.exceptions.ConnectionError,
-            requests.exceptions.HTTPError) as e:
+    except (ConnectionError, HTTPError) as e:
         logging.error("unable to connect to released movies api")
         log.error(e)
-        connect.close()
         raise
     except Exception as error:
         log.error("Unknow exception")
         logging.exception(error)
-        connect.close()
         raise
+    finally:
+        connect.close()
 
 
-def movie_details(yify_id) -> Json:
+def movie_details(yify_id: str) -> Json:
     try:
         params = {'movie_id': yify_id}
         data = requests.get("https://yts.ag/api/v2/movie_details.json",
                             params=params)
         return data.json()
-    except (urllib.error.URLError, urllib.error.HTTPError):
-        logging.warn("Unable to connect to movie detail api")
-    except Exception as error:
-        logging.exception(error)
+    except (ConnectionError, HTTPError) as error:
+        log.warn("Unable to connect to yify movie details api")
+        log.exception(error)

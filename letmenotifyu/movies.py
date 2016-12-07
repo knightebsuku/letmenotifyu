@@ -1,7 +1,5 @@
-#!/usr/bin/python3
 
 import logging
-import psycopg2
 import os
 import requests
 import sqlite3
@@ -16,9 +14,9 @@ log = logging.getLogger(__name__)
 
 
 class Movie:
-    connect = sqlite3.connect(settings.MOVIE_DB)
-    cur = connect.cursor()
-    
+    #connect = sqlite3.connect(settings.MOVIE_DB)
+    #cur = connect.cursor()
+
     def __init__(self, movie_json):
         self._movie = movie_json
         self._title = self._movie['title']
@@ -30,7 +28,10 @@ class Movie:
         self._torrent_url = self._movie['torrents'][0]['url']
         self._torrent_hash = self._movie['torrents'][0]['hash']
         self._image_file_path = os.path.join(settings.IMAGE_PATH, self._title + ".jpg")
-    
+        self.connect = sqlite3.connect(settings.MOVIE_DB)
+        self.cur = self.connect.cursor()
+        self.cur.execute(settings.SQLITE_WAL_MODE)
+
     def poster(self):
         """
         Fetch new movie poster
@@ -75,12 +76,15 @@ class Movie:
                              (new_id, self._image_file_path))
             self.connect.commit()
             announce('Newly Released Movie', "{}".format(self._title))
-        except(sqlite3.DatabaseError, sqlite3.ProgrammingError) as error:
-            log.error("Unable to insert movie {}".format(self._title), error)
+        except(sqlite3.ProgrammingError) as error:
+            log.error("Unable to insert movie {}".format(self._title))
+            log.exception(error)
             self.connect.rollback()
         except sqlite3.IntegrityError:
             log.warn("movie {} already exists".format(self._title))
             self.connect.rollback()
+        finally:
+            self.connect.close()
 
     def _genre(self, genre: str) -> int:
         """
@@ -89,12 +93,12 @@ class Movie:
         s = self._genres[0]
         self.cur.execute("SELECT id FROM genre WHERE genre=?", (s,))
         if self.cur.fetchone() is None:
-            log.debug("genre does not exist yet, creating new genre....")
+            log.debug("creating new genre {}".format(s))
             self.cur.execute("INSERT INTO genre(genre)"
                              "VALUES(?)", (s,))
             return self.cur.lastrowid
         else:
-            log.debug('genre exists')
+            log.debug('genre {} already exists'.format(s))
             self.cur.execute("SELECT id FROM genre WHERE genre=?", (s,))
             (genre_id,) = self.cur.fetchone()
             return int(genre_id)
