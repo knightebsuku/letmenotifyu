@@ -1,24 +1,33 @@
 #!/usr/bin/python3
 
 import psycopg2
+import sqlite3
 import logging
+
 from datetime import datetime, timedelta
+from . import gui, util, settings
+from . import background_worker as bw
+
+import gi
+gi.require_version('Gtk', '3.0')
+gi.require_version('Notify', '0.7')
+
 from gi.repository import Gtk, Gdk
-from letmenotifyu import gui
-from letmenotifyu import util
-from letmenotifyu import settings
-from letmenotifyu import background_worker as bw
+
+
+log = logging.getLogger(__name__)
 
 
 class Main(object):
     "Main application"
     def __init__(self):
-        self.connect = psycopg2.connect(host=settings.DB_HOST,
-                                        database=settings.DB_NAME,
-                                        port=settings.DB_PORT,
-                                        user=settings.DB_USER,
-                                        password=settings.DB_PASSWORD)
-        self.cursor = self.connect.cursor()
+        self.movie_connect = sqlite3.connect(settings.MOVIE_DB)
+        self.movie_cursor = self.movie_connect.cursor()
+        self.series_connect = sqlite3.connect(settings.SERIES_DB)
+        self.series_cursor = self.series_connect.cursor()
+        self.movie_cursor.execute(settings.SQLITE_WAL_MODE)
+        self.series_cursor.execute(settings.SQLITE_WAL_MODE)
+
         self.builder = Gtk.Builder()
         self.image = Gtk.Image()
         self.view_flag = ""
@@ -58,31 +67,32 @@ class Main(object):
         self.button_level_2 = self.builder.get_object("BtnLevel2")
         util.pre_populate_menu(self.builder)
         self.builder.get_object('AppWindow').show()
-        #self.sp = sp
-        #self.mp = mp
-        #self.mdp = mdp
+        # self.sp = sp
+        # self.mp = mp
+        # self.mdp = mdp
         bw.start_threads()
         Gtk.main()
 
     def on_quit(self, widget):
-        self.connect.close()
+        self.movie_connect.close()
+        self.series_connect.close()
         logging.debug("Shutting down processes")
-        #self.sp.terminate()
-        #self.mp.terminate()
-        #self.mdp.terminate()
+        # self.sp.terminate()
+        # self.mp.terminate()
+        # self.mdp.terminate()
         Gtk.main_quit()
 
     def general_view_activate(self, widget, choice):
         if self.view_flag == "latest_episode_view_selected":
             util.open_page(self.cursor, self.episodes_dict[choice])
         elif self.view_flag == "released_movies_view_selected":
-            gui.MovieDetails(self.cursor, self.connect, choice)
+            gui.MovieDetails(self.movie_cursor, self.movie_connect, choice)
         elif self.view_flag == "movie_archive_view_selected":
             self.movie_archive_view_genre_selected(choice)
             self.button_level_1.set_property("visible", True)
             self.button_level_1.set_property("label", choice)
         elif self.view_flag == "movie_archive_view_genre_selected":
-            gui.MovieDetails(self.cursor, self.connect, choice)
+            gui.MovieDetails(self.movie_cursor, self.movie_connect, choice)
         elif self.view_flag == "series_on_air_view_selected":
             self.series_on_air_view_series_selected(choice)
             self.button_level_1.set_property("visible", True)
@@ -141,30 +151,36 @@ class Main(object):
     def released_movies_view_selected(self):
         "show movies which have just been released"
         self.general_model.clear()
-        self.cursor.execute("SELECT value FROM config WHERE key='movie_duration'")
-        duration = self.cursor.fetchone()
+        self.movie_cursor.execute("SELECT value FROM config "
+                                  "WHERE key='movie_duration'")
+        duration = self.movie_cursor.fetchone()
         week = datetime.now() - timedelta(days=float(duration[0]))
-        self.cursor.execute("SELECT movies.title, path from movies JOIN movie_images "\
-                            "ON movies.title=movie_images.title "\
-                            "AND date_added BETWEEN %s AND %s", (week, datetime.now(),))
-        for (title, path) in self.cursor.fetchall():
-            util.render_view(self.image, title, self.general_model, settings.IMAGE_PATH+path)
+        self.movie_cursor.execute("SELECT title, path from movies "
+                                  "JOIN movie_images "
+                                  "ON movies.id=movie_images.movie_id "
+                                  "AND date_added BETWEEN ? AND ?",
+                                  (week, datetime.now(),))
+        for (title, path) in self.movie_cursor.fetchall():
+            util.render_view(self.image, title, self.general_model,
+                             path)
         self.view_flag = "released_movies_view_selected"
 
     def movie_archive_view_genre_selected(self, choice):
         "show all movies from a particular genre"
-        self.cursor.execute("SELECT id FROM genre WHERE genre=%s",
-                                (choice,))
+        self.movie_cursor.execute("SELECT id FROM genre WHERE genre=?",
+                                  (choice,))
         self.search_choice = choice
-        (genre_key,) = self.cursor.fetchone()
-        self.cursor.execute('SELECT movies.title,path FROM movies '\
-                            "JOIN movie_images ON movies.title=movie_images.title "\
-                            'AND genre_id=%s order by movies.title', (genre_key,))
-        movie_info = self.cursor.fetchall()
+        (genre_key,) = self.movie_cursor.fetchone()
+        self.movie_cursor.execute('SELECT title,path FROM movies '
+                                  "JOIN movie_images ON "
+                                  "movies.id=movie_images.movie_id "
+                                  'AND genre_id=? '
+                                  'order by title', (genre_key,))
+        movie_info = self.movie_cursor.fetchall()
         self.general_model.clear()
         for (movie_title, path) in movie_info:
             util.render_view(self.image, movie_title,
-                                 self.general_model, settings.IMAGE_PATH+path)
+                             self.general_model, path)
         self.view_flag = "movie_archive_view_genre_selected"
 
     def series_on_air_view_series_selected(self, choice):
@@ -188,8 +204,8 @@ class Main(object):
     def movie_archive_view_selected(self):
         "show all movie genres"
         self.general_model.clear()
-        self.cursor.execute("SELECT genre FROM genre ORDER BY genre")
-        result = self.cursor.fetchall()
+        self.movie_cursor.execute("SELECT genre FROM genre ORDER BY genre")
+        result = self.movie_cursor.fetchall()
         for genre in result:
             self.image.set_from_file("icons/"+genre[0]+'.png')
             pixbuf = self.image.get_pixbuf()
@@ -263,15 +279,13 @@ class Main(object):
     def watch_queue_movie_selected(self):
         "show movies in queue"
         self.general_model.clear()
-        self.cursor.execute("SELECT mi.path,wqs.name FROM "\
-                            'movie_images AS mi,'\
-                            'watch_queue_status AS wqs,'\
-                            'movie_queue AS mq '\
-                            'WHERE mi.title=(SELECT title FROM movies WHERE id=mq.movie_id) '\
-                            'AND wqs.id=mq.watch_queue_status_id')
-        for (path, watch_name) in self.cursor.fetchall():
+        self.movie_cursor.execute("SELECT mi.path, wqs.name FROM "
+                                  "movie_images mi, watch_queue_status wqs "
+                                  "JOIN movie_queue mq ON mq.id=mi.id "
+                                  "AND wqs.id=mq.watch_queue_status_id;")
+        for (path, watch_name) in self.movie_cursor.fetchall():
             util.render_view(self.image, watch_name, self.general_model,
-                             settings.IMAGE_PATH+path)
+                             path)
         self.view_flag = 'watch_queue_movies_selected'
 
     def watch_queue_series_selected(self):
@@ -334,7 +348,7 @@ class Main(object):
     def watch_list(self, widget):
         "add movie to watch queue"
         try:
-            self.cursor.execute("INSERT INTO movie_queue(movie_id,watch_queue_status_id) "\
+            self.movie_cursor.execute("INSERT INTO movie_queue(movie_id,watch_queue_status_id) "\
                                 "SELECT movies.id,watch_queue_status.id FROM movies,watch_queue_status "\
                                 "WHERE movies.title=%s and watch_queue_status.name='new'",(self.choice,))
             self.connect.commit()

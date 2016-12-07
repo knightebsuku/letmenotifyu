@@ -15,6 +15,7 @@ SERIES_DB = os.path.join(DATABSE_PATH, 'series.db')
 LOG_FILE_PATH = os.path.join(DIRECTORY_PATH, 'letmenotifyu.log')
 #DATA_FILES_PATH = '/usr/share/letmenotifyu/'
 IMAGE_PATH = os.path.relpath(os.path.join(DIRECTORY_PATH, 'images'))
+SQLITE_WAL_MODE = "PRAGMA journal_mode=WAL"
 config = configparser.ConfigParser()
 
 

@@ -39,9 +39,7 @@ def update():
     """
     movie_update()
     log.info("sleeping for updating")
-    # time.sleep(300)
     # time.sleep(float(value)*60)
-    movie_details_process()
 
 
 def process_series_queue():
@@ -92,14 +90,12 @@ def process_series_queue():
 
 
 def process_movie_queue():
-    "handle movie queues"
+    "handle all movies in the queues"
     while True:
-        connect = psycopg2.connect(host=settings.DB_HOST,
-                                   database=settings.DB_NAME,
-                                   port=settings.DB_PORT,
-                                   user=settings.DB_USER,
-                                   password=settings.DB_PASSWORD)
+        connect = sqlite3.connect(settings.MOVIE_DB)
         cursor = connect.cursor()
+        cursor.execute(settings.SQLITE_WAL_MODE)
+
         cursor.execute("SELECT title,mq.id,mtl.link,transmission_hash, "
                        "watch_queue_status_id "
                        "FROM "
@@ -122,12 +118,12 @@ def process_movie_queue():
                         log.debug("updating details for movie {}".format(
                             movie_title))
                         cursor.execute("UPDATE movie_torrent_links SET "
-                                       "transmission_hash=%s,"
-                                       "torrent_name=%s WHERE link=%s",
+                                       "transmission_hash=?s,"
+                                       "torrent_name=? WHERE link=?",
                                        (torrent_hash, torrent_name,
                                         torrent_url,))
                         cursor.execute("UPDATE movie_queue SET "
-                                       "watch_queue_status_id=2 WHERE id=%s",
+                                       "watch_queue_status_id=2 WHERE id=?",
                                        (queue_id,))
                         connect.commit()
                     except Exception as e:

@@ -238,21 +238,33 @@ class MovieDetails(object):
         youtube_link = self.details.get_object("lkYoutubeUrl")
         self.watch_list = self.details.get_object("lblWatchList")
         description = self.details.get_object("bufDescription")
-        self.cursor.execute("SELECT title,link FROM movies WHERE title=%s"
-                            ,(self.movie_title,))
+        print(self.movie_title)
+        self.cursor.execute("SELECT title,link FROM movies "
+                            "WHERE title=?",
+                            (self.movie_title,))
         (mt, ml,) = self.cursor.fetchone()
         movie_title.set_text(mt)
         movie_link.set_uri("http://www.imdb.com/title/{}".format(ml))
-        movie_link.set_property('label',"Imdb")
-        self.cursor.execute("SELECT id FROM movie_queue WHERE movie_id="\
-                            '(SELECT id FROM movies WHERE title=%s)',(self.movie_title,))
+        movie_link.set_property('label', "Imdb")
+        self.cursor.execute("select mq.id FROM movie_queue mq JOIN "
+                            "movies m ON mq.id=m.id "
+                            "AND title=?", (self.movie_title,))
+        #self.cursor.execute("SELECT id FROM movie_queue WHERE movie_id="
+        #                    '(SELECT id FROM movies WHERE title=?)',
+        #                    (self.movie_title,))
         if self.cursor.fetchone():
             self.watch_list.set_text("Yes")
             self.details.get_object("btnWatchList").set_sensitive(False)
         else:
             self.watch_list.set_text("No")
-        self.cursor.execute("SELECT movie_rating,youtube_url,description FROM movie_details "\
-                            'WHERE movie_id=(SELECT id FROM movies WHERE title=%s)',(self.movie_title,))
+        self.cursor.execute("SELECT movie_rating, youtube_url, description "
+                            "FROM movie_details md "
+                            "JOIN movies m "
+                            "ON md.movie_id=m.id "
+                            "AND title=?", (self.movie_title,))
+        #self.cursor.execute("SELECT movie_rating,youtube_url,description "
+        #                    "FROM movie_details "
+        #                    'WHERE movie_id=(SELECT id FROM movies WHERE title=%s)',(self.movie_title,))
         if self.cursor.fetchone() is None:
             rating.set_text("")
             youtube_link.set_uri("")
@@ -263,28 +275,26 @@ class MovieDetails(object):
             self.details.get_object("lblActor3").set_property("visible", False)
             self.details.get_object("lblActor4").set_property("visible", False)
         else:
-            self.cursor.execute("SELECT movie_rating,youtube_url,description from movie_details "\
-                                'WHERE movie_id=(SELECT id FROM movies WHERE title=%s)',(self.movie_title,))
+            self.cursor.execute("SELECT movie_rating, youtube_url, description "
+                                "FROM movie_details md "
+                                "JOIN movies m "
+                                "ON md.movie_id=m.id "
+                                "AND title=?", (self.movie_title,))
             (r, yu, des,) = self.cursor.fetchone()
             rating.set_text(str(r))
             youtube_link.set_uri("https://www.youtube.com/watch?v={}".format(yu))
             youtube_link.set_property('label', "Trailer")
             description.set_text(des)
-            self.cursor.execute("SELECT name FROM actors AS a JOIN actors_movies AS am "\
-                           'ON a.id=am.actor_id AND am.movie_id='\
-                                '(SELECT id FROM movies WHERE title=%s)',(self.movie_title,))
-            cast_list = {1: self.details.get_object("lblActor1"),
-                         2: self.details.get_object("lblActor2"),
-                         3: self.details.get_object("lblActor3"),
-                         4: self.details.get_object("lblActor4")}
-            for num, name in enumerate(self.cursor.fetchall(), start=1):
-                cast_list[num].set_text(name[0])
 
     def watch_list(self, widget):
         "add to watch list"
-        self.cursor.execute("INSERT INTO movie_queue(movie_id,watch_queue_status_id) "\
-                                "SELECT movies.id,watch_queue_status.id FROM movies,watch_queue_status "\
-                                "WHERE movies.title=%s AND watch_queue_status.name='new'",(self.movie_title,))
+        self.cursor.execute("INSERT INTO movie_queue("
+                            "movie_id,watch_queue_status_id) "
+                            "SELECT movies.id,watch_queue_status.id "
+                            "FROM movies,watch_queue_status "
+                            "WHERE movies.title=? "
+                            "AND watch_queue_status.name='new'",
+                            (self.movie_title,))
         self.connect.commit()
         self.watch_list.set_text("Yes")
         self.details.get_object("btnWatchList").set_sensitive(False)
