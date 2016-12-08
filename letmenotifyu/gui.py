@@ -5,6 +5,9 @@ import configparser
 import psycopg2
 import re
 import os
+import sqlite3
+
+
 from datetime import datetime
 from gi.repository import Gtk
 from . import util, settings
@@ -22,9 +25,10 @@ class About(object):
 
 class AddSeries(object):
     "Addition of new series"
-    def __init__(self, cursor, connection):
-        self.cursor = cursor
-        self.connection = connection
+    def __init__(self):
+        self.connect = sqlite3.connect(settings.SERIES_DB)
+        self.cursor = self.connect.cursor()
+        self.cursor.execute(settings.SQLITE_WAL_MODE)
         self.dialog = Gtk.Builder()
         self.dialog.add_from_file("ui/AddSeries.glade")
         connectors = {'on_btnCancel_clicked': self.cancel_clicked,
@@ -42,24 +46,26 @@ class AddSeries(object):
             show_title = change_string.replace("-", " ")
             logging.info("Inserting new series {}".format(show_title))
             try:
-                self.cursor.execute('INSERT INTO series(title,' \
-                               'series_link,' \
-                               'number_of_episodes,' \
-                               'number_of_seasons,' \
-                               'current_season,' \
-                               'last_update)' \
-                               " VALUES(%s,%s,0,0,0,%s)",
-                               (show_title, text, datetime.now(),))
-                self.connection.commit()
+                self.cursor.execute('INSERT INTO series(title,'
+                                    'series_link,'
+                                    'number_of_episodes,'
+                                    'number_of_seasons,'
+                                    'current_season,'
+                                    'last_update)'
+                                    " VALUES(?,?,0,0,0,?)",
+                                    (show_title, text, datetime.now(),))
+                self.connect.commit()
                 logging.info("Series Added: {}".format(show_title))
                 self.link_box.set_text('')
                 self.dialog.get_object('Dialog').destroy()
-            except psycopg2.IntegrityError:
-                self.connection.rollback()
+            except sqlite3.IntegrityError:
+                self.connect.rollback()
                 logging.error("Series {} already exists".format(show_title))
                 self.notice.set_text("Series already added")
                 self.notice.set_visible(True)
                 self.dialog.get_object('imCheck').set_visible(True)
+            finally:
+                self.connect.close()
         else:
             self.notice.set_text("Not a valid link or link already exists")
             self.notice.set_visible(True)

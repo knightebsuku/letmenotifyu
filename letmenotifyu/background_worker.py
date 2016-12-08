@@ -7,7 +7,7 @@ import sqlite3
 
 from . import settings, util, yify, transmission, piratebay
 from .movies import Movie
-from .series import series
+from .series import Series
 from threading import Thread
 from requests.exceptions import ConnectionError
 
@@ -33,13 +33,21 @@ def movie_update():
                 json_movie.commit()
 
 
+def series_update():
+    "Check for any new series episodes"
+    log.info("checking for series updates")
+    series = Series()
+    series.update()
+
+
 def update():
     """
     Check for new movie and series episode releases
     """
-    movie_update()
-    log.info("sleeping for updating")
+    #movie_update()
+    #log.info("sleeping for updating")
     # time.sleep(float(value)*60)
+    series_update()
 
 
 def process_series_queue():
@@ -176,8 +184,8 @@ def movie_details_process():
         connect.close()
         time.sleep(100)
 
-def start_threads():
-    "start all threads and processes"
-    all_update = Thread(target=update)
-    all_update.setDaemon(True)
-    all_update.start()
+# def start_threads():
+#     "start all threads and processes"
+#     all_update = Thread(target=update)
+#     all_update.setDaemon(True)
+#     all_update.start()

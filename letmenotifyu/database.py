@@ -123,7 +123,7 @@ def series_migration():
         [4, "INSERT INTO config(key,value) VALUES('series_duration','7')"],
         [5, "INSERT INTO config(key,value) VALUES('transmission_host','127.0.0.1')"],
         [6, "INSERT INTO config(key,value) VALUES('transmission_port','9091')"],
-        [7, 'CREATE TABLE series(' 
+        [7, 'CREATE TABLE series('
          'id INTEGER PRIMARY KEY,'
          'title TEXT NOT NULL,'
          'series_link TEXT UNIQUE NOT NULL,'

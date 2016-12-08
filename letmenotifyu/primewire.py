@@ -17,7 +17,7 @@ log = logging.getLogger(__name__)
 def series_details(series_url: str) -> BeautifulSoup:
     try:
         response = requests.get(series_url)
-        return BeautifulSoup(response.text)
+        return BeautifulSoup(response.text, 'lxml')
     except (ConnectionError, HTTPError):
         raise
 
@@ -43,17 +43,35 @@ def modify_episode_number(season_value: str, episode_value: str) -> str:
     return''.join(('S', season_value, 'E', episode_value))
 
 
-def primewire(series_url: str) -> Json:
+def episodes(series_url: str) -> Json:
+    """
+    Get series episode and information from series url and
+    convert the resulting html to Json
+    Eg:
+    {'total_seasons': 1, 'total_episodes: 12, 'episodes':[{
+                 'episode_link': '',
+                 'episode_number': 'S01E02',
+                 'episode_name': 'The begining of the end'
+                 }]
+    }
+    """
     try:
         series_episodes = []
         series_info = {}
         series_html = series_details(series_url)
+        title = series_html.title.text
+        title_name = re.search(r'Watch (.*) Online Free - PrimeWire | 1Channel',
+                               title).group(1)
+        series_info['series_title'] = title_name
         total_seasons = len(series_html.find_all('a',
                                                  {'class': 'season-toggle'}))
         total_episodes = len(series_html.find_all('div',
                                                   {'class': 'tv_episode_item'}))
         series_info['total_seasons'] = total_seasons
         series_info['total_episodes'] = total_episodes
+        meta_image = series_html.find('meta', {'property': 'og:image'})
+        series_image = 'http:'+meta_image['content']
+        series_info['series_poster'] = series_image
         for episode in series_html.find_all('div', {'class': 'tv_episode_item'}):
             link = episode.a['href']
             link_data = re.search(r'season-(\d+)-episode-(\d+)', link)

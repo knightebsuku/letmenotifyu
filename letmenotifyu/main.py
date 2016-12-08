@@ -70,13 +70,13 @@ class Main(object):
         # self.sp = sp
         # self.mp = mp
         # self.mdp = mdp
-        bw.start_threads()
+        #bw.start_threads()
         Gtk.main()
 
     def on_quit(self, widget):
         self.movie_connect.close()
         self.series_connect.close()
-        logging.debug("Shutting down processes")
+        log.debug("Shutting down processes")
         # self.sp.terminate()
         # self.mp.terminate()
         # self.mdp.terminate()
@@ -84,7 +84,7 @@ class Main(object):
 
     def general_view_activate(self, widget, choice):
         if self.view_flag == "latest_episode_view_selected":
-            util.open_page(self.cursor, self.episodes_dict[choice])
+            util.open_page(self.series_cursor, self.episodes_dict[choice])
         elif self.view_flag == "released_movies_view_selected":
             gui.MovieDetails(self.movie_cursor, self.movie_connect, choice)
         elif self.view_flag == "movie_archive_view_selected":
@@ -187,16 +187,25 @@ class Main(object):
         "show current seasons episodes"
         self.episodes_dict = {}
         series_name = choice.split(" Season")[0]
-        logging.debug(series_name)
+        log.debug(series_name)
         series_number = choice.split("Season ")[1]
-        logging.debug(series_number)
-        self.cursor.execute("SELECT episode_number || episode_name,episode_link " \
-                            "FROM episodes WHERE " \
-                            ' series_id=(SELECT id from series where title=%s) ' \
-                            ' and episode_link LIKE %s',
-                            (series_name, "%season-{}%".format(series_number),))
+        log.debug(series_number)
+        self.series_cursor.execute("SELECT episode_number||episode_name,"
+                                   "episode_link "
+                                   "FROM episodes e JOIN "
+                                   "series s "
+                                   "ON e.series_id=s.id "
+                                   "AND episode_link LIKE ?",
+                                   (series_name,
+                                    "%season-{}%".format(series_number),))
+        # self.series_cursor.execute("SELECT episode_number || episode_name,"
+        #                            "episode_link "
+        #                            "FROM episodes WHERE "
+        #                            'series_id=(SELECT id from series where title=?) '
+        #                            'and episode_link LIKE ?',
+        #                            (series_name, "%season-{}%".format(series_number),))
         self.general_model.clear()
-        for (episode_name, episode_link) in self.cursor.fetchall():
+        for (episode_name, episode_link) in self.series_cursor.fetchall():
             util.render_view(self.image, episode_name, self.general_model)
             self.episodes_dict[episode_name] = episode_link
         self.view_flag = "series_on_air_view_series_selected"
@@ -216,62 +225,79 @@ class Main(object):
         "show latest episodes"
         self.episodes_dict = {}
         self.general_model.clear()
-        self.cursor.execute("SELECT value FROM config WHERE key='series_duration'")
-        duration = self.cursor.fetchone()
+        self.series_cursor.execute("SELECT value FROM config "
+                                   "WHERE key='series_duration'")
+        duration = self.series_cursor.fetchone()
         week = datetime.now() - timedelta(days=float(duration[0]))
-        self.cursor.execute("SELECT episode_number || episode_name,episode_link,path FROM episodes "\
-                            "JOIN series_images "\
-                            "ON episodes.series_id=series_images.series_id "\
-                            "AND date BETWEEN %s AND %s",
-                            (week, datetime.now(),))
-        for (episode_name, episode_link, path) in self.cursor.fetchall():
+        self.series_cursor.execute("SELECT episode_number||episode_name,"
+                                   "episode_link,path FROM episodes e "
+                                   "JOIN series_images si "
+                                   "ON e.series_id=si.series_id "
+                                   "AND date BETWEEN ? AND ?",
+                                   (week, datetime.now(),))
+        for (episode_name, episode_link, path) in self.series_cursor.fetchall():
             util.render_view(self.image, episode_name, self.general_model,
-                             settings.IMAGE_PATH+path)
+                             path)
             self.episodes_dict[episode_name] = episode_link
         self.view_flag = 'latest_episode_view_selected'
 
     def series_on_air_view_selected(self):
         "show series which are currently on air"
         self.general_model.clear()
-        self.cursor.execute("SELECT title,number_of_seasons,path  FROM series "\
-                            "JOIN series_images ON series.id=series_id AND "\
-                            "status='1' ORDER BY title")
-        for (title, current_season, path) in self.cursor.fetchall():
-            util.render_view(self.image, title+" "+"Season"+" "+str(current_season),
-                              self.general_model, settings.IMAGE_PATH+path)
+        self.series_cursor.execute("SELECT title,number_of_seasons,path "
+                                   "FROM series "
+                                   "JOIN series_images "
+                                   "ON series.id=series_id "
+                                   "AND status='t' ORDER BY title")
+        for (title, current_season, path) in self.series_cursor.fetchall():
+            full_title = title+" "+"Season"+" "+str(current_season)
+            util.render_view(self.image, full_title,
+                             self.general_model, path)
         self.view_flag = 'series_on_air_view_selected'
 
     def series_archive_view_selected(self):
         "show all series"
         self.general_model.clear()
-        self.cursor.execute("SELECT title,path FROM series JOIN "\
-                            "series_images ON series.id=series_images.series_id ORDER BY title")
-        for (title, path) in self.cursor.fetchall():
-            util.render_view(self.image, title, self.general_model,
-                                 settings.IMAGE_PATH+path)
+        self.series_cursor.execute("SELECT title,path FROM series "
+                                   "JOIN series_images "
+                                   "ON series.id=series_images.series_id "
+                                   "ORDER BY title")
+        for (title, path) in self.series_cursor.fetchall():
+            util.render_view(self.image, title, self.general_model, path)
             self.view_flag = 'series_archive_view_selected'
 
     def series_archive_view_season_selected(self, choice):
         "show seasons of series"
         self.series_name = choice
-        self.cursor.execute("SELECT number_of_seasons FROM series WHERE title=%s",
-                            (choice,))
-        (no_seasons,) = self.cursor.fetchone()
+        self.series_cursor.execute("SELECT number_of_seasons "
+                                   "FROM series WHERE title=?",
+                                   (choice,))
+        (no_seasons,) = self.series_cursor.fetchone()
         self.general_model.clear()
         for num in range(1, no_seasons+1):
-            util.render_view(self.image, "Season {}".format(num), self.general_model)
+            util.render_view(self.image, "Season {}".format(num),
+                             self.general_model)
         self.view_flag = "series_archive_view_season_selected"
 
     def series_archive_view_season_episode_view_selected(self, choice):
         "show episodes of particular season of a series"
         self.episodes_dict = {}
         no = choice.split("Season ")[1]
-        self.cursor.execute("SELECT episode_number || episode_name,episode_link FROM episodes " \
-                            ' WHERE series_id=(SELECT id from series where title=%s) ' \
-                            ' and episode_link LIKE %s',
-                            (self.series_name, "%season-" + no + "%",))
+        self.series_cursor.execute("SELECT episode_number || episode_name,"
+                                   "episode_link"
+                                   "FROM episodes e "
+                                   "JOIN series s "
+                                   "ON e.series_id=s.id "
+                                   "AND episode_link LIKE ? ",
+                                   (self.series_name,
+                                    "%season-" + no + "%"))
+        # self.series_cursor.execute("SELECT episode_number || episode_name,"
+        #                            "episode_link FROM episodes "
+        #                            'WHERE series_id=(SELECT id from series where title=%s) ' \
+        #                     ' and episode_link LIKE %s',
+        #                     (self.series_name, "%season-" + no + "%",))
         self.general_model.clear()
-        for (episode_name, episode_link) in self.cursor.fetchall():
+        for (episode_name, episode_link) in self.series_cursor.fetchall():
             util.render_view(self.image, episode_name, self.general_model)
             self.episodes_dict[episode_name] = episode_link
         self.view_flag = "series_archive_view_season_episode_view_selected"
@@ -291,15 +317,17 @@ class Main(object):
     def watch_queue_series_selected(self):
         "show series in watch queue"
         self.general_model.clear()
-        self.cursor.execute("SELECT si.path,wqs.name,sq.episode_name FROM "\
-                            'series_images AS si,'\
-                            'watch_queue_status AS wqs,'\
-                             'series_queue AS sq '\
-                             'WHERE wqs.id=sq.watch_queue_status_id '\
-                             'AND sq.series_id=si.series_id ORDER BY sq.id DESC limit 15')
-        for (path, watch_name, episode_name) in self.cursor.fetchall():
-            util.render_view(self.image, episode_name+":  "+watch_name, self.general_model,
-                             settings.IMAGE_PATH+path)
+        self.series_cursor.execute("SELECT si.path,wqs.name,sq.episode_name "
+                                   "FROM series_images si,"
+                                   'watch_queue_status wqs,'
+                                   'series_queue sq '
+                                   'WHERE wqs.id=sq.watch_queue_status_id '
+                                   'AND sq.series_id=si.series_id '
+                                   'ORDER BY sq.id DESC limit 15')
+        for (path, watch_name, episode_name) in self.series_cursor.fetchall():
+            util.render_view(self.image, episode_name+":  "+watch_name,
+                             self.general_model,
+                             path)
         self.view_flag = 'watch_queue_series_selected'
 
     def button_root_clicked(self, widget):
@@ -307,9 +335,10 @@ class Main(object):
 
     def button_one_clicked(self, widget):
         if self.view_flag in ("released_movies_view_selected",
-                         "movie_archive_view_genre_selected"):
+                              "movie_archive_view_genre_selected"):
             self.released_movies_select(widget.get_label())
-        elif self.view_flag in ("series_on_air_view_selected", "series_on_air_view_series_selected"):
+        elif self.view_flag in ("series_on_air_view_selected",
+                                "series_on_air_view_series_selected"):
             self.series_on_air_series_selected(widget.get_label())
         elif self.view_flag in ("series_archive_view_season_episode_view_selected", "series_archive_view_selected"):
             self.series_archive_view_season_selected(widget.get_label())
@@ -318,19 +347,19 @@ class Main(object):
         self.season__view_selected(widget.get_label())
 
     def add_series_activate(self, widget):
-        gui.AddSeries(self.cursor, self.connect)
+        gui.AddSeries()
 
     def about_activate(self, widget):
         gui.About()
 
     def stop_update_activate(self, widget):
-        gui.Confirm(self.striped_name, "stop", self.connect, self.cursor)
+        gui.Confirm(self.striped_name, "stop", self.connect, self.series_cursor)
 
     def start_update_activate(self, widget):
-        gui.Confirm(self.striped_name, "start", self.connect, self.cursor)
+        gui.Confirm(self.striped_name, "start", self.connect, self.series_cursor)
 
     def delete_series_activate(self, widget):
-        gui.Confirm(self.striped_name, "delete", self.connect, self.cursor)
+        gui.Confirm(self.striped_name, "delete", self.connect, self.series_cursor)
 
     def pref_activate(self, widget):
         gui.Preferences(self.cursor, self.connect)
@@ -339,18 +368,24 @@ class Main(object):
         "add series to watch list"
         if self.view_flag == 'series_archive_view_selected':
             try:
-                self.cursor.execute("UPDATE series SET watch='1' WHERE title=%s",(self.choice,))
+                self.series_cursor.execute("UPDATE series SET watch='t' "
+                                           "WHERE title=?",
+                                           (self.choice,))
                 self.connect.commit()
                 gui.Error("{} has been added to the watch list".format(self.choice))
             except psycopg2.OperationalError as e:
-                logging.exception(e)
+                log.exception(e)
 
     def watch_list(self, widget):
         "add movie to watch queue"
         try:
-            self.movie_cursor.execute("INSERT INTO movie_queue(movie_id,watch_queue_status_id) "\
-                                "SELECT movies.id,watch_queue_status.id FROM movies,watch_queue_status "\
-                                "WHERE movies.title=%s and watch_queue_status.name='new'",(self.choice,))
+            self.movie_cursor.execute("INSERT INTO movie_queue(movie_id,"
+                                      "watch_queue_status_id) "
+                                      "SELECT movies.id,watch_queue_status.id "
+                                      "FROM movies,watch_queue_status "
+                                      "WHERE movies.title=? "
+                                      "AND watch_queue_status.name='new'",
+                                      (self.choice,))
             self.connect.commit()
             gui.Error("{} has been added to the watch list".format(self.choice))
         except psycopg2.IntegrityError:
@@ -359,14 +394,16 @@ class Main(object):
     def add_episode_queue(self, widget):
         " add exsisting episode to watch list"
         try:
-            self.cursor.execute("INSERT INTO series_queue(series_id,episode_id,episode_name) "\
-                            "SELECT series_id,id,episode_number FROM episodes WHERE episode_link=%s",
-                            (self.episodes_dict[self.choice],))
+            self.series_cursor.execute("INSERT INTO series_queue(series_id,"
+                                       "episode_id,episode_name) "
+                                       "SELECT series_id,id,episode_number "
+                                       "FROM episodes WHERE episode_link=?",
+                                       (self.episodes_dict[self.choice],))
             self.connect.commit()
-            logging.info("adding {} to series queue".format(self.episodes_dict[self.choice]))
+            log.info("adding {} to series queue".format(self.episodes_dict[self.choice]))
         except psycopg2.IntegrityError:
             gui.Error("Episode is already in the queue")
 
     def view_episode_online(self, widget):
         "view episode online"
-        util.open_page(self.cursor, self.episodes_dict[self.choice])
+        util.open_page(self.series_cursor, self.episodes_dict[self.choice])

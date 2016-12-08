@@ -1,85 +1,106 @@
-#!/usr/bin/python3
+import logging
+import sqlite3
+import json
+import requests
+import os
 
+
+from typing import Dict
 from datetime import datetime
 from letmenotifyu.notify import announce
-from letmenotifyu import util
-from letmenotifyu.primewire import primewire
-import logging
-import psycopg2
+from . import util, settings, primewire
+from requests.exceptions import ConnectionError, HTTPError
+
+log = logging.getLogger(__name__)
+Json = Dict[str, str]
 
 
-class Series(object):
+class Series():
     "deal with series and episodes"
-    def __init__(self, db, cursor):
-        self.cursor = cursor
-        self.db = db
+    def __init__(self):
+        self.connect = sqlite3.connect(settings.SERIES_DB)
+        self.cursor = self.connect.cursor()
+        self.cursor.execute(settings.SQLITE_WAL_MODE)
 
-    def _add_episodes(self, series_id, new_episodes,  series_title, init='current'):
-        "add new episodes"
-        for (episode_link, episode_number, episode_name,) in new_episodes:
-            try:
-                self.cursor.execute("INSERT INTO episodes(" \
-                                    'series_id,' \
-                                    'episode_link,' \
-                                    'episode_name,' \
-                                    'episode_number,'\
-                                    'Date) ' \
-                                    'VALUES(%s,%s,%s,%s,%s) RETURNING id'
-                                    ,(series_id, episode_link, episode_name, episode_number, datetime.now(),))
-                episode_id = self.cursor.fetchone()[0]
-                self._send_to_queue(series_id, episode_id, episode_number)
-                self.db.commit()
-                if init == 'current':
-                    announce("New Series Episode", series_title, episode_number)
-            except psycopg2.IntegrityError:
-                logging.error("episode already exists")
-
-    def _send_to_queue(self, series_id, episode_id, episode_number ):
-        "send new episodes to queue"
-        self.cursor.execute("INSERT INTO series_queue(series_id,"\
-                           "episode_id, episode_name) VALUES(%s,%s,%s)", (series_id,
-                                                                            episode_id, episode_number,))
-            
-    def _get_new_episodes(self, series_link):
-        "check for new episodes"
-        return primewire(series_link)
-
-    def _series_compare(self, series_id, new_episode_list):
-        "compare current series list with new list"
-        self.cursor.execute("SELECT episode_link FROM episodes WHERE series_id=%s",
-                   (series_id,))
-        data = [x[0] for x in self.cursor.fetchall()]
-        new_data = [link for link in new_episode_list if link[0] not in data]
-        return new_data
-
-    def _update_series_details(self, episode_count, season_count, series_id):
-        "update details for series"
-        self.cursor.execute("UPDATE series SET number_of_episodes=%s,"\
-                                'number_of_seasons=%s,last_update=%s  WHERE id=%s',
-                                (episode_count, season_count, datetime.now(), series_id,))
-        self.db.commit()
-        
     def update(self):
-        self.cursor.execute("SELECT id,title,series_link,number_of_episodes FROM series WHERE status='1'")
-        for (series_id, series_title, series_link, current_ep_no) in self.cursor.fetchall():
-            try:
-                all_episodes, episode_count, season_count = self._get_new_episodes(series_link)
-                if current_ep_no == 0:
-                    logging.debug('series does not have any episodes, adding.....')
-                    self._add_episodes(series_id, all_episodes, series_title, 'new')
-                    self._update_series_details(episode_count, season_count, series_id)
-                    util.series_poster(self.cursor, self.db, series_id)
-                elif current_ep_no == episode_count:
-                    logging.info("no new episodes for {}".format(series_link))
-                elif current_ep_no < episode_count:
-                    compared_list = self._series_compare(series_id,
-                                                         all_episodes)
-                    self._add_episodes(series_id, compared_list, series_title)
-                    self._update_series_details(episode_count, season_count, series_id)
-            except TypeError:
-                pass
+        "check for new episodes from primewire"
+        self.cursor.execute("SELECT id,title,series_link,number_of_episodes "
+                            "FROM series WHERE status='t'")
+        for series_id, title, link, total_eps in self.cursor.fetchall():
+            if total_eps == 0:
+                log.info("new series, retriving all episodes")
+                path = os.path.join(settings.IMAGE_PATH, title+'.jpg')
+                details = json.loads(primewire.episodes(link))
+                if self._poster(details['series_poster'],
+                                title):
+                    self._commit(details, series_id, path=path,
+                                 notify=False, new=True)
+            else:
+                details = json.loads(primewire.episodes(link))
+                self._commit(details, series_id, notify=True, new=False)
 
-def series(connect, cursor):
-    "Initialise series to update"
-    update_series = Series(connect, cursor)
-    update_series.update()
+    def _commit(self, details, series_id, **kwargs):
+        "Loop over episodes in json in insert"
+        try:
+            for episodes in details['episodes']:
+                try:
+                    self.cursor.execute("INSERT INTO episodes(series_id,"
+                                        "episode_link,"
+                                        "episode_name, episode_number, date) "
+                                        "VALUES(?,?,?,?,?)",
+                                        (series_id, episodes['episode_link'],
+                                         episodes['episode_name'],
+                                         episodes['episode_number'],
+                                         datetime.now(),))
+                    new_id = self.cursor.lastrowid
+                    self.cursor.execute("INSERT INTO series_queue(series_id,"
+                                        "episode_id,episode_name) VALUES(?,?,?)",
+                                        (series_id, new_id,
+                                         episodes['episode_name']))
+                    self.connect.commit()
+                    if kwargs['notify'] is True:
+                        announce("New Series Episode",
+                                 details['series_title'],
+                                 episodes['episode_number'])
+                except sqlite3.IntegrityError:
+                    log.debug("episode already exists")
+                except (sqlite3.OperationalError) as error:
+                    log.error("unable to insert episode")
+                    log.exception(error)
+            if kwargs['new'] is True:
+                self.cursor.execute("INSERT INTO series_images(series_id, path) "
+                                    "VALUES(?,?)",
+                                    (series_id, kwargs['path']))
+            self.cursor.execute("UPDATE series SET number_of_episodes=?,"
+                                'number_of_seasons=?,last_update=?,'
+                                'current_season=? '
+                                'WHERE id=?',
+                                (details['total_episodes'],
+                                 details['total_seasons'],
+                                 datetime.now(),
+                                 details['total_seasons'],
+                                 series_id,))
+            self.connect.commit()
+        except sqlite3.IntegrityError:
+            log.debug("episode already exists")
+        except sqlite3.OperationalError as error:
+            log.error("unable to insert episode")
+            log.exception(error)
+        finally:
+            self.connect.close()
+
+    def _poster(self, series_link, title):
+        """
+        Get series poster for newly added series
+        """
+        try:
+            image_path = os.path.join(settings.IMAGE_PATH, title+".jpg")
+            r = requests.get(series_link)
+            if r.status_code == 200:
+                with open(image_path, 'wb') as series_poster:
+                    series_poster.write(r.content)
+                log.info("series poster for {} downloaded".format(title))
+                return True
+        except(ConnectionError, HTTPError) as error:
+            log.error("unable to download series poster")
+            log.exception(error)
