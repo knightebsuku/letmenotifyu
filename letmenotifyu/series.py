@@ -8,7 +8,7 @@ import os
 from typing import Dict
 from datetime import datetime
 from letmenotifyu.notify import announce
-from . import util, settings, primewire
+from . import settings, primewire
 from requests.exceptions import ConnectionError, HTTPError
 
 log = logging.getLogger(__name__)

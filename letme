@@ -19,9 +19,11 @@ if __name__ == "__main__":
         settings.check_db()
     except ValueError:
         log.info("creating new databases")
+        db.create_general_db()
         db.create_movie_db()
         db.create_series_db()
     finally:
+        db.general_migration()
         db.movie_migration()
         db.series_migration()
         #bw.update()

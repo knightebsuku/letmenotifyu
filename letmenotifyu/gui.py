@@ -23,6 +23,91 @@ class About(object):
         window.destroy()
 
 
+class SeriesPreference:
+    def __init__(self):
+        self._connect = sqlite3.connect(settings.SERIES_DB)
+        self._cursor = self._connect.cursor()
+        self._cursor.execute(settings.SQLITE_WAL_MODE)
+        self.pref = Gtk.Builder()
+        self.pref.add_from_file("ui/SeriesPreference.glade")
+        signals = {'on_btnApply_clicked': self.save_clicked,
+                   'on_btnCancel_clicked': self.cancel_clicked}
+        self.pref.connect_signals(signals)
+        self.populate_fields()
+        self.pref.get_object('SeriesPreference').show()
+
+    def populate_fields(self):
+        update = util.get_config_value(self._cursor, 'update_interval')
+        queue = util.get_config_value(self._cursor, 'series_process_interval')
+        duration = util.get_config_value(self._cursor, 'series_duration')
+        self.pref.get_object("spSeriesUpdate").set_value(float(update))
+        self.pref.get_object("spSeriesQueue").set_value(float(queue))
+        self.pref.get_object("spSeriesVisibility").set_value(float(duration))
+
+    def save_clicked(self, widget):
+        update = self.pref.get_object("spSeriesUpdate").get_value()
+        queue = self.pref.get_object('spSeriesQueue').get_value()
+        duration = self.pref.get_object("spSeriesVisibility").get_value()
+
+        query = [
+            (update, 'update_interval'),
+            (queue, 'series_process_interval'),
+            (duration, 'series_duration'),
+        ]
+        self._cursor.executemany("UPDATE config SET "
+                                 "value=? WHERE key=?", query)
+        self._connect.commit()
+        self._connect.close()
+        self.pref.get_object('SeriesPreference').destroy()
+
+    def cancel_clicked(self, widget):
+        self._connect.close()
+        self.pref.get_object('SeriesPreference').destroy()
+
+
+class MoviePreference:
+    def __init__(self):
+        self._connect = sqlite3.connect(settings.MOVIE_DB)
+        self._cursor = self._connect.cursor()
+        self._cursor.execute(settings.SQLITE_WAL_MODE)
+        self.pref = Gtk.Builder()
+        self.pref.add_from_file("ui/MoviePreference.glade")
+        signals = {'on_btnApply_clicked': self.save_clicked,
+                   'on_btnCancel_clicked': self.cancel_clicked}
+        self.pref.connect_signals(signals)
+        self.populate_fields()
+        self.pref.get_object('MoviePreference').show()
+
+    def populate_fields(self):
+        queue = util.get_config_value(self._cursor, 'movie_process_interval')
+        duration = util.get_config_value(self._cursor, 'movie_duration')
+        # quality = util.get_config_value(self._cursor, 'movie_quality')
+        self.pref.get_object("spMovieQueue").set_value(float(queue))
+        self.pref.get_object("spMovieDuration").set_value(float(duration))
+        # self.pref.get_object("lsMovieQuality").set_value(quality)
+
+    def save_clicked(self, widget):
+        queue = self.pref.get_object("spMovieQueue").get_value()
+        duration = self.pref.get_object("spMovieDuration").get_value()
+        quality_iter = self.pref.get_object('cbMovieQuality').get_active_iter()
+        quality = self.pref.get_object('lsMovieQuality').get_value(quality_iter, 0)
+
+        query = [
+            (queue, 'movie_process_interval'),
+            (duration, 'movie_duration'),
+            (quality, 'movie_quality'),
+        ]
+        self._cursor.executemany("UPDATE config SET "
+                                 "value=? WHERE key=?", query)
+        self._connect.commit()
+        self._connect.close()
+        self.pref.get_object('MoviePreference').destroy()
+
+    def cancel_clicked(self, widget):
+        self._connect.close()
+        self.pref.get_object('MoviePreference').destroy()
+
+
 class AddSeries(object):
     "Addition of new series"
     def __init__(self):
@@ -32,7 +117,7 @@ class AddSeries(object):
         self.dialog = Gtk.Builder()
         self.dialog.add_from_file("ui/AddSeries.glade")
         connectors = {'on_btnCancel_clicked': self.cancel_clicked,
-              'on_btnOk_clicked': self.ok_clicked}
+                      'on_btnOk_clicked': self.ok_clicked}
         self.dialog.connect_signals(connectors)
         self.notice = self.dialog.get_object('lblNotice')
         self.link_box = self.dialog.get_object('entLink')
@@ -90,7 +175,7 @@ class Confirm(object):
         self.confirm = Gtk.Builder()
         self.confirm.add_from_file("ui/Confirm.glade")
         signals = {'on_btnOk_clicked': self.ok_clicked,
-               'on_btnCancel_clicked': self.cancel_clicked}
+                   'on_btnCancel_clicked': self.cancel_clicked}
         self.confirm.connect_signals(signals)
         self.message, self.sql = self.which_sql_message()
         self.confirm.get_object('msgDialog').format_secondary_text(self.message+" " +
@@ -121,34 +206,28 @@ class Confirm(object):
 
 
 class Preferences(object):
-    "preference menu"
-    def __init__(self, cursor, connect):
-        self.cursor = cursor
-        self.connect = connect
+    "preference menu for general letmenotifyu settings"
+    def __init__(self):
+        self._connect = sqlite3.connect(settings.GENERAL_DB)
+        self._cursor = self._connect.cursor()
+        self._cursor.execute(settings.SQLITE_WAL_MODE)
         self.pref = Gtk.Builder()
         self.pref.add_from_file("ui/Preferences.glade")
         signals = {'on_btnOK_clicked': self.save_clicked,
-                 'on_btnCancel_clicked': self.cancel_clicked}
+                   'on_btnCancel_clicked': self.cancel_clicked}
         self.pref.connect_signals(signals)
         self.populate_fields()
         self.pref.get_object('Preference').show()
 
     def populate_fields(self):
         "populate fields"
-        update_interval = util.get_config_value(self.cursor, "update_interval")
-        movie_process = util.get_config_value(self.cursor, "movie_process_interval")
-        series_process = util.get_config_value(self.cursor, "series_process_interval")
-        series_duration = util.get_config_value(self.cursor, "series_duration")
-        max_movie_result = util.get_config_value(self.cursor, 'max_movie_results')
-        transmission_host = util.get_config_value(self.cursor, 'transmission_host')
-        transmission_port = util.get_config_value(self.cursor, 'transmission_port')
+        update_interval = util.get_config_value(self._cursor,
+                                                "update_interval")
+        transmission_host = util.get_config_value(self._cursor,
+                                                  'transmission_host')
+        transmission_port = util.get_config_value(self._cursor,
+                                                  'transmission_port')
         self.pref.get_object("spUpdate").set_value(float(update_interval))
-        self.pref.get_object("spMovieQueue").set_value(float(movie_process))
-        self.pref.get_object("spSeriesQueue").set_value(float(series_process))
-        self.pref.get_object("spSeriesDuration").set_value(float(series_duration))
-        self.pref.get_object("spMovieResults").set_value(float(max_movie_result))
-        self.pref.get_object("fcbImages").set_current_folder(settings.IMAGE_PATH)
-        self.pref.get_object("fcbTorrents").set_current_folder(settings.TORRENT_DIRECTORY)
         self.pref.get_object("fcbComplete").set_current_folder(settings.COMPLETE_DIRECTORY)
         self.pref.get_object("fcbIncomplete").set_current_folder(settings.INCOMPLETE_DIRECTORY)
         self.pref.get_object("entHost").set_text(transmission_host)
@@ -157,45 +236,29 @@ class Preferences(object):
     def write_to_config(self):
         "save to configurations to file"
         config = configparser.ConfigParser()
-        images = self.pref.get_object("fcbImages").get_current_folder()
-        torrents = self.pref.get_object("fcbTorrents").get_current_folder()
         complete = self.pref.get_object("fcbComplete").get_current_folder()
         incomplete = self.pref.get_object("fcbIncomplete").get_current_folder()
-        config['DIRECTORIES'] = {'ImagesDIrectory': images+os.sep,
-                             'TorrentsDirectory': torrents+os.sep,
-                             'CompleteDownloads': complete+os.sep,
-                                 'IncompleteDownloads': incomplete+os.sep
+        config['DIRECTORIES'] = {
+            'CompleteDownloads': complete+os.sep,
+            'IncompleteDownloads': incomplete+os.sep
         }
         config["LOGGING"] = {'LoggingLevel': "Logging.INFO"}
-        config['DATABASE'] = {'Host': settings.DB_HOST,
-                          'Port': settings.DB_PORT,
-                          'User': settings.DB_USER,
-                          'Password': settings.DB_PASSWORD,
-                          'Database': settings.DB_NAME}
-        with open(settings.DIRECTORY_PATH+'/config.ini','w') as cfg_file:
+        with open(settings.DIRECTORY_PATH+'/config.ini', 'w') as cfg_file:
             config.write(cfg_file)
 
     def save_clicked(self, widget):
         try:
             update_interval = self.pref.get_object("spUpdate").get_value()
-            movie_process = self.pref.get_object('spMovieQueue').get_value()
-            series_process = self.pref.get_object("spSeriesQueue").get_value()
-            movie_results = self.pref.get_object("spMovieResults").get_value()
-            series_duration = self.pref.get_object("spSeriesDuration").get_value()
-            quality_iter = self.pref.get_object('cbMovieQuality').get_active_iter()
-            movie_quality = self.pref.get_object('lsMovieCombo').get_value(quality_iter, 0)
             trans_host = self.pref.get_object('entHost').get_text()
             trans_port = self.pref.get_object('spPort').get_value()
-            query = [(update_interval, 'update_interval'),
-                     (movie_process, 'movie_process_interval'),
-                     (series_process, 'series_process_interval'),
-                     (movie_results, 'max_movie_results'),
-                     (movie_quality, 'movie_quality'),
-                     (series_duration, 'series_duration'),
-                     (trans_host, 'transmission_port'),
-                     (trans_port, 'transmission_port')]
-            self.cursor.executemany("UPDATE config SET value=%s WHERE key=%s", query)
-            self.connect.commit()
+            query = [
+                (update_interval, 'update_interval'),
+                (trans_host, 'transmission_port'),
+                (trans_port, 'transmission_port')]
+            self._cursor.executemany("UPDATE config SET value=? "
+                                     "WHERE key=?", query)
+            self._connect.commit()
+            self._connect.close()
             self.write_to_config()
             self.pref.get_object('Preference').destroy()
 
@@ -206,6 +269,7 @@ class Preferences(object):
             Error("Not a valid number")
 
     def cancel_clicked(self, widget):
+        self._connect.close()
         self.pref.get_object('Preference').destroy()
 
 
@@ -244,7 +308,6 @@ class MovieDetails(object):
         youtube_link = self.details.get_object("lkYoutubeUrl")
         self.watch_list = self.details.get_object("lblWatchList")
         description = self.details.get_object("bufDescription")
-        print(self.movie_title)
         self.cursor.execute("SELECT title,link FROM movies "
                             "WHERE title=?",
                             (self.movie_title,))

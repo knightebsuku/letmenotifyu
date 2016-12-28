@@ -8,7 +8,7 @@ def create_movie_db():
     """
     Create Movie database
     """
-    log.debug("creatting movie database")
+    log.debug("creating movie database")
     db = Database('sqlite', database=settings.MOVIE_DB)
     db.initialise()
 
@@ -17,9 +17,34 @@ def create_series_db():
     """
     Create series database
     """
-    log.debug("creatting movie database")
+    log.debug("creating series database")
     db = Database('sqlite', database=settings.SERIES_DB)
     db.initialise()
+
+
+def create_general_db():
+    """
+    Create general database to house global settings for letmenotifyu
+    """
+    log.debug("creating general database")
+    db = Database('sqlite', database=settings.GENERAL_DB)
+    db.initialise()
+
+
+def general_migration():
+    log.debug("applying migrations for general database")
+    db = Database('sqlite', database=settings.GENERAL_DB)
+    db.add_schema([
+        [1, 'CREATE TABLE config('
+         'id INTEGER PRIMARY KEY,'
+         'key TEXT NOT NULL,'
+         'value TEXT NOT NULL,'
+         'UNIQUE(key,value)) '],
+        [2, "INSERT INTO config(key,value) VALUES('update_interval', '3600')"],
+        [3, "INSERT INTO config(key,value) VALUES('transmission_host','127.0.0.1')"],
+        [4, "INSERT INTO config(key,value) VALUES('transmission_port','9091')"],
+        
+    ])
 
 
 def movie_migration():

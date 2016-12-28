@@ -12,6 +12,7 @@ DIRECTORY_PATH = 'DevLetme'
 DATABSE_PATH = os.path.join(DIRECTORY_PATH, 'database')
 MOVIE_DB = os.path.join(DATABSE_PATH, 'movie.db')
 SERIES_DB = os.path.join(DATABSE_PATH, 'series.db')
+GENERAL_DB = os.path.join(DATABSE_PATH, 'general.db')
 LOG_FILE_PATH = os.path.join(DIRECTORY_PATH, 'letmenotifyu.log')
 #DATA_FILES_PATH = '/usr/share/letmenotifyu/'
 IMAGE_PATH = os.path.relpath(os.path.join(DIRECTORY_PATH, 'images'))
@@ -37,10 +38,10 @@ def create_ini_file():
 
 
 def check_db():
-    if os.path.exists(MOVIE_DB) and os.path.exists(SERIES_DB):
+    if os.path.exists(MOVIE_DB) and os.path.exists(SERIES_DB) and os.path.exists(GENERAL_DB):
         return True
     else:
-        log.error("movie or series database do not exist")
+        log.error("movie, series or general database do not exist")
         raise ValueError("movie or series database not found")
 
 try:
