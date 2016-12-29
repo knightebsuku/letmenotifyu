@@ -2,7 +2,6 @@
 
 import logging
 import configparser
-import psycopg2
 import re
 import os
 import sqlite3
@@ -12,6 +11,7 @@ from datetime import datetime
 from gi.repository import Gtk
 from . import util, settings
 
+log = logging.getLogger(__name__)
 
 class About(object):
     "Show about menu"
@@ -289,10 +289,12 @@ class Error(object):
 
 class MovieDetails(object):
     "show movie details"
-    def __init__(self, cursor, connect, movie_title):
-        self.cursor = cursor
-        self.connect = connect
-        self.movie_title = movie_title
+    def __init__(self, movie_title):
+        log.debug('selected {} to view movie details'.format(movie_title))
+        self._connect = sqlite3.connect(settings.MOVIE_DB)
+        self._cursor = self._connect.cursor()
+        self._cursor.execute(settings.SQLITE_WAL_MODE)
+        self._movie_title = movie_title
         self.details = Gtk.Builder()
         self.details.add_from_file("ui/MovieDetails.glade")
         signals = {'on_btnWatchList_clicked': self.watch_list,
@@ -302,54 +304,45 @@ class MovieDetails(object):
         self.details.get_object("winMovieDetails").show()
 
     def populate(self):
+        log.debug("populating movie details menu")
         movie_title = self.details.get_object("lblMovieTitle")
         rating = self.details.get_object("lblRating")
         movie_link = self.details.get_object("lkImdb")
         youtube_link = self.details.get_object("lkYoutubeUrl")
         self.watch_list = self.details.get_object("lblWatchList")
         description = self.details.get_object("bufDescription")
-        self.cursor.execute("SELECT title,link FROM movies "
-                            "WHERE title=?",
-                            (self.movie_title,))
-        (mt, ml,) = self.cursor.fetchone()
-        movie_title.set_text(mt)
+        self._cursor.execute("SELECT link FROM movies "
+                             "WHERE title=?",
+                             (self._movie_title,))
+        ml = self._cursor.fetchone()
+        movie_title.set_text(self._movie_title)
         movie_link.set_uri("http://www.imdb.com/title/{}".format(ml))
         movie_link.set_property('label', "Imdb")
-        self.cursor.execute("select mq.id FROM movie_queue mq JOIN "
-                            "movies m ON mq.id=m.id "
-                            "AND title=?", (self.movie_title,))
-        #self.cursor.execute("SELECT id FROM movie_queue WHERE movie_id="
-        #                    '(SELECT id FROM movies WHERE title=?)',
-        #                    (self.movie_title,))
-        if self.cursor.fetchone():
+        self._cursor.execute("SELECT mq.id FROM movie_queue mq JOIN "
+                             "movies m ON mq.movie_id=m.id "
+                             "AND title=?", (self._movie_title,))
+        if self._cursor.fetchone():
             self.watch_list.set_text("Yes")
             self.details.get_object("btnWatchList").set_sensitive(False)
         else:
             self.watch_list.set_text("No")
-        self.cursor.execute("SELECT movie_rating, youtube_url, description "
-                            "FROM movie_details md "
-                            "JOIN movies m "
-                            "ON md.movie_id=m.id "
-                            "AND title=?", (self.movie_title,))
-        #self.cursor.execute("SELECT movie_rating,youtube_url,description "
-        #                    "FROM movie_details "
-        #                    'WHERE movie_id=(SELECT id FROM movies WHERE title=%s)',(self.movie_title,))
-        if self.cursor.fetchone() is None:
+        self._cursor.execute("SELECT movie_rating, youtube_url, description "
+                             "FROM movie_details md "
+                             "JOIN movies m "
+                             "ON md.movie_id=m.id "
+                             "AND title=?", (self._movie_title,))
+        if self._cursor.fetchone() is None:
             rating.set_text("")
             youtube_link.set_uri("")
             youtube_link.set_property("visible", False)
             description.set_text("")
-            self.details.get_object("lblActor1").set_property("visible", False)
-            self.details.get_object("lblActor2").set_property("visible", False)
-            self.details.get_object("lblActor3").set_property("visible", False)
-            self.details.get_object("lblActor4").set_property("visible", False)
         else:
-            self.cursor.execute("SELECT movie_rating, youtube_url, description "
-                                "FROM movie_details md "
-                                "JOIN movies m "
-                                "ON md.movie_id=m.id "
-                                "AND title=?", (self.movie_title,))
-            (r, yu, des,) = self.cursor.fetchone()
+            self._cursor.execute("SELECT movie_rating, youtube_url, description "
+                                 "FROM movie_details md "
+                                 "JOIN movies m "
+                                 "ON md.movie_id=m.id "
+                                 "AND title=?", (self._movie_title,))
+            (r, yu, des,) = self._cursor.fetchone()
             rating.set_text(str(r))
             youtube_link.set_uri("https://www.youtube.com/watch?v={}".format(yu))
             youtube_link.set_property('label', "Trailer")
@@ -357,17 +350,18 @@ class MovieDetails(object):
 
     def watch_list(self, widget):
         "add to watch list"
-        self.cursor.execute("INSERT INTO movie_queue("
-                            "movie_id,watch_queue_status_id) "
-                            "SELECT movies.id,watch_queue_status.id "
-                            "FROM movies,watch_queue_status "
-                            "WHERE movies.title=? "
-                            "AND watch_queue_status.name='new'",
-                            (self.movie_title,))
-        self.connect.commit()
+        self._cursor.execute("INSERT INTO movie_queue("
+                             "movie_id,watch_queue_status_id) "
+                             "SELECT movies.id,watch_queue_status.id "
+                             "FROM movies,watch_queue_status "
+                             "WHERE movies.title=? "
+                             "AND watch_queue_status.name='new'",
+                             (self._movie_title,))
+        self._connect.commit()
         self.watch_list.set_text("Yes")
         self.details.get_object("btnWatchList").set_sensitive(False)
 
     def close(self, widget):
         "close widget"
+        self._connect.close()
         self.details.get_object("winMovieDetails").destroy()

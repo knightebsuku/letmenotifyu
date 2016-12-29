@@ -127,6 +127,8 @@ def movie_migration():
          'UNIQUE(actor_id,movie_id),'
          'FOREIGN KEY(movie_id) REFERENCES movies(id) ON DELETE CASCADE ON UPDATE CASCADE,'
          'FOREIGN KEY(actor_id) REFERENCES actors(id) ON DELETE CASCADE ON UPDATE CASCADE)'],
+        [25, "DELETE FROM config WHERE key='transmission_host'"],
+        [26, "DELETE FROM config WHERE key='transmission_port'"],
     ])
     return
 

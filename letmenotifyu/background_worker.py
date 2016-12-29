@@ -45,9 +45,8 @@ def update():
     Check for new movie and series episode releases
     """
     #movie_update()
-    #log.info("sleeping for updating")
-    # time.sleep(float(value)*60)
-    series_update()
+    #series_update()
+    time.sleep(300)
 
 
 def process_series_queue():
@@ -122,11 +121,11 @@ def process_movie_queue():
                 if downloaded:
                     try:
                         torrent_hash, torrent_name = transmission.add_torrent(
-                            torrent_file_path, cursor)
+                            torrent_file_path)
                         log.debug("updating details for movie {}".format(
                             movie_title))
                         cursor.execute("UPDATE movie_torrent_links SET "
-                                       "transmission_hash=?s,"
+                                       "transmission_hash=?,"
                                        "torrent_name=? WHERE link=?",
                                        (torrent_hash, torrent_name,
                                         torrent_url,))
@@ -184,8 +183,8 @@ def movie_details_process():
         connect.close()
         time.sleep(100)
 
-# def start_threads():
-#     "start all threads and processes"
-#     all_update = Thread(target=update)
-#     all_update.setDaemon(True)
-#     all_update.start()
+
+def update_thread():
+    thread = Thread(target=update)
+    thread.setDaemon(True)
+    thread.start()
