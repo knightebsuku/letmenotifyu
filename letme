@@ -10,7 +10,7 @@ from letmenotifyu import util
 from letmenotifyu import background_worker as bw
 
 log = logging.getLogger(__name__)
-#os.chdir(settings.DATA_FILES_PATH)
+os.chdir(settings.DATA_FILES_PATH)
 
 
 if __name__ == "__main__":

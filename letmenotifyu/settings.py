@@ -3,13 +3,11 @@
 import os
 import configparser
 import logging
-import psycopg2
 
 log = logging.getLogger(__name__)
 
-# DIRECTORY_PATH = os.path.join(os.environ['HOME'], '.letmenotifyu')
-DIRECTORY_PATH = 'DevLetme'
-# DATA_FILES_PATH = '/usr/share/letmenotifyu/'
+DIRECTORY_PATH = os.path.join(os.environ['HOME'], '.letmenotifyu')
+DATA_FILES_PATH = '/usr/share/letmenotifyu/'
 DATABSE_PATH = os.path.join(DIRECTORY_PATH, 'database')
 MOVIE_DB = os.path.join(DATABSE_PATH, 'movie.db')
 SERIES_DB = os.path.join(DATABSE_PATH, 'series.db')
