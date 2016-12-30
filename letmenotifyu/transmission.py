@@ -1,5 +1,3 @@
-#!/usr/bin/python3
-
 import transmissionrpc
 import logging
 import sqlite3

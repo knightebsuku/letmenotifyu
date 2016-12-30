@@ -1,16 +1,12 @@
-#!/usr/bin/python3
-
 import webbrowser
 import logging
-import re
-import urllib
 import os
 import requests
-import psycopg2
 
 from urllib.request import Request, urlopen
-from bs4 import BeautifulSoup
 from letmenotifyu import settings
+
+log = logging.getLogger(__name__)
 
 
 def render_view(image, string, store_model, image_file="ui/movies.png"):
@@ -35,49 +31,17 @@ def open_page(cursor, title, option=None):
     logging.info("Opening link {}".format(title))
 
 
-def series_poster(cursor, connect, series_id):
-    "fetch series JPEG"
-    cursor.execute("SELECT title,series_link FROM series WHERE id=%s", (series_id,))
-    (title, series_link) = cursor.fetchone()
-    try:
-        correct_decode(title, series_link)
-        cursor.execute("INSERT INTO series_images(series_id,path) VALUES(%s,%s)",
-                            (series_id, '{}.jpg'.format(title),))
-        connect.commit()
-    except psycopg2.IntegrityError:
-        logging.warn("Image for {} already exists".format(title))
-
-
-def correct_decode(title, series_link):
-    "fetch and decode images"
-    if re.search(r'^http', series_link):
-        request = Request(series_link,
-                      headers={'User-Agent': 'Mozilla/5.0'})
-    try:
-        soup = BeautifulSoup(urlopen(request).read().decode("UTF-8"))
-        meta = soup.find('meta', {'property': 'og:image'})
-        save_image(title, meta)
-    except UnicodeDecodeError:
-        soup = BeautifulSoup(urlopen(request).read().decode("latin1"))
-        meta = soup.find('meta', {'property': 'og:image'})
-        save_image(title, meta)
-    except urllib.error.URLError:
-        logging.info("Unable to connect to image url".format(title))
-    except TypeError:
-        logging.info("Cant find image link for {}".format(title))
-
-
 def save_image(movie_link, meta):
     if os.path.isfile(settings.IMAGE_PATH+movie_link+".jpg"):
         pass
     else:
-        logging.debug("fetching image {}".format(movie_link))
+        log.debug("fetching image {}".format(movie_link))
         with open("%s" % (settings.IMAGE_PATH+movie_link+".jpg"), 'wb') as image_file:
             full_image_url = "http:"+meta['content']
             image_request = Request(full_image_url,
                           headers={'User-Agent': 'Mozilla/5.0'})
             image_file.write(urlopen(image_request).read())
-            logging.debug("Imaged fetched")
+            log.debug("Imaged fetched")
 
 
 def start_logging():
@@ -109,14 +73,14 @@ def fetch_torrent(torrent_url, title):
         if r.status_code == requests.codes.ok:
             with open(settings.TORRENT_DIRECTORY+title+".torrent", "wb") as torrent_file:
                 torrent_file.write(r.content)
-                logging.debug("torrent downloaded and saved")
+                log.debug("torrent downloaded and saved")
                 return True, settings.TORRENT_DIRECTORY+title+".torrent"
         else:
             logging.debug("unable to download torrent {}".format(r.status_code))
             return False, None
     except requests.exceptions.ConnectionError as e:
-            logging.error("unable to fetch torrent for {}".format(title))
-            logging.exception(e)
+            log.error("unable to fetch torrent for {}".format(title))
+            log.exception(e)
             return False, None
 
 

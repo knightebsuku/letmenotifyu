@@ -1,6 +1,3 @@
-#!/usr/bin/python3
-
-import psycopg2
 import sqlite3
 import logging
 
@@ -383,7 +380,7 @@ class Main(object):
                                             (self.choice,))
                 self.connect.commit()
                 gui.Error("{} has been added to the watch list".format(self.choice))
-            except psycopg2.OperationalError as e:
+            except sqlite3.OperationalError as e:
                 log.exception(e)
 
     def add_episode_queue(self, widget):

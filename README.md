@@ -3,11 +3,11 @@ Letmenotifyu
 
 Application to provide notification of new series episodes from [primewire.ag](http://primewire.ag) and movies from [YIFY](https://yts.re/api).
 
-Full application details on the [wiki](https://github.com/stucomplex/letmenotifyu/wiki)
+Full application details on the [wiki](https://github.com/stumenz/letmenotifyu/wiki)
 
 
 
-Version: 3.5.2
+Version: 3.7.0
 -------------------
 
 Program Features
@@ -30,7 +30,7 @@ Program Features
 Dependencies
 ----------------
 
-* Python  3
+* Python 3.5
 
 * Python3-notify2
 
@@ -38,9 +38,8 @@ Dependencies
 
 * GTK +3
 
-* Python3-litemigration [Litemigration](https://github.com/stucomplex/python3-litemigration)
+* Python3-litemigration [Litemigration](https://github.com/stumenz/python3-litemigration)
 
-* Python3-psycopg2
 
 
 Releases

@@ -4,6 +4,7 @@ from litemigration.database import Database
 
 log = logging.getLogger(__name__)
 
+
 def create_movie_db():
     """
     Create Movie database

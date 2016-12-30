@@ -1,5 +1,3 @@
-#!/usr/bin/python3
-
 import logging
 import configparser
 import re
@@ -12,6 +10,7 @@ from gi.repository import Gtk
 from . import util, settings
 
 log = logging.getLogger(__name__)
+
 
 class About(object):
     "Show about menu"
