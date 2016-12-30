@@ -41,9 +41,14 @@ def update():
     """
     Check for new movie and series episode releases
     """
-    #movie_update()
-    #series_update()
-    time.sleep(3000)
+    while True:
+        connect = sqlite3.connect(settings.GENERAL_DB)
+        cursor = connect.cursor()
+        movie_update()
+        series_update()
+        interval = util.get_config_value(cursor, 'update_interval')
+        connect.close()
+        time.sleep(float(interval))
 
 
 def process_series_queue():
@@ -88,7 +93,7 @@ def process_series_queue():
                     watch_id, queue_id, cursor, connect)
         value = util.get_config_value(cursor, 'series_process_interval')
         connect.close()
-        time.sleep(float(value)*600)
+        time.sleep(float(value)*60)
 
 
 def process_movie_queue():
@@ -135,7 +140,7 @@ def process_movie_queue():
                     watch_id, transmission_hash, cursor, connect)
         value = util.get_config_value(cursor, 'movie_process_interval')
         connect.close()
-        time.sleep(float(value)*600)
+        time.sleep(float(value)*60)
 
 
 def movie_details_process():
@@ -174,7 +179,7 @@ def movie_details_process():
                     connect.rollback()
                     log.exception(e)
         connect.close()
-        time.sleep(10000)
+        time.sleep(300)
 
 
 def update_thread():
