@@ -1,9 +1,6 @@
-#!/usr/bin/python3
-
 import os
 import configparser
 import logging
-import psycopg2
 
 log = logging.getLogger(__name__)
 

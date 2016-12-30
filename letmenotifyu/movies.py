@@ -1,4 +1,3 @@
-
 import logging
 import os
 import requests
@@ -14,9 +13,6 @@ log = logging.getLogger(__name__)
 
 
 class Movie:
-    #connect = sqlite3.connect(settings.MOVIE_DB)
-    #cur = connect.cursor()
-
     def __init__(self, movie_json):
         self._movie = movie_json
         self._title = self._movie['title']
@@ -27,7 +23,8 @@ class Movie:
         self._poster_url = self._movie['medium_cover_image']
         self._torrent_url = self._movie['torrents'][0]['url']
         self._torrent_hash = self._movie['torrents'][0]['hash']
-        self._image_file_path = os.path.join(settings.IMAGE_PATH, self._title + ".jpg")
+        self._image_file_path = os.path.join(settings.IMAGE_PATH,
+                                             self._title + ".jpg")
         self.connect = sqlite3.connect(settings.MOVIE_DB)
         self.cur = self.connect.cursor()
         self.cur.execute(settings.SQLITE_WAL_MODE)
