@@ -386,21 +386,6 @@ class Main(object):
             except psycopg2.OperationalError as e:
                 log.exception(e)
 
-    # def watch_list(self, widget):
-    #     "add movie to watch queue"
-    #     try:
-    #         self._movie_cursor.execute("INSERT INTO movie_queue(movie_id,"
-    #                                    "watch_queue_status_id) "
-    #                                    "SELECT movies.id,watch_queue_status.id "
-    #                                    "FROM movies,watch_queue_status "
-    #                                    "WHERE movies.title=? "
-    #                                    "AND watch_queue_status.name='new'",
-    #                                    (self.choice,))
-    #         self.connect.commit()
-    #         gui.Error("{} has been added to the watch list".format(self.choice))
-    #     except psycopg2.IntegrityError:
-    #         gui.Error("record is already in the movie queue")
-
     def add_episode_queue(self, widget):
         " add exsisting episode to watch list"
         try:
@@ -411,7 +396,7 @@ class Main(object):
                                         (self.episodes_dict[self.choice],))
             self.connect.commit()
             log.info("adding {} to series queue".format(self.episodes_dict[self.choice]))
-        except psycopg2.IntegrityError:
+        except sqlite3.IntegrityError:
             gui.Error("Episode is already in the queue")
 
     def view_episode_online(self, widget):
