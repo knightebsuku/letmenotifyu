@@ -38,6 +38,7 @@ class Series():
             else:
                 details = json.loads(primewire.episodes(link))
                 self._commit(details, series_id, notify=True, new=False)
+        self.connect.close()
 
     def _commit(self, details, series_id, **kwargs):
         "Loop over episodes in json in insert"
@@ -56,7 +57,7 @@ class Series():
                     self.cursor.execute("INSERT INTO series_queue(series_id,"
                                         "episode_id,episode_name) VALUES(?,?,?)",
                                         (series_id, new_id,
-                                         episodes['episode_name']))
+                                         episodes['episode_number']))
                     self.connect.commit()
                     if kwargs['notify'] is True:
                         announce("New Series Episode",
@@ -86,8 +87,6 @@ class Series():
         except sqlite3.OperationalError as error:
             log.error("unable to insert episode")
             log.exception(error)
-        finally:
-            self.connect.close()
 
     def _poster(self, series_link, title):
         """

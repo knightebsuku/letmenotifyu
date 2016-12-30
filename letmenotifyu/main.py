@@ -72,6 +72,10 @@ class Main(object):
         util.pre_populate_menu(self.builder)
         self.builder.get_object('AppWindow').show()
         bw.update_thread()
+        self._series_process = Process(name='series_process',
+                                       target=bw.process_series_queue)
+        self._series_process.daemon = True
+        self._series_process.start()
         self._movie_process = Process(name='movie_process',
                                       target=bw.process_movie_queue)
         self._movie_details = Process(name='movie_details',
@@ -88,6 +92,7 @@ class Main(object):
         log.debug("Shutting down processes")
         self._movie_process.terminate()
         self._movie_details.terminate()
+        self._series_process.terminate()
         Gtk.main_quit()
 
     def general_view_activate(self, widget, choice):
@@ -195,16 +200,16 @@ class Main(object):
         "show current seasons episodes"
         self.episodes_dict = {}
         series_name = choice.split(" Season")[0]
-        log.debug(series_name)
         series_number = choice.split("Season ")[1]
-        log.debug(series_number)
         self._series_cursor.execute("SELECT episode_number||episode_name,"
                                     "episode_link "
                                     "FROM episodes e JOIN "
                                     "series s "
                                     "ON e.series_id=s.id "
-                                    "AND episode_link LIKE ?",
-                                    ("%season-{}%".format(series_number),))
+                                    "AND episode_link LIKE ?"
+                                    "AND s.title=?",
+                                    ("%season-{}%".format(series_number),
+                                     series_name))
         self.general_model.clear()
         for (episode_name, episode_link) in self._series_cursor.fetchall():
             util.render_view(self.image, episode_name, self.general_model)
@@ -284,11 +289,12 @@ class Main(object):
         "show episodes of particular season of a series"
         self.episodes_dict = {}
         no = choice.split("Season ")[1]
-        self._series_cursor.execute("SELECT episode_number || episode_name,"
-                                    "episode_link"
+        self._series_cursor.execute("SELECT episode_number||episode_name,"
+                                    "episode_link "
                                     "FROM episodes e "
                                     "JOIN series s "
                                     "ON e.series_id=s.id "
+                                    "AND s.title=?"
                                     "AND episode_link LIKE ? ",
                                     (self.series_name,
                                      "%season-" + no + "%"))

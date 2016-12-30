@@ -1,11 +1,8 @@
-#!/usr/bin/python3
-
-import psycopg2
 import logging
 import time
 import sqlite3
 
-from . import settings, util, yify, transmission, piratebay
+from . import settings, util, yify, transmission, kickass
 from .movies import Movie
 from .series import Series
 from threading import Thread
@@ -46,7 +43,7 @@ def update():
     """
     #movie_update()
     #series_update()
-    time.sleep(300)
+    time.sleep(3000)
 
 
 def process_series_queue():
@@ -55,35 +52,33 @@ def process_series_queue():
     the magent links and send to transmission
     """
     while True:
-        connect = psycopg2.connect(host=settings.DB_HOST,
-                                   database=settings.DB_NAME,
-                                   port=settings.DB_PORT,
-                                   user=settings.DB_USER,
-                                   password=settings.DB_PASSWORD)
+        connect = sqlite3.connect(settings.SERIES_DB)
         cursor = connect.cursor()
+        cursor.execute(settings.SQLITE_WAL_MODE)
+
         cursor.execute("SELECT title, series_queue.id,"
                        "episode_name, watch_queue_status_id "
                        "FROM series_queue JOIN series ON series_id=series.id "
-                       " AND watch_queue_status_id <> 4")
+                       "AND watch_queue_status_id <> 4")
         for (title, queue_id, ep_name, watch_id) in cursor.fetchall():
             if watch_id == 1:
                 log.info("fetching episode magnet for {}".format(title))
-                magnet_url = piratebay.episode_magnet_link(title, ep_name)
+                magnet_url = kickass.fetch_episode_search_results(title, ep_name)
                 if magnet_url is not None:
                     try:
                         torrent_hash, torrent_name = transmission.add_torrent(
-                            magnet_url, cursor)
+                            magnet_url)
                         cursor.execute("INSERT INTO series_torrent_links("
                                        "series_queue_id, link,"
                                        "transmission_hash, torrent_name) "
-                                       "VALUES(%s,%s,%s,%s)",
+                                       "VALUES(?,?,?,?)",
                                        (queue_id,
                                         magnet_url,
                                         torrent_hash,
                                         torrent_name,))
                         cursor.execute("UPDATE series_queue SET "
                                        "watch_queue_status_id=2 "
-                                       "WHERE id=%s", (queue_id,))
+                                       "WHERE id=?", (queue_id,))
                         connect.commit()
                     except Exception as e:
                         connect.rollback()
@@ -93,7 +88,7 @@ def process_series_queue():
                     watch_id, queue_id, cursor, connect)
         value = util.get_config_value(cursor, 'series_process_interval')
         connect.close()
-        time.sleep(float(value)*60)
+        time.sleep(float(value)*600)
 
 
 def process_movie_queue():
@@ -140,7 +135,7 @@ def process_movie_queue():
                     watch_id, transmission_hash, cursor, connect)
         value = util.get_config_value(cursor, 'movie_process_interval')
         connect.close()
-        time.sleep(float(value)*60)
+        time.sleep(float(value)*600)
 
 
 def movie_details_process():
@@ -170,18 +165,16 @@ def movie_details_process():
                                     detail["rating"],
                                     detail["yt_trailer_code"],
                                     detail["description_full"],))
-                    # check_actors(detail['actors'],
-                    #             movie_id, cursor)
                     connect.commit()
-                except psycopg2.IntegrityError as e:
+                except sqlite3.IntegrityError as e:
                     connect.rollback()
                     log.warn("Movie Detail already exists")
                     log.exception(e)
-                except psycopg2.OperationalError as e:
+                except sqlite3.OperationalError as e:
                     connect.rollback()
                     log.exception(e)
         connect.close()
-        time.sleep(100)
+        time.sleep(10000)
 
 
 def update_thread():
