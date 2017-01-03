@@ -70,7 +70,9 @@ class Movie:
                               self._torrent_hash,))
             self.cur.execute("INSERT INTO movie_images(movie_id, path)"
                              "VALUES(?,?)",
-                             (new_id, self._image_file_path))
+                             (new_id,
+                              os.path.join(settings.IMAGES_DIRECTORY,
+                                           self._title + ".jpg")))
             self.connect.commit()
             announce('Newly Released Movie', "{}".format(self._title))
         except(sqlite3.ProgrammingError) as error:

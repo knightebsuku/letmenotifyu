@@ -29,7 +29,7 @@ class Series():
         for series_id, title, link, total_eps in self.cursor.fetchall():
             if total_eps == 0:
                 log.info("new series, retriving all episodes")
-                path = os.path.join(settings.IMAGE_PATH, title+'.jpg')
+                path = os.path.join(settings.IMAGES_DIRECTORY, title+'.jpg')
                 details = json.loads(primewire.episodes(link))
                 if self._poster(details['series_poster'],
                                 title):

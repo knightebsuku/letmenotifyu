@@ -6,12 +6,15 @@ log = logging.getLogger(__name__)
 
 DIRECTORY_PATH = os.path.join(os.environ['HOME'], '.letmenotifyu')
 DATA_FILES_PATH = '/usr/share/letmenotifyu/'
+
 DATABSE_PATH = os.path.join(DIRECTORY_PATH, 'database')
 MOVIE_DB = os.path.join(DATABSE_PATH, 'movie.db')
 SERIES_DB = os.path.join(DATABSE_PATH, 'series.db')
 GENERAL_DB = os.path.join(DATABSE_PATH, 'general.db')
+
 LOG_FILE_PATH = os.path.join(DIRECTORY_PATH, 'letmenotifyu.log')
-IMAGE_PATH = os.path.relpath(os.path.join(DIRECTORY_PATH, 'images'))
+IMAGES_DIRECTORY = 'images'
+IMAGE_PATH = os.path.join(DIRECTORY_PATH, IMAGES_DIRECTORY)
 SQLITE_WAL_MODE = "PRAGMA journal_mode=WAL"
 config = configparser.ConfigParser()
 
