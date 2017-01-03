@@ -14,10 +14,11 @@
     <property name="icon">notify.png</property>
     <property name="icon_name">notify</property>
     <property name="type_hint">dialog</property>
+    <property name="gravity">center</property>
     <property name="program_name">Letmenotifyu</property>
-    <property name="version">3.5.2</property>
+    <property name="version">3.7.0</property>
     <property name="comments" translatable="yes">letmenotifyu is a program that will notify you of the latest movies and series episodes.</property>
-    <property name="website">https://github.com/stucomplex/letmenotifyu</property>
+    <property name="website">https://github.com/stumenz/letmenotifyu</property>
     <property name="website_label" translatable="yes">Letmenotifyu</property>
     <property name="license" translatable="yes">GPL 3.0</property>
     <property name="authors">Lunga Mthembu

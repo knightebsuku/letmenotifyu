@@ -1,5 +1,6 @@
-letmenotifyu (3.5.2-1) UNRELEASED; urgency=medium
+letmenotifyu (3.7.0-1) UNRELEASED; urgency=medium
 
+  [ Lunga Mthembu ]
   * Delete upcoming movies if released
   * fix
   * code cleanup
@@ -42,7 +43,10 @@ letmenotifyu (3.5.2-1) UNRELEASED; urgency=medium
   * change movie compare to generator
   * fix regular expression for matching episodes which kickass
 
- -- Lunga Mthembu <complexstu@gmail.com>  Tue, 20 Oct 2015 07:33:46 +0200
+  [ lunga ]
+  * Move application to sqlite database  from postgresql
+
+ -- lunga <lunga@complex>  Fri, 30 Dec 2016 15:21:50 +0200
 
 letmenotifyu (2.2.1-1) unstable; urgency=low
 
