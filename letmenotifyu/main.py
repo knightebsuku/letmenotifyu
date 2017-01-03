@@ -1,5 +1,6 @@
 import sqlite3
 import logging
+import os
 
 from datetime import datetime, timedelta
 from . import gui, util, settings
@@ -172,7 +173,7 @@ class Main(object):
                                    (week, datetime.now(),))
         for (title, path) in self._movie_cursor.fetchall():
             util.render_view(self.image, title, self.general_model,
-                             path)
+                             os.path.join(settings.DIRECTORY_PATH, path))
         self.view_flag = "released_movies_view_selected"
 
     def movie_archive_view_genre_selected(self, choice):
@@ -190,7 +191,8 @@ class Main(object):
         self.general_model.clear()
         for (movie_title, path) in movie_info:
             util.render_view(self.image, movie_title,
-                             self.general_model, path)
+                             self.general_model,
+                             os.path.join(settings.DIRECTORY_PATH, path))
         self.view_flag = "movie_archive_view_genre_selected"
 
     def series_on_air_view_series_selected(self, choice):
@@ -240,7 +242,7 @@ class Main(object):
                                     (week, datetime.now(),))
         for (episode_name, episode_link, path) in self._series_cursor.fetchall():
             util.render_view(self.image, episode_name, self.general_model,
-                             path)
+                             os.path.join(settings.DIRECTORY_PATH, path))
             self.episodes_dict[episode_name] = episode_link
         self.view_flag = 'latest_episode_view_selected'
 
@@ -255,7 +257,8 @@ class Main(object):
         for (title, current_season, path) in self._series_cursor.fetchall():
             full_title = title+" "+"Season"+" "+str(current_season)
             util.render_view(self.image, full_title,
-                             self.general_model, path)
+                             self.general_model,
+                             os.path.join(settings.DIRECTORY_PATH, path))
         self.view_flag = 'series_on_air_view_selected'
 
     def series_archive_view_selected(self):
@@ -266,7 +269,8 @@ class Main(object):
                                     "ON series.id=series_images.series_id "
                                     "ORDER BY title")
         for (title, path) in self._series_cursor.fetchall():
-            util.render_view(self.image, title, self.general_model, path)
+            util.render_view(self.image, title, self.general_model,
+                             os.path.join(settings.DIRECTORY_PATH, path))
             self.view_flag = 'series_archive_view_selected'
 
     def series_archive_view_season_selected(self, choice):
@@ -312,7 +316,7 @@ class Main(object):
                                    "AND wqs.id=mq.watch_queue_status_id;")
         for (path, watch_name) in self._movie_cursor.fetchall():
             util.render_view(self.image, watch_name, self.general_model,
-                             path)
+                             os.path.join(settings.DIRECTORY_PATH, path))
         self.view_flag = 'watch_queue_movies_selected'
 
     def watch_queue_series_selected(self):
@@ -328,7 +332,7 @@ class Main(object):
         for (path, watch_name, episode_name) in self._series_cursor.fetchall():
             util.render_view(self.image, episode_name+":  "+watch_name,
                              self.general_model,
-                             path)
+                             os.path.join(settings.DIRECTORY_PATH, path))
         self.view_flag = 'watch_queue_series_selected'
 
     def button_root_clicked(self, widget):

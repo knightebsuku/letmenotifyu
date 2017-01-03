@@ -57,7 +57,7 @@ def process_series_queue():
     the magent links and send to transmission
     """
     while True:
-        connect = sqlite3.connect(settings.SERIES_DB)
+        connect = sqlite3.connect(settings.SERIES_DB, timeout=10)
         cursor = connect.cursor()
         cursor.execute(settings.SQLITE_WAL_MODE)
 
@@ -99,7 +99,7 @@ def process_series_queue():
 def process_movie_queue():
     "handle all movies in the queues"
     while True:
-        connect = sqlite3.connect(settings.MOVIE_DB)
+        connect = sqlite3.connect(settings.MOVIE_DB, timeout=10)
         cursor = connect.cursor()
         cursor.execute(settings.SQLITE_WAL_MODE)
 
@@ -146,7 +146,7 @@ def process_movie_queue():
 def movie_details_process():
     "add movie details"
     while True:
-        connect = sqlite3.connect(settings.MOVIE_DB)
+        connect = sqlite3.connect(settings.MOVIE_DB, timeout=10)
         cursor = connect.cursor()
         cursor.execute(settings.SQLITE_WAL_MODE)
         cursor.execute('SELECT movies.id,yify_id FROM movies '

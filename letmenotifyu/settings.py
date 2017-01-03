@@ -15,6 +15,7 @@ GENERAL_DB = os.path.join(DATABSE_PATH, 'general.db')
 LOG_FILE_PATH = os.path.join(DIRECTORY_PATH, 'letmenotifyu.log')
 IMAGES_DIRECTORY = 'images'
 IMAGE_PATH = os.path.join(DIRECTORY_PATH, IMAGES_DIRECTORY)
+TORRENT_DIRECTORY = os.path.join(DIRECTORY_PATH, 'torrents')
 SQLITE_WAL_MODE = "PRAGMA journal_mode=WAL"
 config = configparser.ConfigParser()
 
@@ -32,9 +33,7 @@ def create_ini_file():
     config['DIRECTORIES'] = {'CompleteDownloads': os.path.join(DIRECTORY_PATH,
                                                                'complete'),
                              'IncompleteDownloads': os.path.join(DIRECTORY_PATH,
-                                                                 'incomplete'),
-                             'Torrents': os.path.join(DIRECTORY_PATH,
-                                                      'torrents')}
+                                                                 'incomplete')}
     config["LOGGING"] = {'LoggingLevel': "Logging.INFO"}
     with open(DIRECTORY_PATH+'/config.ini', 'w') as cfg_file:
         config.write(cfg_file)
@@ -51,7 +50,6 @@ try:
     config.read(DIRECTORY_PATH+'/config.ini')
     COMPLETE_DIRECTORY = config['DIRECTORIES']['CompleteDownloads']
     INCOMPLETE_DIRECTORY = config['DIRECTORIES']['IncompleteDownloads']
-    TORRENT_DIRECTORY = config['DIRECTORIES']['Torrents']
     LOG_LEVEL = logging_dict(config['LOGGING']['LoggingLevel'])
 except KeyError:
     os.mkdir(DIRECTORY_PATH)
@@ -60,7 +58,6 @@ except KeyError:
     create_ini_file()
     COMPLETE_DIRECTORY = config['DIRECTORIES']['CompleteDownloads']
     INCOMPLETE_DIRECTORY = config['DIRECTORIES']['IncompleteDownloads']
-    TORRENT_DIRECTORY = config['DIRECTORIES']['Torrents']
     LOG_LEVEL = logging_dict(config['LOGGING']['LoggingLevel'])
     os.mkdir(INCOMPLETE_DIRECTORY)
     os.mkdir(COMPLETE_DIRECTORY)

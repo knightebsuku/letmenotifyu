@@ -290,7 +290,7 @@ class MovieDetails(object):
     "show movie details"
     def __init__(self, movie_title):
         log.debug('selected {} to view movie details'.format(movie_title))
-        self._connect = sqlite3.connect(settings.MOVIE_DB)
+        self._connect = sqlite3.connect(settings.MOVIE_DB, timeout=10)
         self._cursor = self._connect.cursor()
         self._cursor.execute(settings.SQLITE_WAL_MODE)
         self._movie_title = movie_title
