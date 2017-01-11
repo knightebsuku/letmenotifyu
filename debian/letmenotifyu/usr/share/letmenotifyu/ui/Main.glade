@@ -318,18 +318,6 @@
       </object>
     </child>
   </object>
-  <object class="GtkMenu" id="Movies">
-    <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <child>
-      <object class="GtkMenuItem" id="watchlist">
-        <property name="visible">True</property>
-        <property name="can_focus">False</property>
-        <property name="label" translatable="yes">Add to watch list</property>
-        <signal name="activate" handler="on_watchlist_activate" swapped="no"/>
-      </object>
-    </child>
-  </object>
   <object class="GtkMenu" id="Series">
     <property name="visible">True</property>
     <property name="app_paintable">True</property>

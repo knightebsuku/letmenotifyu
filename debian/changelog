@@ -1,4 +1,4 @@
-letmenotifyu (3.7.0-1) UNRELEASED; urgency=medium
+letmenotifyu (3.7.1) UNRELEASED; urgency=medium
 
   [ Lunga Mthembu ]
   * Delete upcoming movies if released
@@ -45,8 +45,9 @@ letmenotifyu (3.7.0-1) UNRELEASED; urgency=medium
 
   [ lunga ]
   * Move application to sqlite database  from postgresql
+  * check for return errors from primewire json file
 
- -- lunga <lunga@complex>  Fri, 30 Dec 2016 15:21:50 +0200
+ -- lunga <lunga@complex-desktop>  Thu, 12 Jan 2017 00:19:23 +0200
 
 letmenotifyu (2.2.1-1) unstable; urgency=low
 
