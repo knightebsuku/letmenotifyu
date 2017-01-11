@@ -53,6 +53,7 @@ def episodes(series_url: str) -> Json:
                  }]
     }
     """
+    log.debug("checking for new episodes for %s", series_url)
     try:
         series_episodes = []
         series_info = {}
@@ -84,6 +85,7 @@ def episodes(series_url: str) -> Json:
                 series_episodes.append(episode_dict)
         series_info['episodes'] = series_episodes
         return json.dumps(series_info)
-    except (ConnectionError, HTTPError) as error:
-        log.error("Unable to connect to primewire")
-        log.exception(error)
+    except (ConnectionError, HTTPError):
+        raise
+    except TypeError:
+        raise

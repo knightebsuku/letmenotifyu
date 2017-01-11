@@ -30,14 +30,26 @@ class Series():
             if total_eps == 0:
                 log.info("new series, retriving all episodes")
                 path = os.path.join(settings.IMAGES_DIRECTORY, title+'.jpg')
-                details = json.loads(primewire.episodes(link))
-                if self._poster(details['series_poster'],
-                                title):
-                    self._commit(details, series_id, path=path,
-                                 notify=False, new=True)
+                try:
+                    details = json.loads(primewire.episodes(link))
+                except (ConnectionError, HTTPError) as error:
+                    log.exception(e)
+                except TypeError as error:
+                    log.exception(error)
+                else:
+                    if self._poster(details['series_poster'],
+                                    title):
+                        self._commit(details, series_id, path=path,
+                                     notify=False, new=True)
             else:
-                details = json.loads(primewire.episodes(link))
-                self._commit(details, series_id, notify=True, new=False)
+                try:
+                    details = json.loads(primewire.episodes(link))
+                except(ConnectionError, HTTPError) as error:
+                    log.exception(error)
+                except TypeError as error:
+                    log.exception(error)
+                else:
+                    self._commit(details, series_id, notify=True, new=False)
         self.connect.close()
 
     def _commit(self, details, series_id, **kwargs):
