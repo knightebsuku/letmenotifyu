@@ -19,13 +19,16 @@ log = logging.getLogger(__name__)
 
 class Main(object):
     "Main application"
-    def __init__(self):
+    def __init__(self, sp, mp, mdp ):
         self._movie_connect = sqlite3.connect(settings.MOVIE_DB)
         self._movie_cursor = self._movie_connect.cursor()
         self._series_connect = sqlite3.connect(settings.SERIES_DB)
         self._series_cursor = self._series_connect.cursor()
         self._movie_cursor.execute(settings.SQLITE_WAL_MODE)
         self._series_cursor.execute(settings.SQLITE_WAL_MODE)
+        self._sp = sp
+        self._mp = mp
+        self._mdp = mdp
 
         self.builder = Gtk.Builder()
         self.image = Gtk.Image()
@@ -70,27 +73,16 @@ class Main(object):
         util.pre_populate_menu(self.builder)
         self.builder.get_object('AppWindow').show()
         bw.update_thread()
-        self._series_process = Process(name='series_process',
-                                       target=bw.process_series_queue)
-        self._series_process.daemon = True
-        self._series_process.start()
-        self._movie_process = Process(name='movie_process',
-                                      target=bw.process_movie_queue)
-        self._movie_details = Process(name='movie_details',
-                                      target=bw.movie_details_process)
-        self._movie_process.daemon = True
-        self._movie_details.daemon = True
-        self._movie_process.start()
-        self._movie_details.start()
+        
         Gtk.main()
 
     def on_quit(self, widget):
         self._movie_connect.close()
         self._series_connect.close()
         log.debug("Shutting down processes")
-        self._movie_process.terminate()
-        self._movie_details.terminate()
-        self._series_process.terminate()
+        self._mp.terminate()
+        self._mdp.terminate()
+        self._sp.terminate()
         Gtk.main_quit()
 
     def general_view_activate(self, widget, choice):

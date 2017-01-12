@@ -5,8 +5,7 @@ import os
 from multiprocessing import Process
 from letmenotifyu import database as db
 from letmenotifyu.main import Main
-from letmenotifyu import settings
-from letmenotifyu import util
+from letmenotifyu import settings, util
 from letmenotifyu import background_worker as bw
 
 log = logging.getLogger(__name__)
@@ -26,4 +25,16 @@ if __name__ == "__main__":
         db.general_migration()
         db.movie_migration()
         db.series_migration()
-        Main()
+        series_process = Process(name='series_process',
+                                       target=bw.process_series_queue)
+        movie_process = Process(name='movie_process',
+                                      target=bw.process_movie_queue)
+        movie_details_process = Process(name='movie_details',
+                                      target=bw.movie_details_process)
+        series_process.daemon = True
+        movie_process.daemon = True
+        movie_details_process.daemon = True
+        series_process.start()
+        movie_process.start()
+        movie_detail_process.start()
+        Main(series_process, movie_process, movie_details_process)
