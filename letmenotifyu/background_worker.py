@@ -1,6 +1,7 @@
 import logging
 import time
 import sqlite3
+import json
 
 from . import settings, util, yify, transmission, kickass
 from .movies import Movie
@@ -23,6 +24,8 @@ def movie_update():
             movie_list = json_yify['data']['movies']
     except(ConnectionError):
         log.error("Unable to connect to yify site")
+    except json.decoder.JSONDecodeError as error:
+        log.exception(error)
     else:
         for m in movie_list:
             json_movie = Movie(m)
