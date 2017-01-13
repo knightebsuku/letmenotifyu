@@ -104,15 +104,6 @@
                         <signal name="activate" handler="on_AddSeriesMenuItem_activate" swapped="no"/>
                       </object>
                     </child>
-                    <child>
-                      <object class="GtkMenuItem" id="SeriesPeferencesMenuItem">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="label" translatable="yes">Preferences</property>
-                        <property name="use_underline">True</property>
-                        <signal name="activate" handler="on_SeriesPeferencesMenuItem_activate" swapped="no"/>
-                      </object>
-                    </child>
                   </object>
                 </child>
               </object>

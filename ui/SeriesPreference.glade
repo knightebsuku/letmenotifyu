@@ -3,13 +3,8 @@
 <interface>
   <requires lib="gtk+" version="3.12"/>
   <object class="GtkAdjustment" id="adjSeriesQueue">
-    <property name="upper">100</property>
-    <property name="step_increment">1</property>
-    <property name="page_increment">10</property>
-  </object>
-  <object class="GtkAdjustment" id="adjUpdate">
     <property name="lower">1</property>
-    <property name="upper">3600</property>
+    <property name="upper">100</property>
     <property name="step_increment">1</property>
     <property name="page_increment">10</property>
   </object>
@@ -20,7 +15,9 @@
     <property name="page_increment">10</property>
   </object>
   <object class="GtkApplicationWindow" id="SeriesPreference">
-    <property name="can_focus">False</property>
+    <property name="can_focus">True</property>
+    <property name="can_default">True</property>
+    <property name="type">popup</property>
     <property name="title" translatable="yes">Series Preferences</property>
     <property name="window_position">center</property>
     <property name="gravity">center</property>
@@ -46,17 +43,6 @@
               <packing>
                 <property name="left_attach">0</property>
                 <property name="top_attach">0</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkLabel" id="label2">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="label" translatable="yes">Check for new episodes</property>
-              </object>
-              <packing>
-                <property name="left_attach">0</property>
-                <property name="top_attach">1</property>
               </packing>
             </child>
             <child>
@@ -96,21 +82,16 @@
               </packing>
             </child>
             <child>
-              <object class="GtkSpinButton" id="spSeriesUpdate">
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="adjustment">adjUpdate</property>
-              </object>
-              <packing>
-                <property name="left_attach">1</property>
-                <property name="top_attach">1</property>
-              </packing>
-            </child>
-            <child>
               <object class="GtkSpinButton" id="spSeriesQueue">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
+                <property name="width_chars">0</property>
+                <property name="overwrite_mode">True</property>
+                <property name="caps_lock_warning">False</property>
+                <property name="input_purpose">number</property>
                 <property name="adjustment">adjSeriesQueue</property>
+                <property name="numeric">True</property>
+                <property name="update_policy">if-valid</property>
               </object>
               <packing>
                 <property name="left_attach">1</property>
@@ -121,12 +102,21 @@
               <object class="GtkSpinButton" id="spSeriesVisibility">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
+                <property name="input_purpose">number</property>
                 <property name="adjustment">adjVisibility</property>
+                <property name="numeric">True</property>
+                <property name="update_policy">if-valid</property>
               </object>
               <packing>
                 <property name="left_attach">1</property>
                 <property name="top_attach">5</property>
               </packing>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
             </child>
             <child>
               <placeholder/>
