@@ -15,9 +15,9 @@ def open_transmission():
     host = util.get_config_value(cursor, 'transmission_host')
     port = util.get_config_value(cursor, 'transmission_port')
     log.debug("Host is {}".format(host))
-    log.debug("port is {}".format(port[:-2]))
+    log.debug("port is {}".format(port))
     connect.close()
-    return transmissionrpc.Client(host, port=port[:-2])
+    return transmissionrpc.Client(host, port=port)
 
 
 def add_torrent(torrent_file_path):
