@@ -39,7 +39,6 @@ class Main(object):
                    'on_HeaderView_event': self.header_view_event,
                    'on_GeneralIconView_activated': self.general_view_activate,
                    'on_GeneralIconView_event': self.general_view_event,
-                   'on_SeriesPeferencesMenuItem_activate': self.series_preference,
                    'on_AddSeriesMenuItem_activate': self.add_series_activate,
                    'on_MovePeferencesMenuItem_activate': self.movie_preference,
                    'on_GeneralPreference_activate': self.pref_activate,
@@ -342,9 +341,6 @@ class Main(object):
 
     def button_two_clicked(self, widget):
         self.season__view_selected(widget.get_label())
-
-    def series_preference(self, widget):
-        gui.SeriesPreference()
 
     def add_series_activate(self, widget):
         gui.AddSeries()
