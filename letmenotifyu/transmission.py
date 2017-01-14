@@ -81,7 +81,7 @@ def check_episode_status(watch_id, queue_id, cursor, db):
             db.commit()
         elif torrent_status.status == 'seeding':
             log.debug("movie queue Id {} to status 4".format(queue_id))
-            cursor.execute("UPDATE movie_queue SET watch_queue_status_id=4 "
+            cursor.execute("UPDATE series_queue SET watch_queue_status_id=4 "
                            "WHERE id=?", (queue_id,))
             db.commit()
     except KeyError as e:
