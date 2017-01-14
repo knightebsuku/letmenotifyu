@@ -134,13 +134,13 @@ class Confirm(object):
 
     def which_sql_message(self):
         if self.instruction == "start":
-            use_sql = "UPDATE series SET status='1' WHERE title=%s"
+            use_sql = "UPDATE series SET status='t' WHERE title=?"
             message = "Are you sure you want to start updating"
         elif self.instruction == "stop":
-            use_sql = "UPDATE series SET status='0' WHERE title=%s"
+            use_sql = "UPDATE series SET status='f' WHERE title=?"
             message = "Are you sure you want to stop updating"
         elif self.instruction == "delete":
-            use_sql = "DELETE FROM series WHERE title=%s"
+            use_sql = "DELETE FROM series WHERE title=?"
             message = "Are you sure you want to delete"
         return message, use_sql
 
@@ -149,7 +149,7 @@ class Confirm(object):
         self.cursor.execute(self.sql, (self.title,))
         self.connect.commit()
         self.confirm.get_object('msgDialog').destroy()
-        logging.warn("Deleting: {}".format(self.title))
+        log.warn("Deleting: {}".format(self.title))
 
     def cancel_clicked(self, widget):
         self.confirm.get_object('msgDialog').destroy()

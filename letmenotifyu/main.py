@@ -352,13 +352,13 @@ class Main(object):
         gui.About()
 
     def stop_update_activate(self, widget):
-        gui.Confirm(self.striped_name, "stop", self.connect, self._series_cursor)
+        gui.Confirm(self.striped_name, "stop", self._series_connect, self._series_cursor)
 
     def start_update_activate(self, widget):
-        gui.Confirm(self.striped_name, "start", self.connect, self._series_cursor)
+        gui.Confirm(self.striped_name, "start", self._series_connect, self._series_cursor)
 
     def delete_series_activate(self, widget):
-        gui.Confirm(self.striped_name, "delete", self.connect, self._series_cursor)
+        gui.Confirm(self.striped_name, "delete", self._series_connect, self._series_cursor)
 
     def pref_activate(self, widget):
         gui.Preferences()
