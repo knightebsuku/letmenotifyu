@@ -22,48 +22,6 @@ class About(object):
         window.destroy()
 
 
-class SeriesPreference:
-    def __init__(self):
-        self._connect = sqlite3.connect(settings.SERIES_DB)
-        self._cursor = self._connect.cursor()
-        self._cursor.execute(settings.SQLITE_WAL_MODE)
-        self.pref = Gtk.Builder()
-        self.pref.add_from_file("ui/SeriesPreference.glade")
-        signals = {'on_btnApply_clicked': self.save_clicked,
-                   'on_btnCancel_clicked': self.cancel_clicked}
-        self.pref.connect_signals(signals)
-        self.populate_fields()
-        self.pref.get_object('SeriesPreference').show()
-
-    def populate_fields(self):
-        update = util.get_config_value(self._cursor, 'update_interval')
-        queue = util.get_config_value(self._cursor, 'series_process_interval')
-        duration = util.get_config_value(self._cursor, 'series_duration')
-        self.pref.get_object("spSeriesUpdate").set_value(float(update))
-        self.pref.get_object("spSeriesQueue").set_value(float(queue))
-        self.pref.get_object("spSeriesVisibility").set_value(float(duration))
-
-    def save_clicked(self, widget):
-        update = self.pref.get_object("spSeriesUpdate").get_value()
-        queue = self.pref.get_object('spSeriesQueue').get_value()
-        duration = self.pref.get_object("spSeriesVisibility").get_value()
-
-        query = [
-            (update, 'update_interval'),
-            (queue, 'series_process_interval'),
-            (duration, 'series_duration'),
-        ]
-        self._cursor.executemany("UPDATE config SET "
-                                 "value=? WHERE key=?", query)
-        self._connect.commit()
-        self._connect.close()
-        self.pref.get_object('SeriesPreference').destroy()
-
-    def cancel_clicked(self, widget):
-        self._connect.close()
-        self.pref.get_object('SeriesPreference').destroy()
-
-
 class MoviePreference:
     def __init__(self):
         self._connect = sqlite3.connect(settings.MOVIE_DB)
@@ -78,22 +36,15 @@ class MoviePreference:
         self.pref.get_object('MoviePreference').show()
 
     def populate_fields(self):
-        queue = util.get_config_value(self._cursor, 'movie_process_interval')
-        duration = util.get_config_value(self._cursor, 'movie_duration')
         # quality = util.get_config_value(self._cursor, 'movie_quality')
-        self.pref.get_object("spMovieQueue").set_value(float(queue))
-        self.pref.get_object("spMovieDuration").set_value(float(duration))
         # self.pref.get_object("lsMovieQuality").set_value(quality)
+        pass
 
     def save_clicked(self, widget):
-        queue = self.pref.get_object("spMovieQueue").get_value()
-        duration = self.pref.get_object("spMovieDuration").get_value()
         quality_iter = self.pref.get_object('cbMovieQuality').get_active_iter()
         quality = self.pref.get_object('lsMovieQuality').get_value(quality_iter, 0)
 
         query = [
-            (queue, 'movie_process_interval'),
-            (duration, 'movie_duration'),
             (quality, 'movie_quality'),
         ]
         self._cursor.executemany("UPDATE config SET "
@@ -183,13 +134,13 @@ class Confirm(object):
 
     def which_sql_message(self):
         if self.instruction == "start":
-            use_sql = "UPDATE series SET status='1' WHERE title=%s"
+            use_sql = "UPDATE series SET status='t' WHERE title=?"
             message = "Are you sure you want to start updating"
         elif self.instruction == "stop":
-            use_sql = "UPDATE series SET status='0' WHERE title=%s"
+            use_sql = "UPDATE series SET status='f' WHERE title=?"
             message = "Are you sure you want to stop updating"
         elif self.instruction == "delete":
-            use_sql = "DELETE FROM series WHERE title=%s"
+            use_sql = "DELETE FROM series WHERE title=?"
             message = "Are you sure you want to delete"
         return message, use_sql
 
@@ -198,7 +149,7 @@ class Confirm(object):
         self.cursor.execute(self.sql, (self.title,))
         self.connect.commit()
         self.confirm.get_object('msgDialog').destroy()
-        logging.warn("Deleting: {}".format(self.title))
+        log.warn("Deleting: {}".format(self.title))
 
     def cancel_clicked(self, widget):
         self.confirm.get_object('msgDialog').destroy()

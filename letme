@@ -36,5 +36,5 @@ if __name__ == "__main__":
         movie_details_process.daemon = True
         series_process.start()
         movie_process.start()
-        movie_detail_process.start()
+        movie_details_process.start()
         Main(series_process, movie_process, movie_details_process)

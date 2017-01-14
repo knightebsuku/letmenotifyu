@@ -39,7 +39,6 @@ class Main(object):
                    'on_HeaderView_event': self.header_view_event,
                    'on_GeneralIconView_activated': self.general_view_activate,
                    'on_GeneralIconView_event': self.general_view_event,
-                   'on_SeriesPeferencesMenuItem_activate': self.series_preference,
                    'on_AddSeriesMenuItem_activate': self.add_series_activate,
                    'on_MovePeferencesMenuItem_activate': self.movie_preference,
                    'on_GeneralPreference_activate': self.pref_activate,
@@ -343,9 +342,6 @@ class Main(object):
     def button_two_clicked(self, widget):
         self.season__view_selected(widget.get_label())
 
-    def series_preference(self, widget):
-        gui.SeriesPreference()
-
     def add_series_activate(self, widget):
         gui.AddSeries()
 
@@ -356,13 +352,13 @@ class Main(object):
         gui.About()
 
     def stop_update_activate(self, widget):
-        gui.Confirm(self.striped_name, "stop", self.connect, self._series_cursor)
+        gui.Confirm(self.striped_name, "stop", self._series_connect, self._series_cursor)
 
     def start_update_activate(self, widget):
-        gui.Confirm(self.striped_name, "start", self.connect, self._series_cursor)
+        gui.Confirm(self.striped_name, "start", self._series_connect, self._series_cursor)
 
     def delete_series_activate(self, widget):
-        gui.Confirm(self.striped_name, "delete", self.connect, self._series_cursor)
+        gui.Confirm(self.striped_name, "delete", self._series_connect, self._series_cursor)
 
     def pref_activate(self, widget):
         gui.Preferences()

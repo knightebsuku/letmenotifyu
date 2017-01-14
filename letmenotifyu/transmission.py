@@ -15,9 +15,9 @@ def open_transmission():
     host = util.get_config_value(cursor, 'transmission_host')
     port = util.get_config_value(cursor, 'transmission_port')
     log.debug("Host is {}".format(host))
-    log.debug("port is {}".format(port[:-2]))
+    log.debug("port is {}".format(port))
     connect.close()
-    return transmissionrpc.Client(host, port=port[:-2])
+    return transmissionrpc.Client(host, port=port)
 
 
 def add_torrent(torrent_file_path):
@@ -81,7 +81,7 @@ def check_episode_status(watch_id, queue_id, cursor, db):
             db.commit()
         elif torrent_status.status == 'seeding':
             log.debug("movie queue Id {} to status 4".format(queue_id))
-            cursor.execute("UPDATE movie_queue SET watch_queue_status_id=4 "
+            cursor.execute("UPDATE series_queue SET watch_queue_status_id=4 "
                            "WHERE id=?", (queue_id,))
             db.commit()
     except KeyError as e:
