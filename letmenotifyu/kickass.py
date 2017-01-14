@@ -20,7 +20,9 @@ def fetch_episode_search_results(series_name, episode_number):
                                                   {'class': ['odd', 'even']})
         for results in all_possible_results:
             result_title = results.find('a', 'cellMainLink').text
-            if re.search(r'{title}.{episode_number}.(PROPER |INTERNAL |WEB-DL )?HDTV.x264-(LOL|KILLERS|ASAP|2HD|FUM|TLA|BATV)'.format(title=series_name, episode_number=episode_number), result_title):
+            new_title_name = series_name.replace(" ", ".")
+            log.debug("Search results %s", result_title)
+            if re.search(r'{title}.{episode_number}.(PROPER.|INTERNAL.|WEB-DL.)?HDTV.x264-(LOL|KILLERS|ASAP|2HD|FUM|TLA|BATV|FLEET)'.format(title=new_title_name, episode_number=episode_number), result_title):
                 for urls in results.find_all('a', 'icon16'):
                     if urls.get('title') == 'Torrent magnet link':
                         log.debug("found magnet link for {}-{}".format(series_name, episode_number))
@@ -29,6 +31,7 @@ def fetch_episode_search_results(series_name, episode_number):
                     else:
                         log.info("Unable to find torrent magnet link")
             else:
+                print(re.DEBUG)
                 log.info("Unable to find search title {} on kickass.cd".format(search_url))
     except requests.exceptions.ConnectionError as error:
         log.debug("unable to connect to kickass.cd for {}-{}".format(series_name,
