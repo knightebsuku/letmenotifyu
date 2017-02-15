@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Letmenotifyu
+Comment=Notification Program for www.primewire.ag
+TryExec=letme
+Exec=letme
+Icon=/usr/share/letmenotifyu/ui/letmenotifyu.xpm
+Type=Application
+Categories=GNOME;Network;
+StartupNotify=true
+X-Ubuntu-Gettext-Domain=letmenotifyu
