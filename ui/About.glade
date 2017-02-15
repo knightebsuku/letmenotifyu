@@ -16,7 +16,7 @@
     <property name="type_hint">dialog</property>
     <property name="gravity">center</property>
     <property name="program_name">Letmenotifyu</property>
-    <property name="version">3.7.1</property>
+    <property name="version">3.7.3</property>
     <property name="comments" translatable="yes">letmenotifyu is a program that will notify you of the latest movies and series episodes.</property>
     <property name="website">https://github.com/stumenz/letmenotifyu</property>
     <property name="website_label" translatable="yes">Letmenotifyu</property>
