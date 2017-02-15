@@ -1,11 +1,11 @@
 559fc442e8b0e7811cc4f75f2a80abbe  usr/bin/letme
-a7514e836034a8bdea6ec8a2c0501227  usr/lib/python3.5/dist-packages/letmenotifyu-3.7.2.egg-info
+19ef02707c86ba6d75062e9b4d24df11  usr/lib/python3.5/dist-packages/letmenotifyu-3.7.3.egg-info
 d41d8cd98f00b204e9800998ecf8427e  usr/lib/python3.5/dist-packages/letmenotifyu/__init__.py
 33174ff0e857d8926f293041bd2de68a  usr/lib/python3.5/dist-packages/letmenotifyu/__pycache__/__init__.cpython-35.pyc
 55721c1cb4ccfa498d8617a6f214f257  usr/lib/python3.5/dist-packages/letmenotifyu/__pycache__/background_worker.cpython-35.pyc
 b7785f8cc211b30dc7829237346fcfa0  usr/lib/python3.5/dist-packages/letmenotifyu/__pycache__/database.cpython-35.pyc
 353e520d970cafa6ecce13693f56a7fe  usr/lib/python3.5/dist-packages/letmenotifyu/__pycache__/gui.cpython-35.pyc
-8e334d15672dbb28448ecc8c37b38a1a  usr/lib/python3.5/dist-packages/letmenotifyu/__pycache__/kickass.cpython-35.pyc
+9d3218fcc4444df892feee333877edf7  usr/lib/python3.5/dist-packages/letmenotifyu/__pycache__/kickass.cpython-35.pyc
 e302d90deff828b421b100084620d37a  usr/lib/python3.5/dist-packages/letmenotifyu/__pycache__/main.cpython-35.pyc
 47f74eec6d0b1289722b52e290c0ea60  usr/lib/python3.5/dist-packages/letmenotifyu/__pycache__/movies.cpython-35.pyc
 b0eeb306b07376cccc3d4fc6f7e75f27  usr/lib/python3.5/dist-packages/letmenotifyu/__pycache__/notify.cpython-35.pyc
@@ -18,7 +18,7 @@ de17c7a07202ef8e69a77f8dd143c7f6  usr/lib/python3.5/dist-packages/letmenotifyu/_
 5a2127a10af8c72e55fd5d15b05a8ae7  usr/lib/python3.5/dist-packages/letmenotifyu/background_worker.py
 80c4b88f4bf8bbad7667c4a05cea3fd7  usr/lib/python3.5/dist-packages/letmenotifyu/database.py
 0e1d1034511f53eaad2451b961efbe3b  usr/lib/python3.5/dist-packages/letmenotifyu/gui.py
-58859e10c3a58b4372c9e1bdc5b5394d  usr/lib/python3.5/dist-packages/letmenotifyu/kickass.py
+965140706afdd6ffd9f2d9326baea1c8  usr/lib/python3.5/dist-packages/letmenotifyu/kickass.py
 352af06307aced8106acc86627e86c11  usr/lib/python3.5/dist-packages/letmenotifyu/main.py
 5b7b0f24f3388715c0c29a48280406e3  usr/lib/python3.5/dist-packages/letmenotifyu/movies.py
 6309e325cd6fadc0ba92e986b8424543  usr/lib/python3.5/dist-packages/letmenotifyu/notify.py
@@ -31,7 +31,7 @@ c5d7731fae8392ceda9d4415f1b6ac24  usr/lib/python3.5/dist-packages/letmenotifyu/u
 ebd63dd34ef8daa5314bfca6cc7384f3  usr/share/applications/letmenotifyu.desktop
 ac036608c5c402f92926505d0f0ab0e4  usr/share/doc/letmenotifyu/README.Debian
 84bca72ff2fdfe160722b3ee583c071d  usr/share/doc/letmenotifyu/README.md
-b786202072150172ba4acbe0a9121822  usr/share/doc/letmenotifyu/changelog.gz
+61d295460251782abf71cfaaca36b490  usr/share/doc/letmenotifyu/changelog.gz
 9b44b304ea8ea602066981c458463801  usr/share/doc/letmenotifyu/copyright
 8bcc029b0391f68efc29dd7cc0aabe26  usr/share/letmenotifyu/icons/Action.png
 753149684e899b298ab0dd4d4aed1d7e  usr/share/letmenotifyu/icons/Adventure.png
@@ -56,7 +56,7 @@ f948e328d922ce5a102aab8abd2ff886  usr/share/letmenotifyu/icons/Romance.png
 2b803f1a227e27d0c0e35633e35f9095  usr/share/letmenotifyu/icons/Thriller.png
 abfca07d5a92f752e25b16c77654639a  usr/share/letmenotifyu/icons/War.png
 0dabe619e921de52936c08d429443376  usr/share/letmenotifyu/icons/Western.png
-c45fa9d8fe8d918de38c645dcdc44fea  usr/share/letmenotifyu/ui/About.glade
+c5a4483eb8255b497d3f58df8d6006ad  usr/share/letmenotifyu/ui/About.glade
 a73b07a1b4b0d7fba71f606bc6a4f0ab  usr/share/letmenotifyu/ui/AddSeries.glade
 4331d67cb1ca3025978e8b1ccab273c1  usr/share/letmenotifyu/ui/Confirm.glade
 e1379f4747598227712d28a2637c6ecd  usr/share/letmenotifyu/ui/Error.glade
@@ -68,4 +68,4 @@ e57d9cb36bfb20a48c5192c306950869  usr/share/letmenotifyu/ui/SeriesPreference.gla
 b7ecb3dfe1c43fa582bc26fc0c5d9291  usr/share/letmenotifyu/ui/SetSeason.glade
 0e423ae2ad681fb8e33b72e5ba64421a  usr/share/letmenotifyu/ui/letmenotifyu.png
 73cbbe8dd1e15e9d68ef80398b7c090d  usr/share/letmenotifyu/ui/letmenotifyu.xpm
-d690cc3b14945410fb7a356997958c2b  usr/share/letmenotifyu/ui/movies.png
+a06edb34c9c370312cda4fc9609f82e2  usr/share/letmenotifyu/ui/movies.png
