@@ -1,4 +1,4 @@
-letmenotifyu (3.7.3) UNRELEASED; urgency=medium
+letmenotifyu (3.7.4-1) UNRELEASED; urgency=medium
 
   [ Lunga Mthembu ]
   * Delete upcoming movies if released
@@ -51,7 +51,9 @@ letmenotifyu (3.7.3) UNRELEASED; urgency=medium
   * Fix wrong database queried for transmission
   * Add new Release name
   * Add new video encoding
- -- lunga <lunga@complex-desktop>  Wed, 15 Feb 2017 08:16:20 +0200
+  * Fix torrent file name after download 
+
+ -- lunga <lunga@complex>  Wed, 26 Apr 2017 13:04:50 +0200
 
 letmenotifyu (2.2.1-1) unstable; urgency=low
 
