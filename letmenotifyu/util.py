@@ -67,7 +67,7 @@ def pre_populate_menu(builder):
 
 def fetch_torrent(torrent_url, title):
     "fetch torrent images"
-    torrent_path = os.path.join(settings.TORRENT_DIRECTORY, title+"torrent")
+    torrent_path = os.path.join(settings.TORRENT_DIRECTORY, title+".torrent")
     try:
         header = {'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.9; rv:32.0) Gecko/20100101 Firefox/32.0',}
         r = requests.get(torrent_url, headers=header)
