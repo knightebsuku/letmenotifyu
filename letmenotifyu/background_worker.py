@@ -141,8 +141,16 @@ def process_movie_queue():
                     except Exception as e:
                         log.exception(e)
             else:
-                transmission.check_movie_status(
-                    watch_id, transmission_hash, cursor, connect)
+                try:
+                    transmission.check_movie_status(
+                        watch_id, transmission_hash, cursor, connect)
+                except KeyError:
+                    log.info("movie was in transmission but has gone,"
+                             "updating movie status to complete")
+                    cursor.execute("UPDATE movie_queue SET "
+                                   "watch_queue_status_id=4 "
+                                   "WHERE id=?", (queue_id,))
+                    connect.commit()
         value = util.get_config_value(cursor, 'movie_process_interval')
         connect.close()
         time.sleep(float(value)*60)

@@ -59,6 +59,7 @@ def check_movie_status(watch_id, transmission_hash, cursor, db):
             db.commit()
     except KeyError as e:
         log.warn("unable to find movie torrent")
+        raise KeyError
     except transmissionrpc.error.TransmissionError:
         log.error("unable to connect to transmissionrpc")
     except Exception as e:
