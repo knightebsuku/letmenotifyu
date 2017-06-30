@@ -136,6 +136,8 @@ def process_movie_queue():
                                        "watch_queue_status_id=2 WHERE id=?",
                                        (queue_id,))
                         connect.commit()
+                    except NameError:
+                        yify.update_torrent(movie_title)
                     except Exception as e:
                         log.exception(e)
             else:

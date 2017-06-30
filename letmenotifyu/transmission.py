@@ -23,8 +23,12 @@ def open_transmission():
 def add_torrent(torrent_file_path):
     "add torrent to transmission client"
     client = open_transmission()
-    details = client.add_torrent(torrent_file_path)
-    return details.hashString, details.name
+    try:
+        details = client.add_torrent(torrent_file_path)
+        return details.hashString, details.name
+    except transmissionrpc.error.TransmissionError:
+        log.error("Unable to add torrent, fetch new torrent")
+        raise NameError
 
 
 def check_movie_status(watch_id, transmission_hash, cursor, db):
