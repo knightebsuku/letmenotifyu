@@ -7,7 +7,7 @@ Full application details on the [wiki](https://github.com/stumenz/letmenotifyu/w
 
 
 
-Version: 3.7.2
+Version: 3.7.4
 -------------------
 
 Program Features

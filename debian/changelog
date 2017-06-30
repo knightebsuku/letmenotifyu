@@ -1,4 +1,4 @@
-letmenotifyu (3.7.4-1ubuntu1) UNRELEASED; urgency=medium
+letmenotifyu (3.7.5-1) UNRELEASED; urgency=medium
 
   [ Lunga Mthembu ]
   * Delete upcoming movies if released
@@ -54,8 +54,9 @@ letmenotifyu (3.7.4-1ubuntu1) UNRELEASED; urgency=medium
   * Fix torrent file name after download 
   * Check if file is corrupt or not
   * Update movie queue is movie is not in transmission
+  * 
 
- -- lunga <lunga@complex>  Fri, 30 Jun 2017 17:38:40 +0200
+ -- lunga <lunga@complex>  Fri, 30 Jun 2017 18:00:37 +0200
 
 letmenotifyu (2.2.1-1) unstable; urgency=low
 
