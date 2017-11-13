@@ -1,4 +1,4 @@
-letmenotifyu (3.7.4-1ubuntu1) UNRELEASED; urgency=medium
+letmenotifyu (3.7.6) UNRELEASED; urgency=medium
 
   [ Lunga Mthembu ]
   * Delete upcoming movies if released
@@ -42,6 +42,7 @@ letmenotifyu (3.7.4-1ubuntu1) UNRELEASED; urgency=medium
   * clean up commented code
   * change movie compare to generator
   * fix regular expression for matching episodes which kickass
+  * Add more logging
 
   [ lunga ]
   * Move application to sqlite database  from postgresql
@@ -54,8 +55,9 @@ letmenotifyu (3.7.4-1ubuntu1) UNRELEASED; urgency=medium
   * Fix torrent file name after download 
   * Check if file is corrupt or not
   * Update movie queue is movie is not in transmission
+  * 
 
- -- lunga <lunga@complex>  Fri, 30 Jun 2017 17:38:40 +0200
+ -- lunga <lunga@complex>  Mon, 13 Nov 2017 11:19:21 +0200
 
 letmenotifyu (2.2.1-1) unstable; urgency=low
 

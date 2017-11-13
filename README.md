@@ -7,7 +7,7 @@ Full application details on the [wiki](https://github.com/stumenz/letmenotifyu/w
 
 
 
-Version: 3.7.4
+Version: 3.7.6
 -------------------
 
 Program Features
@@ -30,7 +30,7 @@ Program Features
 Dependencies
 ----------------
 
-* Python 3.5
+* Python >= 3.5
 
 * Python3-notify2
 
