@@ -1,8 +1,8 @@
 559fc442e8b0e7811cc4f75f2a80abbe  usr/bin/letme
-e91dcb9a3ad005a6f266d7a1585e2535  usr/lib/python3.6/dist-packages/letmenotifyu-3.7.6.egg-info
+4d2cb7cdc36356ece5acab605cccd32b  usr/lib/python3.6/dist-packages/letmenotifyu-3.7.7.egg-info
 d41d8cd98f00b204e9800998ecf8427e  usr/lib/python3.6/dist-packages/letmenotifyu/__init__.py
 0ca73f1cf2d11a7ecb26537e1c63fa7a  usr/lib/python3.6/dist-packages/letmenotifyu/__pycache__/__init__.cpython-36.pyc
-01f3e29553cecaec9424119cdbcf0852  usr/lib/python3.6/dist-packages/letmenotifyu/__pycache__/background_worker.cpython-36.pyc
+7c737081f4cfdb1e2d0ae7d98699e123  usr/lib/python3.6/dist-packages/letmenotifyu/__pycache__/background_worker.cpython-36.pyc
 465e4d8c3b1b056dcf02d494b03f22db  usr/lib/python3.6/dist-packages/letmenotifyu/__pycache__/database.cpython-36.pyc
 0c4a14fb6ed2f3054553775e0dd94b05  usr/lib/python3.6/dist-packages/letmenotifyu/__pycache__/gui.cpython-36.pyc
 0624bfd007bbba9524a922bd3176822c  usr/lib/python3.6/dist-packages/letmenotifyu/__pycache__/kickass.cpython-36.pyc
@@ -10,12 +10,12 @@ d41d8cd98f00b204e9800998ecf8427e  usr/lib/python3.6/dist-packages/letmenotifyu/_
 ed37f97ba47053206eb6a887a5048c0a  usr/lib/python3.6/dist-packages/letmenotifyu/__pycache__/movies.cpython-36.pyc
 0fe4c5aa21f0a4aa6ebe0cd2328b5573  usr/lib/python3.6/dist-packages/letmenotifyu/__pycache__/notify.cpython-36.pyc
 663efb709dd6551488a67554e2737786  usr/lib/python3.6/dist-packages/letmenotifyu/__pycache__/primewire.cpython-36.pyc
-21aae899a9e6eeffea64ef73635800db  usr/lib/python3.6/dist-packages/letmenotifyu/__pycache__/series.cpython-36.pyc
+314e5372481ebb4d8d48826537da8bfb  usr/lib/python3.6/dist-packages/letmenotifyu/__pycache__/series.cpython-36.pyc
 097dea56d64256371cab2c45bc904ec0  usr/lib/python3.6/dist-packages/letmenotifyu/__pycache__/settings.cpython-36.pyc
 cd5e543efc2ef401cea4cf3f8a250702  usr/lib/python3.6/dist-packages/letmenotifyu/__pycache__/transmission.cpython-36.pyc
 6226d7a20076c1305c3e53b73d2b791a  usr/lib/python3.6/dist-packages/letmenotifyu/__pycache__/util.cpython-36.pyc
 7d667e4e4d3b78a88772917bebf37fcd  usr/lib/python3.6/dist-packages/letmenotifyu/__pycache__/yify.cpython-36.pyc
-60d51f5d0061ce0424c219af2a3d90dc  usr/lib/python3.6/dist-packages/letmenotifyu/background_worker.py
+605dbfea610774d72b1392bcbad5788b  usr/lib/python3.6/dist-packages/letmenotifyu/background_worker.py
 80c4b88f4bf8bbad7667c4a05cea3fd7  usr/lib/python3.6/dist-packages/letmenotifyu/database.py
 0e1d1034511f53eaad2451b961efbe3b  usr/lib/python3.6/dist-packages/letmenotifyu/gui.py
 965140706afdd6ffd9f2d9326baea1c8  usr/lib/python3.6/dist-packages/letmenotifyu/kickass.py
@@ -30,8 +30,8 @@ cd5e543efc2ef401cea4cf3f8a250702  usr/lib/python3.6/dist-packages/letmenotifyu/_
 ead70a202e214e651569d10797193a39  usr/lib/python3.6/dist-packages/letmenotifyu/yify.py
 ebd63dd34ef8daa5314bfca6cc7384f3  usr/share/applications/letmenotifyu.desktop
 ac036608c5c402f92926505d0f0ab0e4  usr/share/doc/letmenotifyu/README.Debian
-3f76c153fd7718460284813c60975dde  usr/share/doc/letmenotifyu/README.md
-8c9c9cba2aff67e20a5f6d8dfc6698ed  usr/share/doc/letmenotifyu/changelog.gz
+6b617181be3c11a9d32bff3fac5925a4  usr/share/doc/letmenotifyu/README.md
+ad851ba90195102dfd8943d0a770a665  usr/share/doc/letmenotifyu/changelog.gz
 9b44b304ea8ea602066981c458463801  usr/share/doc/letmenotifyu/copyright
 8bcc029b0391f68efc29dd7cc0aabe26  usr/share/letmenotifyu/icons/Action.png
 753149684e899b298ab0dd4d4aed1d7e  usr/share/letmenotifyu/icons/Adventure.png
@@ -56,7 +56,7 @@ f948e328d922ce5a102aab8abd2ff886  usr/share/letmenotifyu/icons/Romance.png
 2b803f1a227e27d0c0e35633e35f9095  usr/share/letmenotifyu/icons/Thriller.png
 abfca07d5a92f752e25b16c77654639a  usr/share/letmenotifyu/icons/War.png
 0dabe619e921de52936c08d429443376  usr/share/letmenotifyu/icons/Western.png
-e9f045a54ed9345ff5ae4d969687cc8d  usr/share/letmenotifyu/ui/About.glade
+79a74a9a0b712cd40026638b5b05e0f1  usr/share/letmenotifyu/ui/About.glade
 a73b07a1b4b0d7fba71f606bc6a4f0ab  usr/share/letmenotifyu/ui/AddSeries.glade
 4331d67cb1ca3025978e8b1ccab273c1  usr/share/letmenotifyu/ui/Confirm.glade
 e1379f4747598227712d28a2637c6ecd  usr/share/letmenotifyu/ui/Error.glade
@@ -68,4 +68,4 @@ e57d9cb36bfb20a48c5192c306950869  usr/share/letmenotifyu/ui/SeriesPreference.gla
 b7ecb3dfe1c43fa582bc26fc0c5d9291  usr/share/letmenotifyu/ui/SetSeason.glade
 0e423ae2ad681fb8e33b72e5ba64421a  usr/share/letmenotifyu/ui/letmenotifyu.png
 73cbbe8dd1e15e9d68ef80398b7c090d  usr/share/letmenotifyu/ui/letmenotifyu.xpm
-e4b8153c8a094e487430cb8b74f225fd  usr/share/letmenotifyu/ui/movies.png
+768bf65350a80e93d58dfc892aabb3d1  usr/share/letmenotifyu/ui/movies.png
