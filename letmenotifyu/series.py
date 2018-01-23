@@ -33,8 +33,14 @@ class Series():
                 try:
                     details = json.loads(primewire.episodes(link))
                 except (ConnectionError, HTTPError) as error:
-                    log.exception(e)
+                    log.exception(error)
                 except TypeError as error:
+                    log.exception(error)
+                except AttributeError as error:
+                    log.exception(error)
+                    log.warn("Unable to pull details from primewire from {}".format(link))
+                except Exception as error:
+                    log.critical("Unable to handle this error")
                     log.exception(error)
                 else:
                     if self._poster(details['series_poster'],
@@ -47,6 +53,12 @@ class Series():
                 except(ConnectionError, HTTPError) as error:
                     log.exception(error)
                 except TypeError as error:
+                    log.exception(error)
+                except AttributeError as error:
+                    log.exception(error)
+                    log.warn("Unable to pull details from primewire from {}".format(link))
+                except Exception as error:
+                    log.critical("Unable to handle this error")
                     log.exception(error)
                 else:
                     self._commit(details, series_id, notify=True, new=False)

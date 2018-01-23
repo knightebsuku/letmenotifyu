@@ -92,8 +92,15 @@ def process_series_queue():
                         connect.rollback()
                         log.exception(e)
             else:
-                transmission.check_episode_status(
-                    watch_id, queue_id, cursor, connect)
+                try:
+                    transmission.check_episode_status(
+                        watch_id, queue_id, cursor, connect)
+                except KeyError as error:
+                    log.error("series not in queue, updating transmission")
+                    cursor.execute("UPDATE series_queue SET "
+                                   "watch_queue_status_id=4 "
+                                   "WHERE id=?", (queue_id,))
+                    connect.commit()
         value = util.get_config_value(cursor, 'series_process_interval')
         connect.close()
         time.sleep(float(value)*60)

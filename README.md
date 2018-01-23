@@ -5,9 +5,7 @@ Application to provide notification of new series episodes from [primewire.ag](h
 
 Full application details on the [wiki](https://github.com/stumenz/letmenotifyu/wiki)
 
-
-
-Version: 3.7.5
+Version: 3.7.9
 -------------------
 
 Program Features
@@ -30,7 +28,7 @@ Program Features
 Dependencies
 ----------------
 
-* Python 3.5
+* Python >= 3.5
 
 * Python3-notify2
 

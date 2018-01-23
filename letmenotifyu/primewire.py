@@ -89,3 +89,5 @@ def episodes(series_url: str) -> Json:
         raise
     except TypeError:
         raise
+    except AttributeError:
+        raise
