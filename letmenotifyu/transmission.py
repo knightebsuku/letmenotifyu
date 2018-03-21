@@ -91,5 +91,6 @@ def check_episode_status(watch_id, queue_id, cursor, db):
             db.commit()
     except KeyError as e:
         log.warn("unable to find series torrent for {}".format(queue_id))
+        raise KeyError
     except Exception as e:
         log.exception(e)
