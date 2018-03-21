@@ -319,7 +319,8 @@ class Main(object):
                                     'series_queue sq '
                                     'WHERE wqs.id=sq.watch_queue_status_id '
                                     'AND sq.series_id=si.series_id '
-                                    'ORDER BY sq.id DESC limit 15')
+                                    'AND sq.watch_queue_status_id <> 4 '
+                                    'ORDER BY sq.id DESC')
         for (path, watch_name, episode_name) in self._series_cursor.fetchall():
             util.render_view(self.image, episode_name+":  "+watch_name,
                              self.general_model,
