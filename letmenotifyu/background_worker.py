@@ -47,8 +47,14 @@ def update():
     while True:
         connect = sqlite3.connect(settings.GENERAL_DB)
         cursor = connect.cursor()
-        movie_update()
-        series_update()
+        try:
+            movie_update()
+        except Exception as error:
+            log.error(error)
+        try:
+            series_update()
+        except Exception as error:
+            log.error(error)
         interval = util.get_config_value(cursor, 'update_interval')
         connect.close()
         time.sleep(float(interval))
