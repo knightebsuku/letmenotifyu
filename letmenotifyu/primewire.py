@@ -59,7 +59,7 @@ def episodes(series_url: str) -> Json:
         series_info = {}
         series_html = series_details(series_url)
         title = series_html.title.text
-        title_name = re.search(r'Watch (.*) Online Free - PrimeWire',
+        title_name = re.search(r'Watch (.*) Online - PrimeWire',
                                title).group(1)
         series_info['series_title'] = title_name
         total_seasons = len(series_html.find_all(
