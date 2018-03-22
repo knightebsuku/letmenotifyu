@@ -59,19 +59,23 @@ def episodes(series_url: str) -> Json:
         series_info = {}
         series_html = series_details(series_url)
         title = series_html.title.text
-        title_name = re.search(r'Watch (.*) Online Free - PrimeWire | 1Channel',
+        title_name = re.search(r'Watch (.*) Online Free - PrimeWire',
                                title).group(1)
         series_info['series_title'] = title_name
-        total_seasons = len(series_html.find_all('a',
-                                                 {'class': 'season-toggle'}))
-        total_episodes = len(series_html.find_all('div',
-                                                  {'class': 'tv_episode_item'}))
+        total_seasons = len(series_html.find_all(
+            'a', {'class': 'season-toggle'})
+        )
+        total_episodes = len(series_html.find_all(
+            'div', {'class': 'tv_episode_item'})
+        )
         series_info['total_seasons'] = total_seasons
         series_info['total_episodes'] = total_episodes
         meta_image = series_html.find('meta', {'property': 'og:image'})
         series_image = 'http:'+meta_image['content']
         series_info['series_poster'] = series_image
-        for episode in series_html.find_all('div', {'class': 'tv_episode_item'}):
+        for episode in series_html.find_all(
+                'div', {'class': 'tv_episode_item'}
+        ):
             link = episode.a['href']
             link_data = re.search(r'season-(\d+)-episode-(\d+)', link)
             if check_season_number(link_data.group(1)) and check_episode_numbers(link_data.group(2)):
