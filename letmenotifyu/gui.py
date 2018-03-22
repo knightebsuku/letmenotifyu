@@ -75,8 +75,8 @@ class AddSeries(object):
 
     def check_url(self, text):
         "check adding new series"
-        if re.search(r'http://www.primewire.ag/(.*)-\d+-(.*)-online-free', text):
-            title = re.search(r"http://www.primewire.ag/(.*)-\d+-(.*)-online-free", text)
+        if re.search(r'http://www.primewire.life/(.*)-\d+-(.*)-online-free', text):
+            title = re.search(r"http://www.primewire.life/(.*)-\d+-(.*)-online-free", text)
             change_string = title.group(2)
             show_title = change_string.replace("-", " ")
             logging.info("Inserting new series {}".format(show_title))
@@ -266,7 +266,7 @@ class MovieDetails(object):
                              (self._movie_title,))
         ml = self._cursor.fetchone()
         movie_title.set_text(self._movie_title)
-        movie_link.set_uri("http://www.imdb.com/title/{}".format(ml))
+        movie_link.set_uri("http://www.imdb.com/title/{}".format(ml[0]))
         movie_link.set_property('label', "Imdb")
         self._cursor.execute("SELECT mq.id FROM movie_queue mq JOIN "
                              "movies m ON mq.movie_id=m.id "
