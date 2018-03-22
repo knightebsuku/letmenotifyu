@@ -1,4 +1,4 @@
-letmenotifyu (3.7.10) UNRELEASED; urgency=medium
+letmenotifyu (3.7.11) UNRELEASED; urgency=medium
 
   [ Lunga Mthembu ]
   * Delete upcoming movies if released
@@ -58,9 +58,10 @@ letmenotifyu (3.7.10) UNRELEASED; urgency=medium
   * Update series from queue if missing from transmission
   * Check atrubute error in series fetchinh
   * Rise to update series to status 4
+  * Make Sure series does get updated
   * 
 
- -- lunga <lunga@complex-desktop>  Wed, 21 Mar 2018 08:20:28 +0200
+ -- lunga <lunga@complex-desktop>  Wed, 21 Mar 2018 18:49:20 +0200
 
 letmenotifyu (2.2.1-1) unstable; urgency=low
 
