@@ -6,6 +6,7 @@ from bs4 import BeautifulSoup
 
 log = logging.getLogger(__name__)
 
+
 def fetch_episode_search_results(series_name, episode_number):
     "Search kickass page for episode torrent link"
     kickass_url = 'https://kickass.cd/search.php?q='
@@ -31,9 +32,11 @@ def fetch_episode_search_results(series_name, episode_number):
                     else:
                         log.info("Unable to find torrent magnet link")
             else:
-                print(re.DEBUG)
                 log.info("Unable to find search title {} on kickass.cd".format(search_url))
     except requests.exceptions.ConnectionError as error:
-        log.debug("unable to connect to kickass.cd for {}-{}".format(series_name,
-                                                               episode_number))
+        log.debug(
+            "unable to connect to kickass.cd for {}-{}".format(
+                series_name,
+                episode_number)
+        )
         log.exception(error)
