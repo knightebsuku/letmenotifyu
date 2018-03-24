@@ -10,7 +10,7 @@ log = logging.getLogger(__name__)
 def fetch_episode_search_results(series_name, episode_number):
     "Search kickass page for episode torrent link"
     kickass_url = 'https://kickass.cd/search.php?q='
-    search_url = "{url}{title} {number} HDTV x264".format(url=kickass_url,
+    search_url = "{url}{title} {number}".format(url=kickass_url,
                                                           title=series_name,
                                                           number=episode_number)
     try:
