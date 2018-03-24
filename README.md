@@ -5,7 +5,7 @@ Application to provide notification of new series episodes from [primewire.ag](h
 
 Full application details on the [wiki](https://github.com/stumenz/letmenotifyu/wiki)
 
-Version: 3.7.9
+Version: 3.7.13
 -------------------
 
 Program Features

@@ -1,4 +1,4 @@
-letmenotifyu (3.7.12) UNRELEASED; urgency=medium
+letmenotifyu (3.7.13) UNRELEASED; urgency=medium
 
   [ Lunga Mthembu ]
   * Delete upcoming movies if released
@@ -60,10 +60,10 @@ letmenotifyu (3.7.12) UNRELEASED; urgency=medium
   * Rise to update series to status 4
   * Make Sure series does get updated
   * Fix polling on primewire
-  * 
+  * Add new release names
   * 
 
- -- lunga <lunga@complex-desktop>  Thu, 22 Mar 2018 20:23:44 +0200
+ -- lunga <lunga@complex-desktop>  Sat, 24 Mar 2018 01:33:41 +0200
 
 letmenotifyu (2.2.1-1) unstable; urgency=low
 
